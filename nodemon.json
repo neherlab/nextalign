@@ -3,13 +3,30 @@
   "legacyWatch": false,
   "delay": 0.1,
   "watch": [
+    ".clang-tidy",
     "CMakeLists.txt",
     "conanfile.txt",
-    "src/*",
-    "scripts/*",
-    "tests/*"
+    "packages/cmake",
+    "packages/nextalign/CMakeLists.txt",
+    "packages/nextalign/include/nextalign/.cppcheck",
+    "packages/nextalign/src/*",
+    "packages/nextalign/tests/*",
+    "packages/nextalign/tests/.clang-tidy",
+    "packages/nextalign/tests/CMakeLists.txt",
+    "packages/nextalign_cli/CMakeLists.txt",
+    "packages/nextalign_cli/src/*",
+    "scripts/*"
   ],
-  "ext": ".cpp,.h,.hpp,.cxx,.c,.txt,.cmake,.sh",
-  "ignore": [".build", "node_modules"],
+  "ext": ".c,.cpp,.h,.hpp,.cx,.cxx,.txt,.py,.cmake,.sh,.cppcheck,.clang-tidy,",
+  "ignore": [
+    ".build",
+    ".git",
+    ".ignore",
+    ".temp",
+    ".tmp",
+    "3rdparty",
+    "temp",
+    "tmp"
+  ],
   "exec": "reset; bash -c 'CMAKE_BUILD_TYPE=Debug ./scripts/build_locally.sh' || cd ."
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 BASH_DEBUG="${BASH_DEBUG:=}"
-[[ "${BASH_DEBUG}" == "true" ]] && set -o xtrace
+([[ "${BASH_DEBUG}" == "true" ]] || [[ "${BASH_DEBUG}" == "1" ]]  ) && set -o xtrace
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -12,9 +12,10 @@ trap "exit" INT
 THIS_DIR=$(cd $(dirname "${BASH_SOURCE[0]}"); pwd)
 source "${THIS_DIR}/lib/set_locales.sh"
 
+PROJECT_NAME="nextalign"
+
 # Where the source code is
-SOURCE_DIR="$(realpath ${THIS_DIR}/..)"
-PROJECT_NAME="$(basename ${SOURCE_DIR})"
+PROJECT_ROOT_DIR="$(realpath ${THIS_DIR}/..)"
 
 # Build type (default: Release)
 CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:=Release}"
@@ -43,7 +44,7 @@ mkdir -p "${BUILD_DIR}"
 CMAKE_CXX_CPPCHECK="cppcheck;--template=gcc"
 while IFS='' read -r flag; do
   CMAKE_CXX_CPPCHECK="${CMAKE_CXX_CPPCHECK};${flag}"
-done<"${THIS_DIR}/.cppcheck"
+done<"${THIS_DIR}/../.cppcheck"
 
 # Print coloured message
 function print() {
@@ -57,12 +58,12 @@ function print() {
 pushd "${BUILD_DIR}" > /dev/null
 
   print 56 "Install dependencies";
-  conan install "${SOURCE_DIR}" \
+  conan install "${PROJECT_ROOT_DIR}" \
     -s build_type="${CMAKE_BUILD_TYPE}" \
     --build missing \
 
   print 92 "Generate build files";
-  cmake "${SOURCE_DIR}" \
+  cmake "${PROJECT_ROOT_DIR}" \
     -DCMAKE_MODULE_PATH="${BUILD_DIR}" \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
     -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
