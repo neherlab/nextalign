@@ -8,8 +8,8 @@
 
 struct AlignmentResult {
   int score;
-  const std::string& seq1;
-  const std::string& seq2;
+  std::string seq1;
+  std::string seq2;
 };
 
 
