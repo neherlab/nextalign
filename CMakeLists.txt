@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.10)
 cmake_policy(SET CMP0069 NEW)
 
 include(packages/cmake/quiet.cmake)
