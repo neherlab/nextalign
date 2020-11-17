@@ -15,6 +15,8 @@ add_library(${PROJECT_NAME} STATIC
   src/alignPairwise.h
   src/parseSequences.cpp
   src/parseSequences.h
+  src/seqan2.cpp
+  src/seqan2.h
   )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
