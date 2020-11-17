@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 cmake_policy(SET CMP0069 NEW)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/packages/cmake" ${CMAKE_MODULE_PATH})
+
 include(packages/cmake/quiet.cmake)
 include(packages/cmake/CoolCFlags.cmake)
 include(packages/cmake/CoolCXXFlags.cmake)

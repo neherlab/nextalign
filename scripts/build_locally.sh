@@ -20,6 +20,11 @@ PROJECT_ROOT_DIR="$(realpath ${THIS_DIR}/..)"
 # Build type (default: Release)
 CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:=Release}"
 
+CONAN_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+if [ ! ${CMAKE_BUILD_TYPE} == 'Debug' ] && [ ! ${CMAKE_BUILD_TYPE} == 'Release' ]; then
+  CONAN_BUILD_TYPE="Debug"
+fi
+
 # Where the build files are (default: 'build' directory in the project root)
 BUILD_DIR_DEFAULT="${THIS_DIR}/../.build/${CMAKE_BUILD_TYPE}"
 mkdir -p "${BUILD_DIR_DEFAULT}"
@@ -55,11 +60,12 @@ function print() {
   fi
 }
 
+
 pushd "${BUILD_DIR}" > /dev/null
 
   print 56 "Install dependencies";
   conan install "${PROJECT_ROOT_DIR}" \
-    -s build_type="${CMAKE_BUILD_TYPE}" \
+    -s build_type="${CONAN_BUILD_TYPE}" \
     --build missing \
 
   print 92 "Generate build files";
