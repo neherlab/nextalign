@@ -8,6 +8,9 @@ set -o pipefail
 shopt -s dotglob
 trap "exit" INT
 
+# Install these for clang support:
+# sudo apt-get install --verbose-versions llvm-10 clang{,-tools,-tidy,-format}-10 llvm-10 libclang-common-10-dev
+
 # Directory where this script resides
 THIS_DIR=$(cd $(dirname "${BASH_SOURCE[0]}"); pwd)
 source "${THIS_DIR}/lib/set_locales.sh"
@@ -27,19 +30,22 @@ case ${CMAKE_BUILD_TYPE} in
   *) CONAN_BUILD_TYPE="Release" ;;
 esac
 
+
 USE_CLANG="${USE_CLANG:=0}"
 CONAN_COMPILER_SETTINGS=""
 BUILD_SUFFIX=""
 if [ "${USE_CLANG}" == "true" ] || [ "${USE_CLANG}" == "1" ]; then
-  export CC="clang"
-  export CXX="clang++"
+  export CC="${CC:-clang}"
+  export CXX="${CXX:-clang++}"
   export CMAKE_C_COMPILER=${CC}
   export CMAKE_CXX_COMPILER=${CXX}
 
+  CLANG_VERSION_DETECTED=$(${CC} --version | grep "clang version" | awk -F ' ' {'print $3'} | awk -F \. {'print $1'})
+  CLANG_VERSION=${CLANG_VERSION:=${CLANG_VERSION_DETECTED}}
+
   CONAN_COMPILER_SETTINGS="\
     -s compiler=clang \
-    -s compiler.version=10 \
-    -s compiler.libcxx=libc++ \
+    -s compiler.version=${CLANG_VERSION} \
   "
 
   BUILD_SUFFIX="-Clang"
@@ -102,7 +108,7 @@ pushd "${BUILD_DIR}" > /dev/null
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
     -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
     -DCMAKE_CXX_CPPCHECK="${CMAKE_CXX_CPPCHECK}" \
-    -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE:=0} \
+    -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE:=1} \
 
   print 12 "Build";
   cmake --build "${BUILD_DIR}" --config "${CMAKE_BUILD_TYPE}" -- -j$(($(nproc) - 1))
