@@ -1,8 +1,11 @@
 #include <fmt/format.h>
+#include <nextalign/nextalign.h>
+#include <nextalign/parseGb.h>
 #include <nextalign/types.h>
 
 #include <cxxopts.hpp>
 
+// TODO(ivan-aksamentov): detect number of cores
 const int numCores = 4;
 
 
@@ -135,7 +138,7 @@ int main(int argc, char *argv[]) {
     // for each streamed sequence
     for (;;) {
       std::string query("TODO");
-      runOne(query, ref, geneMap);
+      nextalign(query, ref, geneMap, options);
     }
 
   } catch (const cxxopts::OptionSpecException &e) {

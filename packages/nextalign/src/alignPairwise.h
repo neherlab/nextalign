@@ -1,12 +1,8 @@
 #pragma once
 
-#include <string>
+#include <nextalign/types.h>
 
-struct Alignment {
-  std::string query;
-  std::string ref;
-  int alignmentScore;
-};
+#include <string>
 
 struct NextalignOptions;
 
