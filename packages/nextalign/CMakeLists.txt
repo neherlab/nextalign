@@ -11,8 +11,12 @@ find_package(boost_base 1.68.0 REQUIRED)
 find_package(fmt 7.1.0 REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC
+  include/nextalign/nextalign.h
+  include/nextalign/types.h
   src/alignPairwise.cpp
   src/alignPairwise.h
+  src/parseGb.cpp
+  src/parseGb.h
   src/parseSequences.cpp
   src/parseSequences.h
   src/seqan2.cpp

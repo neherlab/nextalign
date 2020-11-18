@@ -8,4 +8,6 @@ struct Alignment {
   int alignmentScore;
 };
 
-Alignment alignPairwise(const std::string& query, const std::string& ref, int minimalLength);
+struct NextalignOptions;
+
+Alignment alignPairwise(const std::string& query, const std::string& ref, const NextalignOptions& options);
