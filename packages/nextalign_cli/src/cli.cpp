@@ -1,7 +1,11 @@
 #include <fmt/format.h>
+#include <nextalign/nextalign.h>
+#include <nextalign/parseGb.h>
+#include <nextalign/types.h>
 
 #include <cxxopts.hpp>
 
+// TODO(ivan-aksamentov): detect number of cores
 const int numCores = 4;
 
 
@@ -28,28 +32,35 @@ auto parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-avoid
       "i,sequences",
       "Path to a FASTA or file with input sequences",
       cxxopts::value<std::string>(),
-      "IN_FASTA"
+      "SEQS"
     )
 
     (
-      "g,gene-map",
+      "r,reference",
+       R"(Path to a GB file containing reference sequence and gene map)",
+       cxxopts::value<std::string>(),
+       "REF"
+    )
+
+    (
+      "m,genemap",
        R"(Path to a JSON file containing custom gene map)",
        cxxopts::value<std::string>(),
-       "IN_GENE_MAP"
+       "GENEMAP"
     )
 
     (
-      "G,genes",
+      "g,genes",
        R"(List of genes to account for during alignment)",
        cxxopts::value<std::string>(),
-       "IN_GENE_MAP"
+       "GENES"
     )
 
     (
       "o,output",
       "(optional) Path to output aligned sequence ins FASTA format",
       cxxopts::value<std::string>(),
-      "OUT_JSON"
+      "OUTPUT"
     );
   // clang-format on
 
@@ -87,7 +98,7 @@ auto getOptionRequired(const CliOptions &params, const std::string &name) -> Res
 }
 
 
-struct Params {
+struct CliParams {
   int numThreads;
   std::string inputFasta;
   std::string inputRootSeq;
@@ -95,7 +106,7 @@ struct Params {
   std::string inputGenes;
 };
 
-Params validateParams(const CliOptions &options) {
+CliParams validateCliParams(const CliOptions &options) {
   const auto numThreads = getOptionRequired<int>(options, "jobs");
   const auto inputFasta = getOptionRequired<std::string>(options, "sequences");
   const auto inputRootSeq = getOptionRequired<std::string>(options, "root-seq");
@@ -108,14 +119,27 @@ Params validateParams(const CliOptions &options) {
 
 int main(int argc, char *argv[]) {
   try {
-    const auto options = parseCommandLine(argc, argv);
-    const auto params = validateParams(options);
+    const auto args = parseCommandLine(argc, argv);
+    const auto params = validateCliParams(args);
 
     std::cout << "numThreads   : " << params.numThreads << std::endl;
     std::cout << "inputFasta   : " << params.inputFasta << std::endl;
     std::cout << "inputRootSeq : " << params.inputRootSeq << std::endl;
     std::cout << "inputGeneMap : " << params.inputGeneMap << std::endl;
     std::cout << "inputGenes   : " << params.inputGenes << std::endl;
+
+
+    const std::string gbContent = "TODO";
+    const NextalignOptions options = {};
+
+    // Parse and prepare reference sequence and genemap
+    const auto [ref, geneMap] = parseGb(gbContent);
+
+    // for each streamed sequence
+    for (;;) {
+      std::string query("TODO");
+      nextalign(query, ref, geneMap, options);
+    }
 
   } catch (const cxxopts::OptionSpecException &e) {
     std::cerr << e.what() << std::endl;

@@ -3,13 +3,13 @@
 #include <string>
 
 #include "helpers.h"
+#include "nextalign/types.h"
 #include "seqan2.h"
 
-Alignment alignPairwise(const std::string& query, const std::string& ref, int minimalLength) {
+Alignment alignPairwise(const std::string& query, const std::string& ref, const NextalignOptions& options) {
+  NA_UNUSED(options);
 
-  NA_UNUSED(minimalLength);
-
-  const AlignOptionsOverlap options = {
+  const AlignOptionsOverlap alignOptions = {
     .band = 5,
     .score_match = 1,
     .score_mismatch = -1,
@@ -18,7 +18,7 @@ Alignment alignPairwise(const std::string& query, const std::string& ref, int mi
     .cut_flanks = 0,
   };
 
-  const AlignmentResult& result = align_overlap(query, ref, options);
+  const AlignmentResult& result = align_overlap(query, ref, alignOptions);
 
   return {.query = result.seq1, .ref = result.seq2, .alignmentScore = result.score};
 }
