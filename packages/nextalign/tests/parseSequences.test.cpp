@@ -1,8 +1,7 @@
 #include <gtest/gtest.h>
+#include <nextalign/parseSequences.h>
 
 #include <sstream>
-
-#include "../src/parseSequences.h"
 
 
 TEST(parseSequences, SanitizesSequences) {

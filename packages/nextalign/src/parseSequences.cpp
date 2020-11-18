@@ -1,4 +1,5 @@
 #include <fmt/format.h>
+#include <nextalign/parseSequences.h>
 
 #include <boost/algorithm/string.hpp>
 #include <map>
@@ -8,6 +9,21 @@ namespace {
   using regex = std::regex;
   using std::regex_replace;
 }// namespace
+
+
+class ErrorFastaStreamIllegalNextCall : public std::runtime_error {
+public:
+  ErrorFastaStreamIllegalNextCall()
+      : std::runtime_error("Fasta stream: stream is in non-readable state, the next item cannot be retrieved") {}
+};
+
+
+class ErrorFastaStreamInvalidState : public std::runtime_error {
+public:
+  ErrorFastaStreamInvalidState()
+      : std::runtime_error("Fasta stream: stream reached an invalid state which should not be reached") {}
+};
+
 
 auto sanitizeLine(std::string line) {
   line = regex_replace(line, regex("\r\n"), "\n");
@@ -24,53 +40,86 @@ auto sanitizeSequence(std::string seq) {
   return seq;
 }
 
-void addSequence(std::string currentSeqName, const std::string &currentSeq,
-  std::map<std::string, std::string> &seqs,// NOLINT(google-runtime-references)
-  std::map<std::string, int> &seqNames     // NOLINT(google-runtime-references)
-) {
-  if (currentSeqName.empty()) {
-    currentSeqName = "Untitled";
+
+class FastaStreamImpl : public FastaStream {
+  std::istream& istream;
+  std::map<std::string, int> seqNames;
+
+  std::string currentSeqName;
+  std::string currentSeq;
+
+  /**
+   * Keeps track of sequence names for deduplication
+   * and prepares (seqName, seq) entry for returning as the next element of the stream.
+   */
+  std::pair<std::string, std::string> prepareResult() {
+    if (currentSeqName.empty()) {
+      currentSeqName = "Untitled";
+    }
+
+    auto it = seqNames.find(currentSeqName);
+    if (it != seqNames.end()) {
+      const auto nameCount = it->second;
+      currentSeqName = fmt::format("{:s} ({:d})", currentSeqName, nameCount);
+      it->second += 1;
+    } else {
+      seqNames.emplace(currentSeqName, 1);
+    }
+
+    return std::make_pair(currentSeqName, sanitizeSequence(currentSeq));
   }
 
-  auto it = seqNames.find(currentSeqName);
-  if (it != seqNames.end()) {
-    const auto nameCount = it->second;
-    currentSeqName = fmt::format("{:s} ({:d})", currentSeqName, nameCount);
-    it->second += 1;
-  } else {
-    seqNames.emplace(currentSeqName, 1);
+
+public:
+  explicit FastaStreamImpl(std::istream& istream) : istream(istream) {}
+
+  [[nodiscard]] bool good() const override {
+    return istream.good();
   }
 
-  const auto currentSeqSane = sanitizeSequence(currentSeq);
-  seqs.emplace(currentSeqName, currentSeqSane);
+  std::pair<std::string, std::string> next() override {
+    if (!good()) {
+      throw ErrorFastaStreamIllegalNextCall();
+    }
+
+    std::string line;
+    while (std::getline(istream, line)) {
+      line = sanitizeLine(line);
+
+      if (boost::starts_with(line, ">")) {
+        if (!currentSeq.empty()) {
+          return prepareResult();
+        }
+
+        currentSeqName = line.substr(1, line.size());
+        boost::trim(currentSeqName);
+
+        currentSeq = "";
+      } else {
+        currentSeq += line;
+      }
+    }
+
+    if (!currentSeq.empty()) {
+      return prepareResult();
+    }
+
+    throw ErrorFastaStreamInvalidState();
+  }
+};
+
+std::unique_ptr<FastaStream> makeFastaStream(std::istream& istream) {
+  return std::make_unique<FastaStreamImpl>(istream);
 }
 
 
-std::map<std::string, std::string> parseSequences(std::istream &istream) {
-  std::string currentSeqName;
-  std::string currentSeq;
+std::map<std::string, std::string> parseSequences(std::istream& istream) {
   std::map<std::string, std::string> seqs;
-  std::map<std::string, int> seqNames;
 
-  std::string line;
-  while (std::getline(istream, line)) {
-    line = sanitizeLine(line);
-
-    if (boost::starts_with(line, ">")) {
-      if (!currentSeq.empty()) {
-        addSequence(currentSeqName, currentSeq, seqs, seqNames);
-      }
-
-      currentSeqName = line.substr(1, line.size());
-      boost::trim(currentSeqName);
-      currentSeq = "";
-    } else {
-      currentSeq += line;
-    }
-  }
-
-  if (!currentSeq.empty()) {
-    addSequence(currentSeqName, currentSeq, seqs, seqNames);
+  auto fastaStream = makeFastaStream(istream);
+  while (fastaStream->good()) {
+    const auto seqEntry = fastaStream->next();
+    seqs.insert(seqEntry);
   }
 
   return seqs;

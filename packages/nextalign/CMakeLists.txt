@@ -19,7 +19,7 @@ add_library(${PROJECT_NAME} STATIC
   src/nextalign.cpp
   src/parseGb.cpp
   src/parseSequences.cpp
-  src/parseSequences.h
+  include/nextalign/parseSequences.h
   src/seqan2.cpp
   src/seqan2.h
   )
