@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 BASH_DEBUG="${BASH_DEBUG:=}"
-([[ "${BASH_DEBUG}" == "true" ]] || [[ "${BASH_DEBUG}" == "1" ]]  ) && set -o xtrace
+([ "${BASH_DEBUG}" == "true" ] || [ "${BASH_DEBUG}" == "1" ] ) && set -o xtrace
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -21,12 +21,32 @@ PROJECT_ROOT_DIR="$(realpath ${THIS_DIR}/..)"
 CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:=Release}"
 
 CONAN_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-if [ ! ${CMAKE_BUILD_TYPE} == 'Debug' ] && [ ! ${CMAKE_BUILD_TYPE} == 'Release' ]; then
-  CONAN_BUILD_TYPE="Debug"
+case ${CMAKE_BUILD_TYPE} in
+  Debug|Release|RelWithDebInfo|MinSizeRelease) CONAN_BUILD_TYPE=${CMAKE_BUILD_TYPE} ;;
+  ASAN|MSAN|TSAN|UBSAN) CONAN_BUILD_TYPE=RelWithDebInfo ;;
+  *) CONAN_BUILD_TYPE="Release" ;;
+esac
+
+USE_CLANG="${USE_CLANG:=0}"
+CONAN_COMPILER_SETTINGS=""
+BUILD_SUFFIX=""
+if [ "${USE_CLANG}" == "true" ] || [ "${USE_CLANG}" == "1" ]; then
+  export CC="clang"
+  export CXX="clang++"
+  export CMAKE_C_COMPILER=${CC}
+  export CMAKE_CXX_COMPILER=${CXX}
+
+  CONAN_COMPILER_SETTINGS="\
+    -s compiler=clang \
+    -s compiler.version=10 \
+    -s compiler.libcxx=libc++ \
+  "
+
+  BUILD_SUFFIX="-Clang"
 fi
 
 # Where the build files are (default: 'build' directory in the project root)
-BUILD_DIR_DEFAULT="${THIS_DIR}/../.build/${CMAKE_BUILD_TYPE}"
+BUILD_DIR_DEFAULT="${THIS_DIR}/../.build/${CMAKE_BUILD_TYPE}${BUILD_SUFFIX}"
 mkdir -p "${BUILD_DIR_DEFAULT}"
 BUILD_DIR_DEFAULT=$(realpath "${BUILD_DIR_DEFAULT}")
 BUILD_DIR="${BUILD_DIR:=${BUILD_DIR_DEFAULT}}"
@@ -35,6 +55,13 @@ USE_COLOR="${USE_COLOR:=1}"
 
 # gdb (or lldb) command with arguments
 GDB_DEFAULT="gdb --quiet -ix ${THIS_DIR}/lib/.gdbinit -x ${THIS_DIR}/lib/.gdbexec --args"
+
+# AddressSanitizer and MemorySanitizer don't work with gdb
+case ${CMAKE_BUILD_TYPE} in
+  ASAN|MSAN) GDB_DEFAULT="" ;;
+  *) ;;
+esac
+
 GDB="${GDB:=${GDB_DEFAULT}}"
 
 # gttp (Google Test Pretty Printer) command
@@ -66,6 +93,7 @@ pushd "${BUILD_DIR}" > /dev/null
   print 56 "Install dependencies";
   conan install "${PROJECT_ROOT_DIR}" \
     -s build_type="${CONAN_BUILD_TYPE}" \
+    ${CONAN_COMPILER_SETTINGS} \
     --build missing \
 
   print 92 "Generate build files";
