@@ -1,9 +1,11 @@
 #include <fmt/format.h>
 #include <nextalign/nextalign.h>
 #include <nextalign/parseGb.h>
+#include <nextalign/parseSequences.h>
 #include <nextalign/types.h>
 
 #include <cxxopts.hpp>
+#include <fstream>
 
 // TODO(ivan-aksamentov): detect number of cores
 const int numCores = 4;
@@ -127,25 +129,34 @@ int main(int argc, char *argv[]) {
     std::cout << "  genemap  : " << cliParams.genemap << std::endl;
     std::cout << "  genes    : " << cliParams.genes << std::endl;
     std::cout << "  output   : " << cliParams.output << std::endl;
+    std::cout << std::endl;
 
-    const std::string gbContent = "TODO";
+    // const std::string gbContent = "TODO";
     const NextalignOptions options = {};
 
     // Parse and prepare reference sequence and genemap
-    const auto [ref, geneMap] = parseGb(gbContent);
+    // const auto [ref, geneMap] = parseGb(gbContent);
 
-    // for each streamed sequence
-    for (;;) {
-      std::string query("TODO");
-      nextalign(query, ref, geneMap, options);
+    std::ifstream file(cliParams.sequences);
+    const auto fastaStream = makeFastaStream(file);
+    if (!file.good()) {
+      fmt::print(stderr, "Error: unable to read {:s}\n", cliParams.sequences);
+      std::exit(1);
+    }
+
+    while (fastaStream->good()) {
+      const auto entry = fastaStream->next();
+      fmt::print(stdout, "{:s}\n", entry.first);
     }
 
   } catch (const cxxopts::OptionSpecException &e) {
     std::cerr << "Error: " << e.what() << std::endl;
+    std::exit(1);
   } catch (const cxxopts::OptionParseException &e) {
     std::cerr << "Error: " << e.what() << std::endl;
+    std::exit(1);
   } catch (const std::exception &e) {
     std::cerr << "Error: " << e.what() << std::endl;
-    return 1;
+    std::exit(1);
   }
 }
