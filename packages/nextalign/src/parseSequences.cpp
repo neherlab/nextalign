@@ -71,7 +71,20 @@ class FastaStreamImpl : public FastaStream {
 
 
 public:
-  explicit FastaStreamImpl(std::istream& istream) : istream(istream) {}
+  FastaStreamImpl() = delete;
+
+  explicit FastaStreamImpl(std::istream& is) : istream(is) {}
+
+  ~FastaStreamImpl() override = default;
+
+  FastaStreamImpl(const FastaStreamImpl& other) = delete;
+
+  FastaStreamImpl operator=(const FastaStreamImpl& other) = delete;
+
+  FastaStreamImpl(FastaStreamImpl&& other) = delete;
+
+  FastaStreamImpl operator=(const FastaStreamImpl&& other) = delete;
+
 
   [[nodiscard]] bool good() const override {
     return istream.good();

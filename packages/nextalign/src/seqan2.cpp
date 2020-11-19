@@ -5,7 +5,7 @@
 
 #include "seqan2.h"
 
-#include <seqan/align.h>
+#include <seqan2nowarn.h>
 
 #include "helpers.h"
 
@@ -46,7 +46,8 @@ namespace {
 }// namespace
 
 
-AlignmentResult align_global(const std::string& seq1, const std::string& seq2, const AlignOptionsGlobal& options) {
+[[maybe_unused]] AlignmentResult align_global(
+  const std::string& seq1, const std::string& seq2, const AlignOptionsGlobal& options) {
   const auto& band = options.band;
   const auto& score_match = options.score_match;
   const auto& score_mismatch = options.score_mismatch;
@@ -67,8 +68,8 @@ AlignmentResult align_global(const std::string& seq1, const std::string& seq2, c
   return {.score = score, .seq1 = ali1, .seq2 = ali2};
 }
 
-
-AlignmentResult align_overlap(const std::string& seq1, const std::string& seq2, const AlignOptionsOverlap& options) {
+[[maybe_unused]] AlignmentResult align_overlap(
+  const std::string& seq1, const std::string& seq2, const AlignOptionsOverlap& options) {
   const auto& band = options.band;
   const auto& score_match = options.score_match;
   const auto& score_mismatch = options.score_mismatch;
@@ -95,7 +96,8 @@ AlignmentResult align_overlap(const std::string& seq1, const std::string& seq2, 
   return {.score = score, .seq1 = ali1, .seq2 = ali2};
 }
 
-AlignmentResult align_ladder(const std::string& seq1, const std::string& seq2, const AlignOptionsLadder& options) {
+[[maybe_unused]] AlignmentResult align_ladder(
+  const std::string& seq1, const std::string& seq2, const AlignOptionsLadder& options) {
   const auto& band = options.band;
   const auto& score_match = options.score_match;
   const auto& score_mismatch = options.score_mismatch;
@@ -119,7 +121,8 @@ AlignmentResult align_ladder(const std::string& seq1, const std::string& seq2, c
 }
 
 
-AlignmentResult align_local(const std::string& seq1, const std::string& seq2, const AlignOptionsLocal& options) {
+[[maybe_unused]] AlignmentResult align_local(
+  const std::string& seq1, const std::string& seq2, const AlignOptionsLocal& options) {
   const auto& score_match = options.score_match;
   const auto& score_mismatch = options.score_mismatch;
   const auto& score_gapext = options.score_gapext;

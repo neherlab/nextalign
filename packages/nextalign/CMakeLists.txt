@@ -27,6 +27,7 @@ add_library(${PROJECT_NAME} STATIC
   src/parseSequences.cpp
   src/seqan2.cpp
   src/seqan2.h
+  src/seqan2nowarn.h
   )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)

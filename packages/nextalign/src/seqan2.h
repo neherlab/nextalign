@@ -21,7 +21,7 @@ struct AlignOptionsGlobal {
   int score_gapopen;
 };
 
-AlignmentResult align_global(const std::string& seq1, const std::string& seq2, const AlignOptionsGlobal& options);
+[[maybe_unused]] AlignmentResult align_global(const std::string& seq1, const std::string& seq2, const AlignOptionsGlobal& options);
 
 
 struct AlignOptionsOverlap {
@@ -53,4 +53,4 @@ struct AlignOptionsLocal {
   int score_gapopen;
 };
 
-AlignmentResult align_local(const std::string& seq1, const std::string& seq2, const AlignOptionsLocal& options);
+[[maybe_unused]] AlignmentResult align_local(const std::string& seq1, const std::string& seq2, const AlignOptionsLocal& options);

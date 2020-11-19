@@ -7,6 +7,18 @@
 
 class FastaStream {
 public:
+  FastaStream() = default;
+
+  virtual ~FastaStream() = default;
+
+  FastaStream(const FastaStream& other) = delete;
+
+  FastaStream& operator=(const FastaStream& other) = delete;
+
+  FastaStream(FastaStream&& other) = delete;
+
+  FastaStream& operator=(const FastaStream&& other) = delete;
+
   /** Checks that the stream is in valid state and the next element can be retrieved from it */
   [[nodiscard]] virtual bool good() const = 0;
 
@@ -15,7 +27,7 @@ public:
 };
 
 /** Creates an instance of fasta stream, given a file or string stream */
-std::unique_ptr<FastaStream> makeFastaStream(std::istream &istream);
+std::unique_ptr<FastaStream> makeFastaStream(std::istream& istream);
 
 /** Parses all sequences of a given file of string stream */
-std::map<std::string, std::string> parseSequences(std::istream &istream);
+std::map<std::string, std::string> parseSequences(std::istream& istream);
