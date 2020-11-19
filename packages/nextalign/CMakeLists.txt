@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 cmake_policy(SET CMP0069 NEW)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/packages/cmake" ${CMAKE_MODULE_PATH})
+include(CFlags)
+include(Quiet)
+include(Sanitizers)
+
 project(nextalign)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -13,21 +18,19 @@ find_package(fmt 7.1.0 REQUIRED)
 add_library(${PROJECT_NAME} STATIC
   include/nextalign/nextalign.h
   include/nextalign/parseGb.h
+  include/nextalign/parseSequences.h
   include/nextalign/types.h
   src/alignPairwise.cpp
   src/alignPairwise.h
   src/nextalign.cpp
   src/parseGb.cpp
   src/parseSequences.cpp
-  include/nextalign/parseSequences.h
   src/seqan2.cpp
   src/seqan2.h
   )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
-
-include(CoolSanitizers)
 
 target_compile_definitions(${PROJECT_NAME}
   PRIVATE -DPROJECT_NAME="${PROJECT_NAME}"
