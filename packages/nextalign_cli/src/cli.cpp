@@ -9,13 +9,40 @@
 const int numCores = 4;
 
 
-using CliOptions = cxxopts::ParseResult;
+struct CliParams {
+  int jobs;
+  std::string sequences;
+  std::string reference;
+  std::string genemap;
+  std::string genes;
+  std::string output;
+};
 
-auto parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-avoid-c-arrays)
-  cxxopts::Options options("nextalign", "Nextalign: sequence alignment");
+
+template<typename Result>
+auto getParamRequired(
+  const cxxopts::Options &cxxOpts, const cxxopts::ParseResult &cxxOptsParsed, const std::string &name) -> Result {
+  if (!cxxOptsParsed.count(name)) {
+    fmt::print(stderr, "Error: argument `--{:s}` is required\n\n", name);
+    fmt::print(stderr, "{:s}\n", cxxOpts.help());
+    std::exit(1);
+  }
+
+  return cxxOptsParsed[name].as<Result>();
+}
+
+template<typename Result>
+auto getParamRequiredDefaulted([[maybe_unused]] const cxxopts::Options &cxxOpts,
+  const cxxopts::ParseResult &cxxOptsParsed, const std::string &name) -> Result {
+  return cxxOptsParsed[name].as<Result>();
+}
+
+
+CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-avoid-c-arrays)
+  cxxopts::Options cxxOpts("nextalign", "Nextalign: sequence alignment\n");
 
   // clang-format off
-  options.add_options()
+  cxxOpts.add_options()
     (
       "h,help",
       "Show this help"
@@ -23,111 +50,83 @@ auto parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-avoid
 
     (
       "j,jobs",
-      "Number of CPU threads used by the algorithm. If not specified, using number of available logical CPU cores",
+      "(optional) Number of CPU threads used by the algorithm. If not specified, using number of available logical CPU cores",
       cxxopts::value<int>()->default_value(std::to_string(numCores)),
       "JOBS"
     )
 
     (
       "i,sequences",
-      "Path to a FASTA or file with input sequences",
+      "(required) Path to a FASTA or file with input sequences",
       cxxopts::value<std::string>(),
       "SEQS"
     )
 
     (
       "r,reference",
-       R"(Path to a GB file containing reference sequence and gene map)",
+       "(required) Path to a GB file containing reference sequence and gene map",
        cxxopts::value<std::string>(),
        "REF"
     )
 
     (
       "m,genemap",
-       R"(Path to a JSON file containing custom gene map)",
+       "(required) Path to a JSON file containing custom gene map",
        cxxopts::value<std::string>(),
        "GENEMAP"
     )
 
     (
       "g,genes",
-       R"(List of genes to account for during alignment)",
+       "(required) List of genes to account for during alignment",
        cxxopts::value<std::string>(),
        "GENES"
     )
 
     (
       "o,output",
-      "(optional) Path to output aligned sequence ins FASTA format",
+      "(required) Path to output aligned sequence in FASTA format",
       cxxopts::value<std::string>(),
       "OUTPUT"
     );
   // clang-format on
 
-  auto result = options.parse(argc, argv);
+  const auto cxxOptsParsed = cxxOpts.parse(argc, argv);
 
-  if (result.count("help") > 0) {
-    std::cout << options.help() << std::endl;
+  if (cxxOptsParsed.count("help") > 0) {
+    fmt::print(stdout, "{:s}\n", cxxOpts.help());
     std::exit(0);
   }
 
-  if (result.count("input-fasta") == 0) {
-    std::cerr << "Error: input-fasta argument is required" << std::endl;
-    std::cerr << options.help() << std::endl;
-    std::exit(1);
-  }
+  const auto jobs = getParamRequiredDefaulted<int>(cxxOpts, cxxOptsParsed, "jobs");
+  const auto sequences = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "sequences");
+  const auto reference = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "reference");
+  const auto genemap = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "genemap");
+  const auto genes = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "genes");
+  const auto output = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "output");
 
-  return result;
-}
-
-class DeveloperError : public std::runtime_error {
-public:
-  explicit DeveloperError(const std::string &message) : std::runtime_error(message) {}
-};
-
-template<typename Result>
-auto getOptionRequired(const CliOptions &params, const std::string &name) -> Result {
-  if (!params.count(name)) {
-    throw DeveloperError(
-      fmt::format("Developer Error: `--{:s}` argument is required but is not present. This may mean that "
-                  "the missing required argument has escaped the argument validation. This needs to be fixed.",
-        name));
-  }
-
-  return params[name].as<Result>();
-}
-
-
-struct CliParams {
-  int numThreads;
-  std::string inputFasta;
-  std::string inputRootSeq;
-  std::string inputGeneMap;
-  std::string inputGenes;
-};
-
-CliParams validateCliParams(const CliOptions &options) {
-  const auto numThreads = getOptionRequired<int>(options, "jobs");
-  const auto inputFasta = getOptionRequired<std::string>(options, "sequences");
-  const auto inputRootSeq = getOptionRequired<std::string>(options, "root-seq");
-  const auto inputGeneMap = getOptionRequired<std::string>(options, "gene-map");
-  const auto inputGenes = getOptionRequired<std::string>(options, "genes");
-  const auto outputFasta = getOptionRequired<std::string>(options, "output");
-  return {numThreads, inputFasta, inputRootSeq, inputGeneMap, outputFasta};
+  return {
+    jobs,
+    sequences,
+    reference,
+    genemap,
+    genes,
+    output,
+  };
 }
 
 
 int main(int argc, char *argv[]) {
   try {
-    const auto args = parseCommandLine(argc, argv);
-    const auto params = validateCliParams(args);
+    const auto cliParams = parseCommandLine(argc, argv);
 
-    std::cout << "numThreads   : " << params.numThreads << std::endl;
-    std::cout << "inputFasta   : " << params.inputFasta << std::endl;
-    std::cout << "inputRootSeq : " << params.inputRootSeq << std::endl;
-    std::cout << "inputGeneMap : " << params.inputGeneMap << std::endl;
-    std::cout << "inputGenes   : " << params.inputGenes << std::endl;
-
+    std::cout << "Parameters" << std::endl;
+    std::cout << "  jobs     : " << cliParams.jobs << std::endl;
+    std::cout << "  sequences: " << cliParams.sequences << std::endl;
+    std::cout << "  reference: " << cliParams.reference << std::endl;
+    std::cout << "  genemap  : " << cliParams.genemap << std::endl;
+    std::cout << "  genes    : " << cliParams.genes << std::endl;
+    std::cout << "  output   : " << cliParams.output << std::endl;
 
     const std::string gbContent = "TODO";
     const NextalignOptions options = {};
@@ -142,11 +141,11 @@ int main(int argc, char *argv[]) {
     }
 
   } catch (const cxxopts::OptionSpecException &e) {
-    std::cerr << e.what() << std::endl;
+    std::cerr << "Error: " << e.what() << std::endl;
   } catch (const cxxopts::OptionParseException &e) {
-    std::cerr << e.what() << std::endl;
+    std::cerr << "Error: " << e.what() << std::endl;
   } catch (const std::exception &e) {
-    std::cerr << e.what() << std::endl;
+    std::cerr << "Error: " << e.what() << std::endl;
     return 1;
   }
 }
