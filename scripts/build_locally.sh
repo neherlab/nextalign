@@ -13,16 +13,18 @@ trap "exit" INT
 
 # Directory where this script resides
 THIS_DIR=$(cd $(dirname "${BASH_SOURCE[0]}"); pwd)
-source "${THIS_DIR}/lib/set_locales.sh"
-
-PROJECT_NAME="nextalign"
 
 # Where the source code is
 PROJECT_ROOT_DIR="$(realpath ${THIS_DIR}/..)"
 
+source "${THIS_DIR}/lib/set_locales.sh"
+
+PROJECT_NAME="nextalign"
+
 # Build type (default: Release)
 CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:=Release}"
 
+# Deduce conan build type from cmake build type
 CONAN_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 case ${CMAKE_BUILD_TYPE} in
   Debug|Release|RelWithDebInfo|MinSizeRelease) CONAN_BUILD_TYPE=${CMAKE_BUILD_TYPE} ;;
@@ -30,7 +32,7 @@ case ${CMAKE_BUILD_TYPE} in
   *) CONAN_BUILD_TYPE="Release" ;;
 esac
 
-
+# Whether to use Clang C++ compiler (default: use GCC)
 USE_CLANG="${USE_CLANG:=0}"
 CONAN_COMPILER_SETTINGS=""
 BUILD_SUFFIX=""
@@ -51,11 +53,10 @@ if [ "${USE_CLANG}" == "true" ] || [ "${USE_CLANG}" == "1" ]; then
   BUILD_SUFFIX="-Clang"
 fi
 
-# Where the build files are (default: 'build' directory in the project root)
-BUILD_DIR_DEFAULT="${THIS_DIR}/../.build/${CMAKE_BUILD_TYPE}${BUILD_SUFFIX}"
-mkdir -p "${BUILD_DIR_DEFAULT}"
-BUILD_DIR_DEFAULT=$(realpath "${BUILD_DIR_DEFAULT}")
+# Create build directory
+BUILD_DIR_DEFAULT="${PROJECT_ROOT_DIR}/.build/${CMAKE_BUILD_TYPE}${BUILD_SUFFIX}"
 BUILD_DIR="${BUILD_DIR:=${BUILD_DIR_DEFAULT}}"
+mkdir -p "${BUILD_DIR}"
 
 USE_COLOR="${USE_COLOR:=1}"
 
