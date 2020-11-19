@@ -4,7 +4,10 @@
   "delay": 0.1,
   "watch": [
     ".clang-tidy",
+    ".env",
+    ".env.example",
     "CMakeLists.txt",
+    "Makefile",
     "conanfile.txt",
     "packages/cmake",
     "packages/nextalign/CMakeLists.txt",
@@ -17,7 +20,7 @@
     "packages/nextalign_cli/src/*",
     "scripts/*"
   ],
-  "ext": ".c,.cpp,.h,.hpp,.cx,.cxx,.txt,.py,.cmake,.sh,.cppcheck,.clang-tidy,",
+  "ext": ".c,.cpp,.h,.hpp,.cx,.cxx,.txt,.py,.cmake,.sh,.cppcheck,.clang-tidy,Makefile,.env,.env.example",
   "ignore": [
     ".build",
     ".git",

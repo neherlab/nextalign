@@ -19,6 +19,11 @@ PROJECT_ROOT_DIR="$(realpath ${THIS_DIR}/..)"
 
 source "${THIS_DIR}/lib/set_locales.sh"
 
+source "${PROJECT_ROOT_DIR}/.env.example"
+if [ -f "${PROJECT_ROOT_DIR}/.env" ]; then
+  source "${PROJECT_ROOT_DIR}/.env"
+fi
+
 PROJECT_NAME="nextalign"
 
 # Build type (default: Release)
@@ -59,6 +64,7 @@ BUILD_DIR="${BUILD_DIR:=${BUILD_DIR_DEFAULT}}"
 mkdir -p "${BUILD_DIR}"
 
 USE_COLOR="${USE_COLOR:=1}"
+DEV_CLI_OPTIONS="${DEV_CLI_OPTIONS:=}"
 
 # gdb (or lldb) command with arguments
 GDB_DEFAULT="gdb --quiet -ix ${THIS_DIR}/lib/.gdbinit -x ${THIS_DIR}/lib/.gdbexec --args"
@@ -119,7 +125,12 @@ pushd "${BUILD_DIR}" > /dev/null
 
   print 23 "Run tests";
   pushd "${BUILD_DIR}/packages/${PROJECT_NAME}/tests" > /dev/null
-      ${GTPP} ${GDB} ./nextalign_tests --gtest_output=xml
+      ${GTPP} ${GDB} ./nextalign_tests --gtest_output=xml || cd .
+  popd > /dev/null
+
+  print 27 "Run CLI";
+  pushd "${BUILD_DIR}/packages/${PROJECT_NAME}_cli/" > /dev/null
+      ${GDB} ./nextalign_cli ${DEV_CLI_OPTIONS}
   popd > /dev/null
 
   print 22 "Done";
