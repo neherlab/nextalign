@@ -149,10 +149,22 @@ GeneMap parseGeneMapGffFile(const std::string &filename) {
 }
 
 
-std::string formatRef(const std::string &refName, const std::string &ref) {
-  return fmt::format("\nReference: \"{:s}\", length: {:d}\n", refName, ref.size());
+std::string formatCliParams(const CliParams &cliParams) {
+  fmt::memory_buffer buf;
+  fmt::format_to(buf, "\nCLI Parameters:\n");
+  fmt::format_to(buf, "{:>12s}=\"{:<d}\"\n", "--jobs", cliParams.jobs);
+  fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--sequences", cliParams.sequences);
+  fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--reference", cliParams.reference);
+  fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--genemap", cliParams.genemap);
+  fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--genes", cliParams.genes);
+  fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--output", cliParams.output);
+  return fmt::to_string(buf);
 }
 
+
+std::string formatRef(const std::string &refName, const std::string &ref) {
+  return fmt::format("\nReference:\n  name: \"{:s}\"\n  length: {:d}\n", refName, ref.size());
+}
 
 std::string formatGeneMap(const GeneMap &geneMap) {
   constexpr const auto TABLE_WIDTH = 64;
@@ -174,15 +186,7 @@ std::string formatGeneMap(const GeneMap &geneMap) {
 int main(int argc, char *argv[]) {
   try {
     const auto cliParams = parseCommandLine(argc, argv);
-
-    std::cout << "\nParameters" << std::endl;
-    std::cout << "  jobs     : " << cliParams.jobs << std::endl;
-    std::cout << "  sequences: " << cliParams.sequences << std::endl;
-    std::cout << "  reference: " << cliParams.reference << std::endl;
-    std::cout << "  genemap  : " << cliParams.genemap << std::endl;
-    std::cout << "  genes    : " << cliParams.genes << std::endl;
-    std::cout << "  output   : " << cliParams.output << std::endl;
-    std::cout << std::endl;
+    fmt::print(stdout, formatCliParams(cliParams));
 
     const NextalignOptions options = {};
 
