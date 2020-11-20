@@ -14,16 +14,21 @@ set(CMAKE_INSTALL_MESSAGE LAZY)
 
 find_package(boost_base 1.68.0 REQUIRED)
 find_package(fmt 7.1.0 REQUIRED)
+find_package(fast-cpp-csv-parser 20191004 REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC
+  include/nextalign/geneUtils.h
   include/nextalign/nextalign.h
   include/nextalign/parseGb.h
+  include/nextalign/parseGeneMapGff.h
   include/nextalign/parseSequences.h
   include/nextalign/types.h
   src/alignPairwise.cpp
   src/alignPairwise.h
+  src/geneUtils.cpp
   src/nextalign.cpp
   src/parseGb.cpp
+  src/parseGeneMapGff.cpp
   src/parseSequences.cpp
   src/seqan2.cpp
   src/seqan2.h
@@ -48,9 +53,10 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
-  boost_base::boost_base
 
   PRIVATE
+  fast-cpp-csv-parser::fast-cpp-csv-parser
+  boost_base::boost_base
   fmt::fmt
   )
 

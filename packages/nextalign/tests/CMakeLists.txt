@@ -4,9 +4,13 @@ cmake_policy(SET CMP0069 NEW)
 project(nextalign_tests)
 
 find_package(GTest 1.10.0 REQUIRED)
+find_package(boost_base 1.68.0 REQUIRED)
+find_package(fmt 7.1.0 REQUIRED)
 
 add_executable(${PROJECT_NAME}
   alignPairwise.test.cpp
+  data/sampleGeneMap.h
+  parseGeneMapGff.test.cpp
   parseSequences.test.cpp
   )
 
@@ -25,6 +29,8 @@ target_link_libraries(${PROJECT_NAME}
   PRIVATE
   nextalign
   GTest::GTest
+  boost_base::boost_base
+  fmt::fmt
   )
 
 add_test(${PROJECT_NAME} ${PROJECT_NAME})
