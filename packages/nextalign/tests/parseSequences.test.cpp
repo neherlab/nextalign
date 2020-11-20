@@ -1,25 +1,53 @@
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <nextalign/parseSequences.h>
 
 #include <sstream>
 
+using ExpectedResults = std::vector<std::pair<std::string, std::string>>;
 
 TEST(parseSequences, SanitizesSequences) {
   std::stringstream input;
 
+  // clang-format off
   input << R"(  >  Hello/Sequence/ID1234
+
  ABC?D
 EF.GH
-L*M#N!OP
+
+  L*M#N!OP
+
+
 X Y:)Z
+  )"  ;
+  // clang-format on
+
+  const auto results = parseSequences(input);
+
+  const ExpectedResults expected = {
+    {"Hello/Sequence/ID1234", "ABC?DEF.GHL*MNOPXYZ"},
+  };
+  EXPECT_EQ(results.size(), expected.size());
+  EXPECT_THAT(results, testing::UnorderedElementsAreArray(expected));
+}
+
+
+TEST(parseSequences, ConvertsSequencesToUppercase) {
+  std::stringstream input;
+
+  input << R"(>Some/Sequence
+  Hi,
+  Can you make it uppercase please?
+  Cheers!
   )";
 
   const auto results = parseSequences(input);
 
-  const auto result = results.begin();
-  EXPECT_NE(results.begin(), results.end());
-  EXPECT_EQ("Hello/Sequence/ID1234", result->first);
-  EXPECT_EQ("ABC?DEF.GHL*MNOPXYZ", result->second);
+  const ExpectedResults expected = {
+    {"Some/Sequence", "HICANYOUMAKEITUPPERCASEPLEASE?CHEERS"},
+  };
+  EXPECT_EQ(results.size(), expected.size());
+  EXPECT_THAT(results, testing::UnorderedElementsAreArray(expected));
 }
 
 TEST(parseSequences, DeduplicatesSequenceNames) {
@@ -28,19 +56,31 @@ TEST(parseSequences, DeduplicatesSequenceNames) {
   input << R"(
     >Hello
     ABCD
-    >Hello
+
+    >World
     EFGH
+
+    >Foo
+    Bar
+
+    >World
+    IJKLMN
+
+    >Hello
+    OPQRS
   )";
 
   const auto results = parseSequences(input);
 
-  EXPECT_EQ(results.size(), 2);
-
-  const auto one = results.begin();
-  const auto two = ++results.begin();
-
-  EXPECT_EQ("Hello", one->first);
-  EXPECT_EQ("Hello (1)", two->first);
+  const ExpectedResults expected = {
+    {"Hello", "ABCD"},
+    {"World", "EFGH"},
+    {"Foo", "BAR"},
+    {"World (1)", "IJKLMN"},
+    {"Hello (1)", "OPQRS"},
+  };
+  EXPECT_EQ(results.size(), expected.size());
+  EXPECT_THAT(results, testing::UnorderedElementsAreArray(expected));
 }
 
 TEST(parseSequences, AssignsSequenceNameToUntitledSequences) {
@@ -55,11 +95,10 @@ TEST(parseSequences, AssignsSequenceNameToUntitledSequences) {
 
   const auto results = parseSequences(input);
 
-  EXPECT_EQ(results.size(), 2);
-
-  const auto one = results.begin();
-  const auto two = ++results.begin();
-
-  EXPECT_EQ("Untitled", one->first);
-  EXPECT_EQ("Untitled (1)", two->first);
+  const ExpectedResults expected = {
+    {"Untitled", "ABCD"},
+    {"Untitled (1)", "EFGH"},
+  };
+  EXPECT_EQ(results.size(), expected.size());
+  EXPECT_THAT(results, testing::UnorderedElementsAreArray(expected));
 }

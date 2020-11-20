@@ -32,6 +32,12 @@ auto sanitizeLine(std::string line) {
   return line;
 }
 
+auto sanitizeSequenceName(std::string seqName) {
+  seqName = seqName.substr(1, seqName.size());
+  boost::trim(seqName);
+  return seqName;
+}
+
 auto sanitizeSequence(std::string seq) {
   boost::to_upper(seq);
   // NOTE: Strip all characters except capital letters, asterisks, dots and question marks
@@ -90,6 +96,7 @@ public:
     return istream.good();
   }
 
+
   std::pair<std::string, std::string> next() override {
     if (!good()) {
       throw ErrorFastaStreamIllegalNextCall();
@@ -101,14 +108,16 @@ public:
 
       if (boost::starts_with(line, ">")) {
         if (!currentSeq.empty()) {
-          return prepareResult();
+          auto result = prepareResult();
+          currentSeq = "";
+          currentSeqName = sanitizeSequenceName(line);
+          return result;
         }
 
-        currentSeqName = line.substr(1, line.size());
-        boost::trim(currentSeqName);
-
+        currentSeqName = sanitizeSequenceName(line);
         currentSeq = "";
-      } else {
+
+      } else if (!line.empty()) {
         currentSeq += line;
       }
     }
