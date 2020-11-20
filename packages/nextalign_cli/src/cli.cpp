@@ -1,4 +1,5 @@
 #include <fmt/format.h>
+#include <nextalign/nextalign.h>
 #include <nextalign/parseGeneMapGff.h>
 #include <nextalign/parseSequences.h>
 #include <nextalign/types.h>
@@ -203,13 +204,23 @@ int main(int argc, char *argv[]) {
       std::exit(1);
     }
 
+
+    constexpr const auto TABLE_WIDTH = 71;
     fmt::print(stdout, "\nSequences:\n");
+    fmt::print(stdout, "{:s}\n", std::string(TABLE_WIDTH, '-'));
+    fmt::print(stdout, "| {:5s} | {:40s} | {:16s} |\n", "Index", "Seq. name", "Align. score");
+    fmt::print(stdout, "{:s}\n", std::string(TABLE_WIDTH, '-'));
     int i = 0;
     while (fastaStream->good()) {
       const auto entry = fastaStream->next();
-      fmt::print(stdout, "{:5d}: \"{:s}\"\n", i, entry.first);
+      fmt::print(stdout, "| {:5d} | {:<40s} | ", i, entry.first);
+
+      const auto &alignment = nextalign(entry.second, ref, geneMap, options);
+      fmt::print(stdout, "{:>16d} |\n", alignment.alignmentScore);
+
       ++i;
     }
+    fmt::print(stdout, "{:s}\n", std::string(TABLE_WIDTH, '-'));
 
   } catch (const cxxopts::OptionSpecException &e) {
     std::cerr << "Error: " << e.what() << std::endl;
