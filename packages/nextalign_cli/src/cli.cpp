@@ -117,6 +117,22 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
   };
 }
 
+std::pair<std::string, std::string> parseRefFasta(const std::string &filename) {
+  std::ifstream refFile(filename);
+  if (!refFile.good()) {
+    fmt::print(stderr, "Error: unable to read \"{:s}\"\n", filename);
+    std::exit(1);
+  }
+
+  const auto refSeqs = parseSequences(refFile);
+  if (refSeqs.size() != 1) {
+    fmt::print(stderr, "Error: {:d} sequences found in reference sequence file, expected 1", refSeqs.size());
+    std::exit(1);
+  }
+
+  return *(refSeqs.begin());
+}
+
 
 int main(int argc, char *argv[]) {
   try {
@@ -137,16 +153,22 @@ int main(int argc, char *argv[]) {
     // Parse and prepare reference sequence and genemap
     // const auto [ref, geneMap] = parseGb(gbContent);
 
-    std::ifstream file(cliParams.sequences);
-    const auto fastaStream = makeFastaStream(file);
-    if (!file.good()) {
-      fmt::print(stderr, "Error: unable to read {:s}\n", cliParams.sequences);
+    const auto [refName, ref] = parseRefFasta(cliParams.reference);
+    fmt::print(stdout, "Reference: \"{:s}\"\n", refName);
+
+    std::ifstream fastaFile(cliParams.sequences);
+    const auto fastaStream = makeFastaStream(fastaFile);
+    if (!fastaFile.good()) {
+      fmt::print(stderr, "Error: unable to read \"{:s}\"\n", cliParams.sequences);
       std::exit(1);
     }
 
+    fmt::print(stdout, "Sequences:\n");
+    int i = 0;
     while (fastaStream->good()) {
       const auto entry = fastaStream->next();
-      fmt::print(stdout, "{:s}\n", entry.first);
+      fmt::print(stdout, "{:5d}: \"{:s}\"\n", i, entry.first);
+      ++i;
     }
 
   } catch (const cxxopts::OptionSpecException &e) {

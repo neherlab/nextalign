@@ -102,3 +102,20 @@ TEST(parseSequences, AssignsSequenceNameToUntitledSequences) {
   EXPECT_EQ(results.size(), expected.size());
   EXPECT_THAT(results, testing::UnorderedElementsAreArray(expected));
 }
+
+TEST(parseSequences, AllowsPlainText) {
+  std::stringstream input;
+
+  input << R"(
+    This is
+    plain text!
+  )";
+
+  const auto results = parseSequences(input);
+
+  const ExpectedResults expected = {
+    {"Untitled", "THISISPLAINTEXT"},
+  };
+  EXPECT_EQ(results.size(), expected.size());
+  EXPECT_THAT(results, testing::UnorderedElementsAreArray(expected));
+}
