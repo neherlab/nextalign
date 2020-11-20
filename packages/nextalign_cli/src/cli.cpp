@@ -1,6 +1,4 @@
 #include <fmt/format.h>
-#include <nextalign/nextalign.h>
-#include <nextalign/parseGb.h>
 #include <nextalign/parseGeneMapGff.h>
 #include <nextalign/parseSequences.h>
 #include <nextalign/types.h>
@@ -186,11 +184,7 @@ int main(int argc, char *argv[]) {
     std::cout << "  output   : " << cliParams.output << std::endl;
     std::cout << std::endl;
 
-    // const std::string gbContent = "TODO";
     const NextalignOptions options = {};
-
-    // Parse and prepare reference sequence and genemap
-    // const auto [ref, geneMap] = parseGb(gbContent);
 
     const auto [refName, ref] = parseRefFastaFile(cliParams.reference);
     fmt::print(stdout, formatRef(refName, ref));
@@ -205,7 +199,7 @@ int main(int argc, char *argv[]) {
       std::exit(1);
     }
 
-    fmt::print(stdout, "Sequences:\n");
+    fmt::print(stdout, "\nSequences:\n");
     int i = 0;
     while (fastaStream->good()) {
       const auto entry = fastaStream->next();
