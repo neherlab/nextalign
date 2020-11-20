@@ -1,6 +1,7 @@
 #include <fmt/format.h>
 #include <nextalign/nextalign.h>
 #include <nextalign/parseGb.h>
+#include <nextalign/parseGeneMapGff.h>
 #include <nextalign/parseSequences.h>
 #include <nextalign/types.h>
 
@@ -117,14 +118,14 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
   };
 }
 
-std::pair<std::string, std::string> parseRefFasta(const std::string &filename) {
-  std::ifstream refFile(filename);
-  if (!refFile.good()) {
+std::pair<std::string, std::string> parseRefFastaFile(const std::string &filename) {
+  std::ifstream file(filename);
+  if (!file.good()) {
     fmt::print(stderr, "Error: unable to read \"{:s}\"\n", filename);
     std::exit(1);
   }
 
-  const auto refSeqs = parseSequences(refFile);
+  const auto refSeqs = parseSequences(file);
   if (refSeqs.size() != 1) {
     fmt::print(stderr, "Error: {:d} sequences found in reference sequence file, expected 1", refSeqs.size());
     std::exit(1);
@@ -133,12 +134,50 @@ std::pair<std::string, std::string> parseRefFasta(const std::string &filename) {
   return *(refSeqs.begin());
 }
 
+GeneMap parseGeneMapGffFile(const std::string &filename) {
+  std::ifstream file(filename);
+  if (!file.good()) {
+    fmt::print(stderr, "Error: unable to read \"{:s}\"\n", filename);
+    std::exit(1);
+  }
+
+  auto geneMap = parseGeneMapGff(file);
+  if (geneMap.empty()) {
+    fmt::print(stderr, "Error: gene map is empty");
+    std::exit(1);
+  }
+
+  return geneMap;
+}
+
+
+std::string formatRef(const std::string &refName, const std::string &ref) {
+  return fmt::format("\nReference: \"{:s}\", length: {:d}\n", refName, ref.size());
+}
+
+
+std::string formatGeneMap(const GeneMap &geneMap) {
+  constexpr const auto TABLE_WIDTH = 64;
+
+  fmt::memory_buffer buf;
+  fmt::format_to(buf, "\nGene map:\n");
+  fmt::format_to(buf, "{:s}\n", std::string(TABLE_WIDTH, '-'));
+  fmt::format_to(buf, "| {:16s} | {:8s} | {:8s} | {:8s} | {:8s} |\n", "Name", "Start", "End", "Strand", "Frame");
+  fmt::format_to(buf, "{:s}\n", std::string(TABLE_WIDTH, '-'));
+  for (const auto &[geneName, gene] : geneMap) {
+    fmt::format_to(
+      buf, "| {:16s} | {:8d} | {:8d} | {:8s} | {:8d} |\n", geneName, gene.start, gene.end, gene.strand, gene.frame);
+  }
+  fmt::format_to(buf, "{:s}\n", std::string(TABLE_WIDTH, '-'));
+  return fmt::to_string(buf);
+}
+
 
 int main(int argc, char *argv[]) {
   try {
     const auto cliParams = parseCommandLine(argc, argv);
 
-    std::cout << "Parameters" << std::endl;
+    std::cout << "\nParameters" << std::endl;
     std::cout << "  jobs     : " << cliParams.jobs << std::endl;
     std::cout << "  sequences: " << cliParams.sequences << std::endl;
     std::cout << "  reference: " << cliParams.reference << std::endl;
@@ -153,8 +192,11 @@ int main(int argc, char *argv[]) {
     // Parse and prepare reference sequence and genemap
     // const auto [ref, geneMap] = parseGb(gbContent);
 
-    const auto [refName, ref] = parseRefFasta(cliParams.reference);
-    fmt::print(stdout, "Reference: \"{:s}\"\n", refName);
+    const auto [refName, ref] = parseRefFastaFile(cliParams.reference);
+    fmt::print(stdout, formatRef(refName, ref));
+
+    const auto geneMap = parseGeneMapGffFile(cliParams.genemap);
+    fmt::print(stdout, formatGeneMap(geneMap));
 
     std::ifstream fastaFile(cliParams.sequences);
     const auto fastaStream = makeFastaStream(fastaFile);
