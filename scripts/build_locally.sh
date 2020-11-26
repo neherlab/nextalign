@@ -37,6 +37,9 @@ case ${CMAKE_BUILD_TYPE} in
   *) CONAN_BUILD_TYPE="Release" ;;
 esac
 
+ADDITIONAL_PATH="${PROJECT_ROOT_DIR}/3rdparty/binutils/bin:${PROJECT_ROOT_DIR}/3rdparty/gcc/bin:${PROJECT_ROOT_DIR}/3rdparty/llvm/bin"
+export PATH=${ADDITIONAL_PATH}${PATH:+":PATH"}
+
 # Whether to use Clang C++ compiler (default: use GCC)
 USE_CLANG="${USE_CLANG:=0}"
 CONAN_COMPILER_SETTINGS=""
