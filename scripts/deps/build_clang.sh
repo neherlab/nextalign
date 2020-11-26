@@ -77,7 +77,7 @@ cmake "${SOURCE_DIR}/llvm" \
   -DDEFAULT_CXX_STDLIB="libc++" \
   -DCMAKE_C_FLAGS="-I/usr/include/x86_64-linux-gnu" \
   -DCMAKE_CXX_FLAGS="-I/usr/include/x86_64-linux-gnu" \
-  -DLLVM_BINUTILS_INCDIR="3rdparty/binutils/include"
+  -DLLVM_BINUTILS_INCDIR="${THIS_DIR}/../3rdparty/binutils/include"
 
 make -j ${NUM_JOBS}
 make install
