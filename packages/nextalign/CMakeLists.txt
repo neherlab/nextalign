@@ -26,6 +26,8 @@ add_library(${PROJECT_NAME} STATIC
   src/alignPairwise.cpp
   src/alignPairwise.h
   src/geneUtils.cpp
+  src/matchNuc.cpp
+  src/matchNuc.h
   src/nextalign.cpp
   src/parseGb.cpp
   src/parseGeneMapGff.cpp
