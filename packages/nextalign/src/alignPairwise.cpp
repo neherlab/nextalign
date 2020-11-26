@@ -10,11 +10,11 @@ Alignment alignPairwise(const std::string& query, const std::string& ref, const 
   NA_UNUSED(options);
 
   const AlignOptionsOverlap alignOptions = {
-    .band = 5,
+    .band = 50,
     .score_match = 1,
     .score_mismatch = -1,
-    .score_gapext = 1,
-    .score_gapopen = -1,
+    .score_gapext = 0,
+    .score_gapopen = -2,
     .cut_flanks = 0,
   };
 

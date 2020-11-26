@@ -30,15 +30,13 @@ namespace {
   }
 
   std::tuple<std::string, std::string> AlignmentToStrings(const Align& ali) {
-    std::stringstream ss;
+    std::stringstream ss1, ss2;
 
-    ss << row(ali, 0);
-    const auto seq1 = ss.str();
+    ss1 << row(ali, 0);
+    const auto seq1 = ss1.str();
 
-    ss.clear();
-
-    const auto seq2 = ss.str();
-    ss << row(ali, 1);
+    ss2 << row(ali, 1);
+    const auto seq2 = ss2.str();
 
     return std::make_tuple(seq1, seq2);
   }
