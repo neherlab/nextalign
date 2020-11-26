@@ -21,9 +21,6 @@ struct AlignOptionsGlobal {
   int score_gapopen;
 };
 
-[[maybe_unused]] AlignmentResult align_global(const std::string& seq1, const std::string& seq2, const AlignOptionsGlobal& options);
-
-
 struct AlignOptionsOverlap {
   int band;
   int score_match;
@@ -33,8 +30,6 @@ struct AlignOptionsOverlap {
   int cut_flanks;
 };
 
-AlignmentResult align_overlap(const std::string& seq1, const std::string& seq2, const AlignOptionsOverlap& options);
-
 struct AlignOptionsLadder {
   int band;
   int score_match;
@@ -43,9 +38,6 @@ struct AlignOptionsLadder {
   int score_gapopen;
 };
 
-AlignmentResult align_ladder(const std::string& seq1, const std::string& seq2, const AlignOptionsLadder& options);
-
-
 struct AlignOptionsLocal {
   int score_match;
   int score_mismatch;
@@ -53,4 +45,30 @@ struct AlignOptionsLocal {
   int score_gapopen;
 };
 
-[[maybe_unused]] AlignmentResult align_local(const std::string& seq1, const std::string& seq2, const AlignOptionsLocal& options);
+
+// For nucleotides
+[[maybe_unused]] AlignmentResult align_global(
+  const std::string& seq1, const std::string& seq2, const AlignOptionsGlobal& options);
+
+[[maybe_unused]] AlignmentResult align_overlap(
+  const std::string& seq1, const std::string& seq2, const AlignOptionsOverlap& options);
+
+[[maybe_unused]] AlignmentResult align_ladder(
+  const std::string& seq1, const std::string& seq2, const AlignOptionsLadder& options);
+
+[[maybe_unused]] AlignmentResult align_local(
+  const std::string& seq1, const std::string& seq2, const AlignOptionsLocal& options);
+
+
+// For aminoacids
+[[maybe_unused]] AlignmentResult align_aa_global(
+  const std::string& seq1, const std::string& seq2, const AlignOptionsGlobal& options);
+
+[[maybe_unused]] AlignmentResult align_aa_overlap(
+  const std::string& seq1, const std::string& seq2, const AlignOptionsOverlap& options);
+
+[[maybe_unused]] AlignmentResult align_aa_ladder(
+  const std::string& seq1, const std::string& seq2, const AlignOptionsLadder& options);
+
+[[maybe_unused]] AlignmentResult align_aa_local(
+  const std::string& seq1, const std::string& seq2, const AlignOptionsLocal& options);
