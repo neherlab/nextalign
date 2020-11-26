@@ -38,7 +38,7 @@ case ${CMAKE_BUILD_TYPE} in
 esac
 
 ADDITIONAL_PATH="${PROJECT_ROOT_DIR}/3rdparty/binutils/bin:${PROJECT_ROOT_DIR}/3rdparty/gcc/bin:${PROJECT_ROOT_DIR}/3rdparty/llvm/bin"
-export PATH=${ADDITIONAL_PATH}${PATH:+":PATH"}
+export PATH="${ADDITIONAL_PATH}${PATH:+:$PATH}"
 
 # Whether to use Clang C++ compiler (default: use GCC)
 USE_CLANG="${USE_CLANG:=0}"
@@ -64,6 +64,7 @@ fi
 # Create build directory
 BUILD_DIR_DEFAULT="${PROJECT_ROOT_DIR}/.build/${CMAKE_BUILD_TYPE}${BUILD_SUFFIX}"
 BUILD_DIR="${BUILD_DIR:=${BUILD_DIR_DEFAULT}}"
+
 mkdir -p "${BUILD_DIR}"
 
 USE_COLOR="${USE_COLOR:=1}"
