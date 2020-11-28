@@ -260,15 +260,33 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
       return si - bandWidth + meanShift;
     };
 
+
   std::vector<std::pair<char, char>> aln;
+  std::string aln_ref, aln_query;
+  aln_ref.reserve(rowLength + 3*bandWidth);
+  aln_query.reserve(rowLength + 3*bandWidth);
 
   // Determine the best alignment by picking the optimal score at the end of the query
   // const lastIndexByShift = scores.map((d, i) = > Math.min(rowLength - 1, query.size() + indexToShift(i)));
   // const lastScoreByShift = scores.map((d, i) = > d[lastIndexByShift[i]]);
 
-  int si = argmax(lastScoreByShift)[0];
+
+  std::vector<int> lastScoreByShift;
+  std::vector<int> lastIndexByShift;
+  lastScoreByShift.reserve(scores.size());
+  lastIndexByShift.reserve(scores.size());
+
+  int si = 0, bestScore = 0;
+  for (int i=0; i<scores.size(); i++){
+    lastIndexByShift[i] = rowLength - 1 < query.size() + indexToShift(i) ? rowLength - 1 : query.size() + indexToShift(i);
+    lastScoreByShift[i] = scores[i][lastIndexByShift[i]];
+    if (lastScoreByShift[i]>bestScore){
+      bestScore = lastScoreByShift[i];
+      si = i;
+    }
+  }
+
   const int shift = indexToShift(si);
-  const int bestScore = lastScoreByShift[si];
   int origin;
 
   // determine position tuple qPos, rPos corresponding to the place it the matrix
@@ -277,11 +295,13 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
   // add right overhang, i.e. unaligned parts of the query or reference the right end
   if (rPos < ref.size() - 1) {
     for (int ii = ref.size() - 1; ii > rPos; ii--) {
-      aln.emplace_back('-', ref[ii]);
+      aln_query += '-';
+      aln_ref += ref[ii];
     }
   } else if (qPos < query.size() - 1) {
     for (int ii = query.size() - 1; ii > qPos; ii--) {
-      aln.emplace_back(query[ii], '-');
+      aln_query += query[ii];
+      aln_ref += '-';
     }
   }
 
@@ -291,17 +311,20 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
     origin = paths[si][rPos + 1];
     if (origin == 1) {
       // match -- decrement both strands and add match to alignment
-      aln.emplace_back(query[qPos], ref[rPos]);
+      aln_query += query[qPos];
+      aln_ref += ref[rPos];
       qPos--;
       rPos--;
     } else if (origin == 2) {
       // insertion in query -- decrement query, increase shift
-      aln.emplace_back(query[qPos], '-');
+      aln_query += query[qPos];
+      aln_ref += '-';
       qPos--;
       si++;
     } else if (origin == 3) {
       // deletion in query -- decrement reference, reduce shift
-      aln.emplace_back('-', ref[rPos]);
+      aln_query += '-';
+      aln_ref += ref[rPos];
       rPos--;
       si--;
     } else {
@@ -309,33 +332,37 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
     }
   }
   // add the last match
-  aln.emplace_back(query[qPos], ref[rPos]);
+  aln_query += query[qPos];
+  aln_ref += ref[rPos];
 
   // add left overhang
   if (rPos > 0) {
     for (int ii = rPos - 1; ii >= 0; ii--) {
-      aln.emplace_back('-', ref[ii]);
+      aln_query += '-';
+      aln_ref += ref[ii];
     }
   } else if (qPos > 0) {
     for (int ii = qPos - 1; ii >= 0; ii--) {
-      aln.emplace_back(query[ii], '-');
+      aln_query += query[ii];
+      aln_ref += '-';
     }
   }
 
   // reverse and make sequence
   std::reverse(aln.begin(), aln.end());
 
-  const auto queryFinal = std::string(aln.size(), '-');
-  std::accumulate(aln.cbegin(), aln.cend(), query.begin(),//
-    [](const auto& x, std::string& res) { return res + x[0]; });
+  // TODO: these caused errors for me -- eliminated the pair vector
+  // const auto queryFinal = std::string(aln.size(), '-');
+  // std::accumulate(aln.cbegin(), aln.cend(), query.begin(),//
+  //   [](const auto& x, std::string& res) { return res + x[0]; });
 
-  const auto refFinal = std::string(aln.size(), '-');
-  std::accumulate(aln.cbegin(), aln.cend(), query.begin(),//
-    [](const auto& x, std::string& res) { return res + x[1]; });
+  // const auto refFinal = std::string(aln.size(), '-');
+  // std::accumulate(aln.cbegin(), aln.cend(), query.begin(),//
+  //   [](const auto& x, std::string& res) { return res + x[1]; });
 
   return {
-    .query = queryFinal,
-    .ref = refFinal,
+    .query = aln_query,
+    .ref = aln_ref,
     .alignmentScore = bestScore,
   };
 }
