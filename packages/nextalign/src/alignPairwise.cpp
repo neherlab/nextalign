@@ -5,7 +5,7 @@
 #include <numeric>
 #include <string>
 #include <vector>
-
+#include <iostream>
 #include "matchNuc.h"
 
 namespace details {
@@ -111,15 +111,15 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
     const int qPos = details::round(margin + ((todoGiveAName) / (nSeeds - 1)) * ni);
 
     // TODO: verify that the `query.substr()` behavior is the same as JS `string.substr()`
-    const auto tmpMatch = seedMatch(query.substr(qPos, qPos + seedLength), ref);
+    const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref);
 
     // TODO: is this comment out of date?
-    // only use seeds that match at least 70%
+    // only use seeds that match at least 90%
     if (tmpMatch.score >= 0.9 * seedLength) {
       seedMatches.push_back({qPos, tmpMatch.shift, tmpMatch.shift - qPos, tmpMatch.score});
     }
+    std::cout <<qPos<<"  "<<tmpMatch.shift<< " "<<tmpMatch.score<<" "<<seedMatches[seedMatches.size()-1][2]<<"\n";
   }
-
   if (seedMatches.size() < 2) {
     throw ErrorAlignmentNoSeedMatches();
   }
@@ -128,13 +128,22 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
   // this shift is the typical amount the query needs shifting to match ref
   // ref:   ACTCTACTGC-TCAGAC
   // query: ----TCACTCATCT-ACACCGAT  => shift = 4, then 3, 4 again
-  const auto& [minShiftIt, maxShiftIt] = std::minmax(seedMatches.cbegin(), seedMatches.cend(),//
-    [](const auto& left, const auto& right) { return left[2] < right[2]; });
+  //TODO: This thing doesn't work:
+  // const auto& [minShiftIt, maxShiftIt] = std::minmax(seedMatches.cbegin(), seedMatches.cend(),//
+  //   [](const auto& left, const auto& right) { return left[2] < right[2]; });
 
-  const int minShift = (*minShiftIt)[2];
-  const int maxShift = (*maxShiftIt)[2];
+  int minShift = ref.size();
+  int maxShift = -ref.size();
+  for (int si=0; si<seedMatches.size(); si++){
+    if (seedMatches[si][2]<minShift){
+      minShift = seedMatches[si][2];
+    }
+    if (seedMatches[si][2]>maxShift){
+      maxShift = seedMatches[si][2];
+    }
+  }
 
-
+  std::cout <<minShift<<" "<<maxShift<<"\n";
   const int meanShift = details::round(0.5 * (minShift + maxShift));
   const int bandWidthFinal = maxShift - minShift + 9;
   return {.meanShift = meanShift, .bandWidth = bandWidthFinal};
@@ -349,7 +358,9 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
   }
 
   // reverse and make sequence
-  std::reverse(aln.begin(), aln.end());
+  // std::reverse(aln.begin(), aln.end());
+  std::reverse(aln_query.begin(), aln_query.end());
+  std::reverse(aln_ref.begin(), aln_ref.end());
 
   // TODO: these caused errors for me -- eliminated the pair vector
   // const auto queryFinal = std::string(aln.size(), '-');
@@ -376,7 +387,7 @@ Alignment alignPairwise(const std::string& query, const std::string& ref, int mi
   const SeedAlignment& seedAlignmentResult = seedAlignment(query, ref);
   const auto& bandWidth = seedAlignmentResult.bandWidth;
   const auto& meanShift = seedAlignmentResult.meanShift;
-
+  std::cout <<"shift "<<meanShift<<" band "<<bandWidth<<"\n";
   if (bandWidth > 400) {
     throw ErrorAlignmentBadSeedMatches();
   }

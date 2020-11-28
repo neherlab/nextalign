@@ -74,7 +74,7 @@ Alignment alignBetter(const Alignment& alignment, const GeneMap& geneMap, const 
 Alignment nextalign(
   const std::string& query, const std::string& ref, const GeneMap& geneMap, const NextalignOptions& options) {
   matchSeeds();// TODO: mmmm..?
-  const auto alignment = alignPairwise(query, ref, options);
+  const auto alignment = alignPairwise(query, ref, 100);
   auto alignmentImproved = alignBetter(alignment, geneMap, options);
   return alignmentImproved;
 }

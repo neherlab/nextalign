@@ -6,4 +6,4 @@
 
 struct NextalignOptions;
 
-Alignment alignPairwise(const std::string& query, const std::string& ref, const NextalignOptions& options);
+Alignment alignPairwise(const std::string& query, const std::string& ref, const int min_length);
