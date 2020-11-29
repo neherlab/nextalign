@@ -1,5 +1,5 @@
 #include "alignPairwise.h"
-
+#include <ctime>
 #include <algorithm>
 #include <cmath>
 #include <numeric>
@@ -67,20 +67,24 @@ AlignmentParameters alignmentParameters = {
 
 
 // determine the position where a particular kmer (string of length k) matches the reference sequence
-SeedMatch seedMatch(const std::string& kmer, const std::string& ref) {
+SeedMatch seedMatch(const std::string& kmer, const std::string& ref, const int start_pos) {
   int tmpScore = 0;
   int maxScore = 0;
   int maxShift = -1;
-  for (int shift = 0; shift < ref.size() - kmer.size(); ++shift) {
+  for (int shift = start_pos; shift < ref.size() - kmer.size(); ++shift) {
     tmpScore = 0;
     for (int pos = 0; pos < kmer.size(); ++pos) {
       if (kmer[pos] == ref[shift + pos]) {
         tmpScore++;
       }
+      // TODO: this speeds up seed-matching by disregarding bad seeds.
+      if (tmpScore+3<pos){break;}
     }
     if (tmpScore > maxScore) {
       maxScore = tmpScore;
       maxShift = shift;
+      // if maximal score is reached
+      if (tmpScore==kmer.size()) {break;}
     }
   }
   return {.shift = maxShift, .score = maxScore};
@@ -93,7 +97,7 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
 
   const int margin = ref.size() > 10000 ? 100 : details::round(ref.size() / 100.0);
   const int bandWidth = std::min(ref.size(), query.size());
-
+  int start_pos = 0;
   if (bandWidth < 2 * seedLength) {
     return {.meanShift = 0, .bandWidth = bandWidth};
   }
@@ -111,14 +115,15 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
     const int qPos = details::round(margin + ((todoGiveAName) / (nSeeds - 1)) * ni);
 
     // TODO: verify that the `query.substr()` behavior is the same as JS `string.substr()`
-    const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref);
+    const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref, start_pos);
 
     // TODO: is this comment out of date?
     // only use seeds that match at least 90%
     if (tmpMatch.score >= 0.9 * seedLength) {
       seedMatches.push_back({qPos, tmpMatch.shift, tmpMatch.shift - qPos, tmpMatch.score});
+      start_pos = tmpMatch.shift;
     }
-    std::cout <<qPos<<"  "<<tmpMatch.shift<< " "<<tmpMatch.score<<" "<<seedMatches[seedMatches.size()-1][2]<<"\n";
+    // std::cout <<qPos<<"  "<<tmpMatch.shift<< " "<<tmpMatch.score<<" "<<seedMatches[seedMatches.size()-1][2]<<"\n";
   }
   if (seedMatches.size() < 2) {
     throw ErrorAlignmentNoSeedMatches();
@@ -143,7 +148,7 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
     }
   }
 
-  std::cout <<minShift<<" "<<maxShift<<"\n";
+  // std::cout <<minShift<<" "<<maxShift<<"\n";
   const int meanShift = details::round(0.5 * (minShift + maxShift));
   const int bandWidthFinal = maxShift - minShift + 9;
   return {.meanShift = meanShift, .bandWidth = bandWidthFinal};
@@ -221,11 +226,13 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, int b
 
       if (qPos < 0) {
         // preceeds query sequence -- no score, origin is query gap
+        // we could fill all of this at once
         score = 0;
         origin = 3;
       } else if (qPos < query.size()) {
         // if the shifted position is within the query sequence
         tmpMatch = isMatch(query[qPos], ref[ri]) ? match : misMatch;
+        // if the previous move included a gap, add gap-close cost
         if (paths[si][ri] == 2 || paths[si][ri] == 3) {
           tmpMatch += gapClose;
         }
@@ -382,17 +389,23 @@ Alignment alignPairwise(const std::string& query, const std::string& ref, int mi
   if (query.size() < minimalLength) {
     throw ErrorAlignmentSequenceTooShort();
   }
+  clock_t t1, t2;
 
   // perform a number of seed matches to determine te rough alignment of query rel to ref
+  t1 = std::clock();
   const SeedAlignment& seedAlignmentResult = seedAlignment(query, ref);
   const auto& bandWidth = seedAlignmentResult.bandWidth;
   const auto& meanShift = seedAlignmentResult.meanShift;
-  std::cout <<"shift "<<meanShift<<" band "<<bandWidth<<"\n";
+  // std::cout <<"shift "<<meanShift<<" band "<<bandWidth<<"\n";
   if (bandWidth > 400) {
     throw ErrorAlignmentBadSeedMatches();
   }
 
+  t2 = std::clock();
+  std::cout<<"\nseed matching: "<<t2-t1<<"\n";
   const ForwardTrace& forwardTrace = scoreMatrix(query, ref, bandWidth, meanShift);
+  t1 = std::clock();
+  std::cout<<"forward trace: "<<t1-t2<<"\n";
   const auto& scores = forwardTrace.scores;
   const auto& paths = forwardTrace.paths;
 
