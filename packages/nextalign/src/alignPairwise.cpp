@@ -233,7 +233,7 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, int b
       } else if (qPos < query.size()) {
         // if the shifted position is within the query sequence
         tmpMatch = isMatch(query[qPos], ref[ri]) ? match : misMatch;
-        // if the previous move included a gap, add gap-close cost
+        // if the previous move included a gap (this for the match case, so we are coming from [si][ri]), add gap-close cost
         if (paths[si][ri] == 2 || paths[si][ri] == 3) {
           tmpMatch += gapClose;
         }
