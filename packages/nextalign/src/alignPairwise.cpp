@@ -67,7 +67,7 @@ AlignmentParameters alignmentParameters = {
 
 
 // determine the position where a particular kmer (string of length k) matches the reference sequence
-SeedMatch seedMatch(const std::string& kmer, const std::string& ref, const int start_pos) {
+SeedMatch seedMatch(const std::string& kmer, const std::string& ref, const int start_pos, const int allowed_mismatches) {
   int tmpScore = 0;
   int maxScore = 0;
   int maxShift = -1;
@@ -78,7 +78,7 @@ SeedMatch seedMatch(const std::string& kmer, const std::string& ref, const int s
         tmpScore++;
       }
       // TODO: this speeds up seed-matching by disregarding bad seeds.
-      if (tmpScore+3<pos){break;}
+      if (tmpScore+allowed_mismatches<pos){break;}
     }
     if (tmpScore > maxScore) {
       maxScore = tmpScore;
@@ -94,6 +94,7 @@ SeedMatch seedMatch(const std::string& kmer, const std::string& ref, const int s
 SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
   constexpr const int nSeeds = 9;
   constexpr const int seedLength = 21;
+  constexpr const int allowed_mismatches = 3;
 
   const int margin = ref.size() > 10000 ? 100 : details::round(ref.size() / 100.0);
   const int bandWidth = std::min(ref.size(), query.size());
@@ -115,11 +116,11 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
     const int qPos = details::round(margin + ((todoGiveAName) / (nSeeds - 1)) * ni);
 
     // TODO: verify that the `query.substr()` behavior is the same as JS `string.substr()`
-    const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref, start_pos);
+    const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref, start_pos, allowed_mismatches);
 
     // TODO: is this comment out of date?
     // only use seeds that match at least 90%
-    if (tmpMatch.score >= 0.9 * seedLength) {
+    if (tmpMatch.score >= seedLength - allowed_mismatches) {
       seedMatches.push_back({qPos, tmpMatch.shift, tmpMatch.shift - qPos, tmpMatch.score});
       start_pos = tmpMatch.shift;
     }
