@@ -17,12 +17,16 @@ THIS_DIR=$(
   pwd
 )
 
-if [ -z ${1} ]; then
-  VERSION="9.3.0"
-else
-  VERSION="${1}"
+PROJECT_ROOT_DIR="$(realpath ${THIS_DIR}/../..)"
+
+if [[ $OSTYPE == "linux-gnu" ]]; then
+  export NUM_JOBS="$(nproc)"
+elif [[ $OSTYPE == "darwin"* ]]; then
+  export NUM_JOBS="$(sysctl -n hw.ncpu)"
 fi
 
+VERSION_DEFAULT="9.3.0"
+VERSION="${1:=VERSION_DEFAULT}"
 VERSION_MAJOR="$(echo ${VERSION} | cut -d. -f1)"
 
 source $(
@@ -31,9 +35,9 @@ source $(
 )/settings
 
 NAME="gcc"
-SRC_DIR="${THIS_DIR}/../tmp"
+SRC_DIR="${PROJECT_ROOT_DIR}/tmp"
 SOURCE_DIR="${SRC_DIR}/${NAME}-${VERSION}"
-INSTALL_DIR="${THIS_DIR}/3rdparty/${NAME}"
+INSTALL_DIR="${PROJECT_ROOT_DIR}/3rdparty/${NAME}"
 BUILD_DIR="${SOURCE_DIR}_build"
 ARCHIVE_FILE="${NAME}-${VERSION}.tar.gz"
 URL="ftp://ftp.gnu.org/gnu/gcc/gcc-${VERSION}/${ARCHIVE_FILE}"

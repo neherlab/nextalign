@@ -5,7 +5,7 @@
 --inline-suppr
 --quiet
 --std=c++20
---suppress=*:*third_party/*:*tests/*
+--suppress=*:*3rdparty/*:*tests/*:*tmp/*:*temp/*
 -i .build
 -i .conan
 -i .git
@@ -14,3 +14,5 @@
 -i .vscode
 -i 3rdparty
 -i cmake
+-i temp
+-i tmp
