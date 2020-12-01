@@ -1,5 +1,7 @@
 
 set confirm off
+catch throw
+catch signal
 
 # Setup gdb-dashboard to only show source and stack modules
 # See: https://github.com/cyrus-and/gdb-dashboard#default-modules
