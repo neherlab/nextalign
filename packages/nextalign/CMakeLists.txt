@@ -13,8 +13,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
 find_package(boost_base 1.68.0 REQUIRED)
-find_package(fmt 7.1.0 REQUIRED)
 find_package(fast-cpp-csv-parser 20191004 REQUIRED)
+find_package(fmt 7.1.0 REQUIRED)
+find_package(Microsoft.GSL 3.1.0 REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC
   include/nextalign/geneUtils.h
@@ -32,6 +33,7 @@ add_library(${PROJECT_NAME} STATIC
   src/parseGb.cpp
   src/parseGeneMapGff.cpp
   src/parseSequences.cpp
+  src/safeCast.h
   src/seqan2.cpp
   src/seqan2.h
   src/seqan2nowarn.h
@@ -60,6 +62,7 @@ target_link_libraries(${PROJECT_NAME}
   fast-cpp-csv-parser::fast-cpp-csv-parser
   boost_base::boost_base
   fmt::fmt
+  Microsoft.GSL::GSL
   )
 
 set(${PROJECT_NAME}_BUILD_TESTS ON CACHE BOOL "Build unit tests")

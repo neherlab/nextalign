@@ -4,6 +4,7 @@ cxxopts/2.2.1
 fast-cpp-csv-parser/20191004
 fmt/7.1.0
 gtest/1.10.0
+ms-gsl/3.1.0
 
 [generators]
 cmake

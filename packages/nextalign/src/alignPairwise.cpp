@@ -3,16 +3,17 @@
 #include <algorithm>
 #include <cmath>
 #include <ctime>
+#include <gsl/gsl>
 #include <iostream>
-#include <numeric>
 #include <string>
 #include <vector>
 
 #include "matchNuc.h"
+#include "safeCast.h"
 
 namespace details {
   int round(double x) {
-    return static_cast<int>(std::round(x));
+    return safe_cast<int>(std::round(x));
   }
 }// namespace details
 
@@ -71,12 +72,14 @@ AlignmentParameters alignmentParameters = {
 // determine the position where a particular kmer (string of length k) matches the reference sequence
 SeedMatch seedMatch(
   const std::string& kmer, const std::string& ref, const int start_pos, const int allowed_mismatches) {
+  const int refSize = safe_cast<int>(ref.size());
+  const int kmerSize = safe_cast<int>(kmer.size());
   int tmpScore = 0;
   int maxScore = 0;
   int maxShift = -1;
-  for (int shift = start_pos; shift < ref.size() - kmer.size(); ++shift) {
+  for (int shift = start_pos; shift < refSize - kmerSize; ++shift) {
     tmpScore = 0;
-    for (int pos = 0; pos < kmer.size(); ++pos) {
+    for (int pos = 0; pos < kmerSize; ++pos) {
       if (kmer[pos] == ref[shift + pos]) {
         tmpScore++;
       }
@@ -89,7 +92,7 @@ SeedMatch seedMatch(
       maxScore = tmpScore;
       maxShift = shift;
       // if maximal score is reached
-      if (tmpScore == kmer.size()) {
+      if (tmpScore == kmerSize) {
         break;
       }
     }
@@ -147,12 +150,12 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
 
   int minShift = ref.size();
   int maxShift = -ref.size();
-  for (int si = 0; si < seedMatches.size(); si++) {
-    if (seedMatches[si][2] < minShift) {
-      minShift = seedMatches[si][2];
+  for (auto& seedMatch : seedMatches) {
+    if (seedMatch[2] < minShift) {
+      minShift = seedMatch[2];
     }
-    if (seedMatches[si][2] > maxShift) {
-      maxShift = seedMatches[si][2];
+    if (seedMatch[2] > maxShift) {
+      maxShift = seedMatch[2];
     }
   }
 
@@ -165,11 +168,12 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
 // self made argmax function
 template<typename Container>
 std::pair<int, int> argmax(const Container& d) {
+  const int size = d.size();
   int tmpmax = d[0];
   int tmpii = 0;
 
-  for (int i = 1; i < d.size(); ++i) {
-    const auto& x = d[i];
+  for (int i = 1; i < size; ++i) {
+    const auto& x = gsl::at(d, i);
     if (x > tmpmax) {
       tmpmax = x;
       tmpii = i;
@@ -187,7 +191,7 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, int b
     };
 
   // allocate a matrix to record the matches
-  const int rowLength = ref.size() + 1;// TODO: Fix narrowing conversion
+  const int rowLength = safe_cast<int>(ref.size() + 1);
   std::vector<std::vector<int>> scores;// TODO: Avoid 2D vectors, use contiguous storage instead
   std::vector<std::vector<int>> paths;
   for (int shift = -bandWidth; shift < bandWidth + 1; ++shift) {
@@ -217,6 +221,12 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, int b
   // TODO: Try to narrow the scope of these variables. Do all of these variables
   //  need to be forward-declared an uninitialized?
   const int END_OF_SEQUENCE = -1;
+  const int querySize = safe_cast<int>(query.size());
+  const int refSize = safe_cast<int>(ref.size());
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cppcoreguidelines-init-variables"
+#pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
   int si;
   int ri;
   int shift;
@@ -227,17 +237,19 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, int b
   int score;
   int qGapOpen;
   int rGapOpen;
-  for (ri = 0; ri < ref.size(); ri++) {
+#pragma clang diagnostic pop
+
+  for (ri = 0; ri < refSize; ri++) {
     for (si = 2 * bandWidth; si >= 0; si--) {
       shift = indexToShift(si);
       qPos = ri - shift;
 
       if (qPos < 0) {
-        // preceeds query sequence -- no score, origin is query gap
+        // precedes query sequence -- no score, origin is query gap
         // we could fill all of this at once
         score = 0;
         origin = 3;
-      } else if (qPos < query.size()) {
+      } else if (qPos < querySize) {
         // if the shifted position is within the query sequence
         tmpMatch = isMatch(query[qPos], ref[ri]) ? match : misMatch;
         // if the previous move included a gap (this for the match case, so we are coming from [si][ri]), add gap-close cost
@@ -275,8 +287,11 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, int b
 
 Alignment backTrace(const std::string& query, const std::string& ref, const std::vector<std::vector<int>>& scores,
   const std::vector<std::vector<int>>& paths, int meanShift) {
-  const int bandWidth = (scores.size() - 1) / 2;
   const int rowLength = scores[0].size();
+  const int scoresSize = safe_cast<int>(scores.size());
+  const int querySize = safe_cast<int>(query.size());
+  const int refSize = safe_cast<int>(ref.size());
+  const int bandWidth = (scoresSize - 1) / 2;
 
   // TODO: Avoid creating this lambda function
   const auto indexToShift = [&bandWidth, &meanShift]//
@@ -286,7 +301,8 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
 
 
   std::vector<std::pair<char, char>> aln;
-  std::string aln_ref, aln_query;
+  std::string aln_ref;
+  std::string aln_query;
   aln_ref.reserve(rowLength + 3 * bandWidth);
   aln_query.reserve(rowLength + 3 * bandWidth);
 
@@ -300,10 +316,10 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
   lastScoreByShift.reserve(scores.size());
   lastIndexByShift.reserve(scores.size());
 
-  int si = 0, bestScore = 0;
-  for (int i = 0; i < scores.size(); i++) {
-    lastIndexByShift[i] =
-      rowLength - 1 < query.size() + indexToShift(i) ? rowLength - 1 : query.size() + indexToShift(i);
+  int si = 0;
+  int bestScore = 0;
+  for (int i = 0; i < scoresSize; i++) {
+    lastIndexByShift[i] = rowLength - 1 < querySize + indexToShift(i) ? rowLength - 1 : query.size() + indexToShift(i);
     lastScoreByShift[i] = scores[i][lastIndexByShift[i]];
     if (lastScoreByShift[i] > bestScore) {
       bestScore = lastScoreByShift[i];
@@ -312,19 +328,19 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
   }
 
   const int shift = indexToShift(si);
-  int origin;
+  int origin;//NOLINT(cppcoreguidelines-init-variables)
 
   // determine position tuple qPos, rPos corresponding to the place it the matrix
   int rPos = lastIndexByShift[si] - 1;
   int qPos = rPos - shift;
   // add right overhang, i.e. unaligned parts of the query or reference the right end
-  if (rPos < ref.size() - 1) {
-    for (int ii = ref.size() - 1; ii > rPos; ii--) {
+  if (rPos < refSize - 1) {
+    for (int ii = refSize - 1; ii > rPos; ii--) {
       aln_query += '-';
       aln_ref += ref[ii];
     }
-  } else if (qPos < query.size() - 1) {
-    for (int ii = query.size() - 1; ii > qPos; ii--) {
+  } else if (qPos < querySize - 1) {
+    for (int ii = querySize - 1; ii > qPos; ii--) {
       aln_query += query[ii];
       aln_ref += '-';
     }
@@ -395,7 +411,8 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
 }
 
 Alignment alignPairwise(const std::string& query, const std::string& ref, int minimalLength) {
-  if (query.size() < minimalLength) {
+  const int querySize = query.size();
+  if (querySize < minimalLength) {
     throw ErrorAlignmentSequenceTooShort();
   }
   clock_t t1, t2;
