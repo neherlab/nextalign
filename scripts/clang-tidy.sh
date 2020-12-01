@@ -14,6 +14,7 @@ source "${THIS_DIR}/lib/set_locales.sh"
 
 # Where the source code is
 SOURCE_DIR="$(realpath ${THIS_DIR}/..)"
+PACKAGES_DIR="${SOURCE_DIR}/packages"
 
 # Where the build files are (default: 'build' directory in the project root)
 CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:=Debug}
@@ -22,10 +23,8 @@ mkdir -p "${BUILD_DIR_DEFAULT}"
 BUILD_DIR_DEFAULT=$(realpath "${BUILD_DIR_DEFAULT}")
 BUILD_DIR="${BUILD_DIR:=${BUILD_DIR_DEFAULT}}"
 
-# Generate a space-delimited list of arguments for cppcheck
-CPPCHECK="cppcheck --template=gcc -j$(($(nproc) - 1))"
-while IFS='' read -r flag; do
-  CPPCHECK="${CPPCHECK} ${flag}"
-done<"${SOURCE_DIR}/.cppcheck"
-
-${CPPCHECK} "${SOURCE_DIR}" || true
+find "${SOURCE_DIR}" -regex '.*\.\(c\|cpp\|h\|hpp\|cc\|cxx\)' -print0 | xargs -0 \
+  run-clang-tidy \
+    -quiet \
+    -p=.build/Debug \
+    || true

@@ -17,6 +17,8 @@ THIS_DIR=$(
   pwd
 )
 
+PROJECT_ROOT_DIR="$(realpath ${THIS_DIR}/../..)"
+
 if [[ $OSTYPE == "linux-gnu" ]]; then
   export NUM_JOBS="$(nproc)"
 elif [[ $OSTYPE == "darwin"* ]]; then
@@ -25,7 +27,7 @@ fi
 
 NAME="llvm"
 URL="https://github.com/llvm/llvm-project"
-VERSION_DEFAULT="10.0.0"
+VERSION_DEFAULT="11.0.0"
 GIT_TAG_PREFIX="llvmorg-"
 
 VERSION=${1:-${VERSION_DEFAULT}}
@@ -45,10 +47,10 @@ if [ ! -z "${COMMIT_HASH}" ]; then
   NAME=${NAME}-${COMMIT_HASH}
 fi
 
-SRC_DIR="${THIS_DIR}/../tmp"
+SRC_DIR="${PROJECT_ROOT_DIR}/tmp"
 SOURCE_DIR=${SRC_DIR}/${NAME}
 BUILD_DIR=${SOURCE_DIR}_build
-INSTALL_DIR="${THIS_DIR}/../3rdparty/${NAME_SIMPLE}"
+INSTALL_DIR="${THIS_DIR}/3rdparty/${NAME_SIMPLE}"
 
 if [ ! -d ${SOURCE_DIR} ]; then
   mkdir -p ${SRC_DIR}
@@ -77,7 +79,7 @@ cmake "${SOURCE_DIR}/llvm" \
   -DDEFAULT_CXX_STDLIB="libc++" \
   -DCMAKE_C_FLAGS="-I/usr/include/x86_64-linux-gnu" \
   -DCMAKE_CXX_FLAGS="-I/usr/include/x86_64-linux-gnu" \
-  -DLLVM_BINUTILS_INCDIR="${THIS_DIR}/../3rdparty/binutils/include"
+  -DLLVM_BINUTILS_INCDIR="${PROJECT_ROOT_DIR}/3rdparty/binutils/include"
 
 make -j ${NUM_JOBS}
 make install

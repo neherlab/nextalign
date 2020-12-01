@@ -40,6 +40,15 @@ esac
 ADDITIONAL_PATH="${PROJECT_ROOT_DIR}/3rdparty/binutils/bin:${PROJECT_ROOT_DIR}/3rdparty/gcc/bin:${PROJECT_ROOT_DIR}/3rdparty/llvm/bin"
 export PATH="${ADDITIONAL_PATH}${PATH:+:$PATH}"
 
+# Whether to use Clang Analyzer
+USE_CLANG_ANALYZER="${USE_CLANG_ANALYZER:=0}"
+CLANG_ANALYZER=""
+if [ "${USE_CLANG_ANALYZER}" == "true" ] || [ "${USE_CLANG_ANALYZER}" == "1" ]; then
+  CLANG_ANALYZER="scan-build -v -o ${PROJECT_ROOT_DIR}/.reports/clang-analyzer"
+  USE_CLANG=1
+  mkdir -p "${PROJECT_ROOT_DIR}/.reports/clang-analyzer"
+fi
+
 # Whether to use Clang C++ compiler (default: use GCC)
 USE_CLANG="${USE_CLANG:=0}"
 CONAN_COMPILER_SETTINGS=""
@@ -114,7 +123,7 @@ pushd "${BUILD_DIR}" > /dev/null
     --build missing \
 
   print 92 "Generate build files";
-  cmake "${PROJECT_ROOT_DIR}" \
+  ${CLANG_ANALYZER} cmake "${PROJECT_ROOT_DIR}" \
     -DCMAKE_MODULE_PATH="${BUILD_DIR}" \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
     -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
@@ -122,7 +131,7 @@ pushd "${BUILD_DIR}" > /dev/null
     -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE:=0} \
 
   print 12 "Build";
-  cmake --build "${BUILD_DIR}" --config "${CMAKE_BUILD_TYPE}" -- -j$(($(nproc) - 1))
+  ${CLANG_ANALYZER} cmake --build "${BUILD_DIR}" --config "${CMAKE_BUILD_TYPE}" -- -j$(($(nproc) - 1))
 
   print 25 "Run cppcheck";
   . "${THIS_DIR}/cppcheck.sh"

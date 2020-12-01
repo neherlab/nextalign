@@ -14,11 +14,24 @@ echo ""
 
 VERSION=2.35.1
 
+THIS_DIR=$(
+  cd $(dirname "${BASH_SOURCE[0]}")
+  pwd
+)
+
+PROJECT_ROOT_DIR="$(realpath ${THIS_DIR}/../..)"
+
+if [[ $OSTYPE == "linux-gnu" ]]; then
+  export NUM_JOBS="$(nproc)"
+elif [[ $OSTYPE == "darwin"* ]]; then
+  export NUM_JOBS="$(sysctl -n hw.ncpu)"
+fi
+
 NAME=binutils
-SRC_DIR="${THIS_DIR}/../tmp"
+SRC_DIR="${PROJECT_ROOT_DIR}/tmp"
 SOURCE_DIR=${SRC_DIR}/${NAME}-${VERSION}
-BUILD_DIR=${SOURCE_DIR}_build
-INSTALL_DIR="${THIS_DIR}/../3rdparty/${NAME}"
+BUILD_DIR=${SOURCE_DIR}
+INSTALL_DIR="${PROJECT_ROOT_DIR}/3rdparty/${NAME}"
 ARCHIVE_FILE=${NAME}-${VERSION}.tar.xz
 URL=http://ftp.gnu.org/gnu/${NAME}/${ARCHIVE_FILE}
 
@@ -28,6 +41,10 @@ pushd ${SRC_DIR}
 # Download package
 if [ ! -f ${ARCHIVE_FILE} ]; then
   wget ${URL}
+fi
+
+if [ ! -d ${SOURCE_DIR} ]; then
+  tar xvf ${ARCHIVE_FILE}
 fi
 
 # Create build directory, configure and build
