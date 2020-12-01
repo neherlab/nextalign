@@ -1,11 +1,13 @@
 #include "alignPairwise.h"
-#include <ctime>
+
 #include <algorithm>
 #include <cmath>
+#include <ctime>
+#include <iostream>
 #include <numeric>
 #include <string>
 #include <vector>
-#include <iostream>
+
 #include "matchNuc.h"
 
 namespace details {
@@ -67,7 +69,8 @@ AlignmentParameters alignmentParameters = {
 
 
 // determine the position where a particular kmer (string of length k) matches the reference sequence
-SeedMatch seedMatch(const std::string& kmer, const std::string& ref, const int start_pos, const int allowed_mismatches) {
+SeedMatch seedMatch(
+  const std::string& kmer, const std::string& ref, const int start_pos, const int allowed_mismatches) {
   int tmpScore = 0;
   int maxScore = 0;
   int maxShift = -1;
@@ -78,13 +81,17 @@ SeedMatch seedMatch(const std::string& kmer, const std::string& ref, const int s
         tmpScore++;
       }
       // TODO: this speeds up seed-matching by disregarding bad seeds.
-      if (tmpScore+allowed_mismatches<pos){break;}
+      if (tmpScore + allowed_mismatches < pos) {
+        break;
+      }
     }
     if (tmpScore > maxScore) {
       maxScore = tmpScore;
       maxShift = shift;
       // if maximal score is reached
-      if (tmpScore==kmer.size()) {break;}
+      if (tmpScore == kmer.size()) {
+        break;
+      }
     }
   }
   return {.shift = maxShift, .score = maxScore};
@@ -140,11 +147,11 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
 
   int minShift = ref.size();
   int maxShift = -ref.size();
-  for (int si=0; si<seedMatches.size(); si++){
-    if (seedMatches[si][2]<minShift){
+  for (int si = 0; si < seedMatches.size(); si++) {
+    if (seedMatches[si][2] < minShift) {
       minShift = seedMatches[si][2];
     }
-    if (seedMatches[si][2]>maxShift){
+    if (seedMatches[si][2] > maxShift) {
       maxShift = seedMatches[si][2];
     }
   }
@@ -280,8 +287,8 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
 
   std::vector<std::pair<char, char>> aln;
   std::string aln_ref, aln_query;
-  aln_ref.reserve(rowLength + 3*bandWidth);
-  aln_query.reserve(rowLength + 3*bandWidth);
+  aln_ref.reserve(rowLength + 3 * bandWidth);
+  aln_query.reserve(rowLength + 3 * bandWidth);
 
   // Determine the best alignment by picking the optimal score at the end of the query
   // const lastIndexByShift = scores.map((d, i) = > Math.min(rowLength - 1, query.size() + indexToShift(i)));
@@ -294,10 +301,11 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
   lastIndexByShift.reserve(scores.size());
 
   int si = 0, bestScore = 0;
-  for (int i=0; i<scores.size(); i++){
-    lastIndexByShift[i] = rowLength - 1 < query.size() + indexToShift(i) ? rowLength - 1 : query.size() + indexToShift(i);
+  for (int i = 0; i < scores.size(); i++) {
+    lastIndexByShift[i] =
+      rowLength - 1 < query.size() + indexToShift(i) ? rowLength - 1 : query.size() + indexToShift(i);
     lastScoreByShift[i] = scores[i][lastIndexByShift[i]];
-    if (lastScoreByShift[i]>bestScore){
+    if (lastScoreByShift[i] > bestScore) {
       bestScore = lastScoreByShift[i];
       si = i;
     }
@@ -403,10 +411,10 @@ Alignment alignPairwise(const std::string& query, const std::string& ref, int mi
   }
 
   t2 = std::clock();
-  std::cout<<"\nseed matching: "<<t2-t1<<"\n";
+  std::cout << "\nseed matching: " << t2 - t1 << "\n";
   const ForwardTrace& forwardTrace = scoreMatrix(query, ref, bandWidth, meanShift);
   t1 = std::clock();
-  std::cout<<"forward trace: "<<t1-t2<<"\n";
+  std::cout << "forward trace: " << t1 - t2 << "\n";
   const auto& scores = forwardTrace.scores;
   const auto& paths = forwardTrace.paths;
 

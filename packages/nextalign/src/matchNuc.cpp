@@ -77,15 +77,15 @@ int lookupNucMatchScore(IupacNucCodes x, IupacNucCodes y) {
 }
 
 bool isMatch(char x, char y) {
-  if (x==y){
+  if (x == y) {
     return true;
   }
 
-  if (y=='N'){
+  if (y == 'N') {
     return true;
   }
 
-  if (x=='N'){
+  if (x == 'N') {
     return true;
   }
   return lookupNucMatchScore(toIupac(x), toIupac(y)) > 0;
