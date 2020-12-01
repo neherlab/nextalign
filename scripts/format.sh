@@ -16,6 +16,6 @@ THIS_DIR=$(
 source "${THIS_DIR}/lib/set_locales.sh"
 
 # Where the source code is
-SOURCE_DIR="$(realpath ${THIS_DIR}/..)"
+SOURCE_DIR="$(realpath ${THIS_DIR}/..)/packages"
 
 find "${SOURCE_DIR}" -regex '.*\.\(c\|cpp\|h\|hpp\|cc\|cxx\)' -exec clang-format -style=file -i {} \;

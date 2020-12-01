@@ -9,3 +9,6 @@ dev-nowatch:
 
 prod:
 	CMAKE_BUILD_TYPE=Release scripts/build_locally.sh
+
+format:
+	@scripts/format.sh
