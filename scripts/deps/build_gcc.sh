@@ -25,7 +25,7 @@ elif [[ $OSTYPE == "darwin"* ]]; then
   export NUM_JOBS="$(sysctl -n hw.ncpu)"
 fi
 
-VERSION_DEFAULT="9.3.0"
+VERSION_DEFAULT="10.2.0"
 VERSION="${1:=VERSION_DEFAULT}"
 VERSION_MAJOR="$(echo ${VERSION} | cut -d. -f1)"
 
