@@ -9,7 +9,7 @@ shopt -s dotglob
 trap "exit" INT
 
 echo "On Ubuntu you will need these dependencies:"
-echo "sudo apt-get install build-essential git swig cmake libc++abi-dev libc++-dev libc++-helpers doxygen  python2.7-dev libedit-dev libncurses5-dev libxml2-dev libffi-dev ocaml ocaml-findlib"
+echo "sudo apt-get install build-essential cmake doxygen git libc++-dev libc++abi-dev libedit-dev libelf-dev libffi-dev libncurses5-dev libompl-dev libxml2-dev lua5.3 ocaml ocaml-findlib python2.7-dev swig libctypes-ocaml-dev python-epydoc"
 echo ""
 
 THIS_DIR=$(
@@ -32,7 +32,7 @@ GIT_TAG_PREFIX="llvmorg-"
 
 VERSION=${1:-${VERSION_DEFAULT}}
 VERSION_MAJOR="$(echo ${VERSION} | cut -d. -f1)"
-NAME_SIMPLE=${NAME}-${VERSION_MAJOR}
+NAME_SIMPLE=${NAME}
 BRANCH=${VERSION}
 NAME=${NAME}-${BRANCH}
 
@@ -50,7 +50,7 @@ fi
 SRC_DIR="${PROJECT_ROOT_DIR}/tmp"
 SOURCE_DIR=${SRC_DIR}/${NAME}
 BUILD_DIR=${SOURCE_DIR}_build
-INSTALL_DIR="${THIS_DIR}/3rdparty/${NAME_SIMPLE}"
+INSTALL_DIR="${PROJECT_ROOT_DIR}/3rdparty/${NAME_SIMPLE}"
 
 if [ ! -d ${SOURCE_DIR} ]; then
   mkdir -p ${SRC_DIR}
@@ -69,14 +69,13 @@ cmake "${SOURCE_DIR}/llvm" \
   -DCMAKE_INSTALL_PREFIX="${INSTALL_DIR}" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_VERBOSE_MAKEFILE=0 \
+  -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;compiler-rt;flang;libclc;libcxx;libcxxabi;libunwind;lld;lldb;openmp;polly" \
   -DLLVM_TOOL_LLDB_BUILD=1 \
   -DLLVM_TOOL_LLD_BUILD=1 \
   -DLLVM_ENABLE_FFI=1 \
   -DLLVM_CCACHE_BUILD=1 \
-  -DLLVM_ENABLE_LIBCXX=1 \
   -DLLVM_ENABLE_LLD=1 \
-  -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;libcxx;libcxxabi;libunwind;lld;lldb;openmp" \
-  -DDEFAULT_CXX_STDLIB="libc++" \
+  -DLLVM_ENABLE_DOXYGEN=1 \
   -DCMAKE_C_FLAGS="-I/usr/include/x86_64-linux-gnu" \
   -DCMAKE_CXX_FLAGS="-I/usr/include/x86_64-linux-gnu" \
   -DLLVM_BINUTILS_INCDIR="${PROJECT_ROOT_DIR}/3rdparty/binutils/include"
