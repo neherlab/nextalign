@@ -25,6 +25,15 @@ dev-clang-analyzer:
 prod:
 	@CMAKE_BUILD_TYPE=Release scripts/build_locally.sh
 
+benchmarks:
+	@$(MAKE) --no-print-directory benchmarks-impl
+
+benchmarks-impl:
+	@nodemon --config nodemon.benchmarks.json
+
+benchmarks-nowatch:
+	@scripts/benchmarks.sh
+
 format:
 	@scripts/format.sh
 

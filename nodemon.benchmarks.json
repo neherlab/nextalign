@@ -14,11 +14,7 @@
     "packages/nextalign/CMakeLists.txt",
     "packages/nextalign/include/nextalign/*",
     "packages/nextalign/src/*",
-    "packages/nextalign/tests/*",
-    "packages/nextalign/tests/.clang-tidy",
-    "packages/nextalign/tests/CMakeLists.txt",
-    "packages/nextalign_cli/CMakeLists.txt",
-    "packages/nextalign_cli/src/*",
+    "packages/nextalign/benchmarks/*",
     "scripts/*"
   ],
   "ext": ".c,.cpp,.h,.hpp,.cx,.cxx,.txt,.py,.cmake,.sh,.cppcheck,.clang-tidy,Makefile,.env,.env.example",
@@ -32,5 +28,5 @@
     "temp",
     "tmp"
   ],
-  "exec": "reset; bash -c \"CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:=Debug} ./scripts/build_locally.sh\" || cd ."
+  "exec": "reset; bash -c \"CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:=Release} ./scripts/benchmarks.sh\" || cd ."
 }

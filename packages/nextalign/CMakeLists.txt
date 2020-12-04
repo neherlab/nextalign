@@ -12,9 +12,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
+find_package(Microsoft.GSL 3.1.0 REQUIRED)
 find_package(boost_base 1.68.0 REQUIRED)
-find_package(fmt 7.1.0 REQUIRED)
 find_package(fast-cpp-csv-parser 20191004 REQUIRED)
+find_package(fmt 7.1.0 REQUIRED)
+find_package(frozen 1.0.0 REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC
   include/nextalign/geneUtils.h
@@ -26,13 +28,13 @@ add_library(${PROJECT_NAME} STATIC
   src/alignPairwise.cpp
   src/alignPairwise.h
   src/geneUtils.cpp
+  src/matchNuc.cpp
+  src/matchNuc.h
   src/nextalign.cpp
   src/parseGb.cpp
   src/parseGeneMapGff.cpp
   src/parseSequences.cpp
-  src/seqan2.cpp
-  src/seqan2.h
-  src/seqan2nowarn.h
+  src/safeCast.h
   )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
@@ -48,21 +50,27 @@ target_include_directories(${PROJECT_NAME}
 
   PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/include"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../3rdparty/seqan/include"
   )
 
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
 
   PRIVATE
-  fast-cpp-csv-parser::fast-cpp-csv-parser
+  Microsoft.GSL::GSL
   boost_base::boost_base
+  fast-cpp-csv-parser::fast-cpp-csv-parser
   fmt::fmt
+  frozen::frozen
   )
 
-set(${PROJECT_NAME}_BUILD_TESTS ON CACHE BOOL "Build unit tests")
-if (${${PROJECT_NAME}_BUILD_TESTS})
+set(NEXTALIGN_BUILD_TESTS ON CACHE BOOL "Build unit tests")
+if (${NEXTALIGN_BUILD_TESTS})
   include(CTest)
   enable_testing()
   add_subdirectory(tests)
+endif ()
+
+set(NEXTALIGN_BUILD_BENCHMARKS OFF CACHE BOOL "Build benchmarks")
+if (${NEXTALIGN_BUILD_BENCHMARKS})
+  add_subdirectory(benchmarks)
 endif ()

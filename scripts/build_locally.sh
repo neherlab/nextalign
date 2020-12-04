@@ -74,8 +74,6 @@ fi
 BUILD_DIR_DEFAULT="${PROJECT_ROOT_DIR}/.build/${CMAKE_BUILD_TYPE}${BUILD_SUFFIX}"
 BUILD_DIR="${BUILD_DIR:=${BUILD_DIR_DEFAULT}}"
 
-mkdir -p "${BUILD_DIR}"
-
 USE_COLOR="${USE_COLOR:=1}"
 DEV_CLI_OPTIONS="${DEV_CLI_OPTIONS:=}"
 
@@ -143,7 +141,7 @@ pushd "${BUILD_DIR}" > /dev/null
 
   print 27 "Run CLI";
   pushd "${BUILD_DIR}/packages/${PROJECT_NAME}_cli/" > /dev/null
-      ${GDB} ./nextalign_cli ${DEV_CLI_OPTIONS}
+      ${GDB} ./nextalign_cli ${DEV_CLI_OPTIONS} || cd .
   popd > /dev/null
 
   print 22 "Done";
