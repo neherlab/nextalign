@@ -89,6 +89,11 @@ The results are also saved to the file `nextalign_benchmarks.json`.
 You can compare multiple results using the [compare.py](https://github.com/google/benchmark/tree/master/tools) tool in the Google Benchmark's repository. For more information refer to [Benchmark Tools](https://github.com/google/benchmark/blob/master/docs/tools.md) documentation.
 
 
+### Tests
+
+Test are run as a part of the main development script (`make dev`). We are using [Google Test](https://github.com/google/googletest/blob/master/googletest/docs/primer.md)
+See [Google Test documentation](https://github.com/google/googletest/blob/master/googletest/docs/primer.md) and [Google Mock documentation](https://github.com/google/googletest/blob/master/googlemock/README.md) for more details.
+
 ## License
 
 <a target="_blank" rel="noopener noreferrer" href="LICENSE" alt="License file">MIT License</a>
