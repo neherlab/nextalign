@@ -65,9 +65,14 @@ target_link_libraries(${PROJECT_NAME}
   Microsoft.GSL::GSL
   )
 
-set(${PROJECT_NAME}_BUILD_TESTS ON CACHE BOOL "Build unit tests")
-if (${${PROJECT_NAME}_BUILD_TESTS})
+set(NEXTALIGN_BUILD_TESTS ON CACHE BOOL "Build unit tests")
+if (${NEXTALIGN_BUILD_TESTS})
   include(CTest)
   enable_testing()
   add_subdirectory(tests)
+endif ()
+
+set(NEXTALIGN_BUILD_BENCHMARKS OFF CACHE BOOL "Build benchmarks")
+if (${NEXTALIGN_BUILD_BENCHMARKS})
+  add_subdirectory(benchmarks)
 endif ()

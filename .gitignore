@@ -6,3 +6,4 @@
 3rdparty/gcc
 3rdparty/llvm
 tmp
+nextalign_benchmarks.json
