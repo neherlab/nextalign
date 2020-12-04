@@ -61,5 +61,4 @@ void NextalignVariation(benchmark::State& st) {
 BENCHMARK(NextalignVariation)          //
   ->DenseRange(0, NUM_SEQUENCES_VAR, 1)//
   ->Unit(benchmark::kMillisecond)      //
-  ->Complexity(benchmark::oNSquared)
-  ->Iterations(0);
+  ->Complexity(benchmark::oNSquared);

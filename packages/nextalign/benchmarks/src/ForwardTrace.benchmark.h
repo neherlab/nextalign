@@ -80,5 +80,4 @@ BENCHMARK_DEFINE_F(ForwardTraceBench, Variation)(benchmark::State& st) {
 BENCHMARK_REGISTER_F(ForwardTraceBench, Variation)
   ->DenseRange(0, NUM_SEQUENCES_VAR, 1)//
   ->Unit(benchmark::kMillisecond)      //
-  ->Complexity(benchmark::oNSquared)
-  ->Iterations(0);
+  ->Complexity(benchmark::oNSquared);
