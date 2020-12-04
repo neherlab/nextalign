@@ -391,23 +391,16 @@ Alignment alignPairwise(const std::string& query, const std::string& ref, int mi
   if (querySize < minimalLength) {
     throw ErrorAlignmentSequenceTooShort();
   }
-  //  clock_t t1, t2;
 
-  // perform a number of seed matches to determine te rough alignment of query rel to ref
-  //  t1 = std::clock();
   const SeedAlignment& seedAlignmentResult = seedAlignment(query, ref);
   const auto& bandWidth = seedAlignmentResult.bandWidth;
   const auto& meanShift = seedAlignmentResult.meanShift;
-  // std::cout <<"shift "<<meanShift<<" band "<<bandWidth<<"\n";
+
   if (bandWidth > 400) {
     throw ErrorAlignmentBadSeedMatches();
   }
 
-  //  t2 = std::clock();
-  //  std::cout << "\nseed matching: " << t2 - t1 << "\n";
   const ForwardTrace& forwardTrace = scoreMatrix(query, ref, bandWidth, meanShift);
-  //  t1 = std::clock();
-  //  std::cout << "forward trace: " << t1 - t2 << "\n";
   const auto& scores = forwardTrace.scores;
   const auto& paths = forwardTrace.paths;
 
