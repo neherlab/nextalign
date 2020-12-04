@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <fstream>
 #include <numeric>
 #include <vector>
@@ -17,7 +18,7 @@ auto getData() {
   const auto sequencesMap = parseSequences(fastaFile);
   std::copy(sequencesMap.cbegin(), sequencesMap.cend(), back_inserter(sequences));
 
-  assert(sequences.size() < NUM_SEQUENCES_VAR);
+  assert(sequences.size() >= NUM_SEQUENCES_VAR);
   const auto totalNucs =
     std::accumulate(sequences.cbegin(), sequences.cbegin() + NUM_SEQUENCES_VAR, 0, [](int total, const auto& seq) {
       total += seq.second.size();
