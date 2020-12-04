@@ -2,7 +2,7 @@
 
 #include "utils/getData.h"
 
-const auto [sequences, ref, geneMap, totalNucs] = getData();
+const auto [sequences, reference, geneMap, totalNucs] = getData();
 
 // clang-format off
 #include "Nextalign.benchmark.h"

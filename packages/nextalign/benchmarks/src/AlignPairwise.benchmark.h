@@ -25,7 +25,7 @@ void AlignPairwiseAverage(benchmark::State& st) {
   for (const auto& _ : st) {
     for (int i = 0; i < n; ++i) {
       const auto& [seqName, query] = sequences[i];
-      benchmark::DoNotOptimize(aln = alignPairwise(query, ref, 100));
+      benchmark::DoNotOptimize(aln = alignPairwise(query, reference, 100));
     }
   }
 
@@ -51,7 +51,7 @@ void AlignPairwiseVariation(benchmark::State& st) {
   st.SetComplexityN(query.size());
 
   for (const auto& _ : st) {
-    benchmark::DoNotOptimize(aln = alignPairwise(query, ref, 100));
+    benchmark::DoNotOptimize(aln = alignPairwise(query, reference, 100));
   }
 
   setCounters(st, 1);
