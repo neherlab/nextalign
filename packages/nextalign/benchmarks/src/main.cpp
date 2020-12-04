@@ -8,6 +8,7 @@ const auto [sequences, ref, geneMap, totalNucs] = getData();
 #include "Nextalign.benchmark.h"
 #include "AlignPairwise.benchmark.h"
 #include "SeedMatching.benchmark.h"
+#include "ForwardTrace.benchmark.h"
 // clang-format on
 
 

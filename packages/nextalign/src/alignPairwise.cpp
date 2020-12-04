@@ -36,30 +36,6 @@ public:
 };
 
 
-struct SeedMatch {
-  int shift;
-  int score;
-};
-
-struct SeedAlignment {
-  int meanShift;
-  int bandWidth;
-};
-
-struct ForwardTrace {
-  std::vector<std::vector<int>> scores;
-  std::vector<std::vector<int>> paths;
-};
-
-
-struct AlignmentParameters {
-  int gapExtend;
-  int gapOpen;
-  int gapClose;
-  int misMatch;
-  int match;
-};
-
 AlignmentParameters alignmentParameters = {
   .gapExtend = 0,
   .gapOpen = -2,

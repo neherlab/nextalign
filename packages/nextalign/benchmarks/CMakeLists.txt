@@ -9,6 +9,7 @@ find_package(Microsoft.GSL 3.1.0 REQUIRED)
 
 add_executable(${PROJECT_NAME}
   src/AlignPairwise.benchmark.h
+  src/ForwardTrace.benchmark.h
   src/Nextalign.benchmark.h
   src/SeedMatching.benchmark.h
   src/main.cpp

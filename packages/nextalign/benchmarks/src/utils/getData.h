@@ -8,8 +8,8 @@
 #include "../include/nextalign/parseGeneMapGff.h"
 #include "../include/nextalign/parseSequences.h"
 
-constexpr const int NUM_SEQUENCES_VAR = 10;// Number of sequences to process per "Variation" benchmark
 constexpr const int NUM_SEQUENCES_AVG = 30;// Number of sequences to process per "Average" benchmark
+constexpr const int NUM_SEQUENCES_VAR = 10;// Number of sequences to process per "Variation" benchmark
 
 auto getData() {
   std::vector<std::pair<std::string, std::string>> sequences;

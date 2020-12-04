@@ -11,28 +11,49 @@
 #include "utils/setCounters.h"
 
 
+class ForwardTraceBench : public benchmark::Fixture {
+protected:
+  std::vector<SeedAlignment> seedAlignments;
+
+  SeedAlignment seed;
+  std::string query;
+
+  ForwardTraceBench() {
+    const auto n = NUM_SEQUENCES_AVG;
+    seedAlignments.resize(n);
+    for (int i = 0; i < n; ++i) {
+      const auto& [seqName, query] = sequences[i];
+      seedAlignments[i] = seedAlignment(query, ref);
+    }
+  }
+};
+
+
 /**
- * Average benchmark for nextalign().
- * Runs `nextalign()` for NUM_SEQUENCES_AVG sequences and averages the result.
+ * Average benchmark for scoreMatrix().
+ * Runs `scoreMatrix()` for NUM_SEQUENCES_AVG sequences and averages the result.
  * This is an estimate of runtime performance in a real world scenario, when many sequences are ran in a batch.
  */
-void NextalignAverage(benchmark::State& st) {
+
+BENCHMARK_DEFINE_F(ForwardTraceBench, Average)(benchmark::State& st) {
   const auto n = NUM_SEQUENCES_AVG;
-  const NextalignOptions options = {};
-  Alignment aln;
+  ForwardTrace forwardTrace;
   st.SetComplexityN(totalNucs);
 
   for (const auto& _ : st) {
     for (int i = 0; i < n; ++i) {
       const auto& [seqName, query] = sequences[i];
-      benchmark::DoNotOptimize(aln = nextalign(query, ref, geneMap, options));
+      const auto& seedAlignment = seedAlignments[i];
+      benchmark::DoNotOptimize(
+        forwardTrace = scoreMatrix(query, ref, seedAlignment.bandWidth, seedAlignment.meanShift));
     }
   }
 
   setCounters(st, n);
 }
 
-BENCHMARK(NextalignAverage)      //
+
+BENCHMARK_REGISTER_F(ForwardTraceBench, Average)
   ->Unit(benchmark::kMillisecond)//
   ->Complexity(benchmark::oNSquared)
   ->Iterations(3);
@@ -43,22 +64,22 @@ BENCHMARK(NextalignAverage)      //
  * Runs `nextalign()` for NUM_SEQUENCES_VAR sequences and shows results per sequence.
  * This shows variation or runtime between different sequences.
  */
-void NextalignVariation(benchmark::State& st) {
+BENCHMARK_DEFINE_F(ForwardTraceBench, Variation)(benchmark::State& st) {
   const auto& index = st.range(0);
   const auto& [seqName, query] = sequences[index];
-  const NextalignOptions options = {};
-  Alignment aln;
+  seed = seedAlignments[index];
+  ForwardTrace forwardTrace;
   st.SetLabel(seqName);
   st.SetComplexityN(query.size());
 
   for (const auto& _ : st) {
-    benchmark::DoNotOptimize(aln = nextalign(query, ref, geneMap, options));
+    benchmark::DoNotOptimize(forwardTrace = scoreMatrix(query, ref, seed.bandWidth, seed.meanShift));
   }
 
   setCounters(st, 1);
 }
 
-BENCHMARK(NextalignVariation)          //
+BENCHMARK_REGISTER_F(ForwardTraceBench, Variation)
   ->DenseRange(0, NUM_SEQUENCES_VAR, 1)//
   ->Unit(benchmark::kMillisecond)      //
   ->Complexity(benchmark::oNSquared)

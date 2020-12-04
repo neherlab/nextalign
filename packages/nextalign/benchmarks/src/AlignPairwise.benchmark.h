@@ -39,8 +39,8 @@ BENCHMARK(AlignPairwiseAverage)  //
 
 
 /**
- * Variation benchmark for nextalign().
- * Runs `nextalign()` for NUM_SEQUENCES sequences and shows results per sequence.
+ * Variation benchmark for alignPairwise().
+ * Runs `alignPairwise()` for NUM_SEQUENCES_VAR sequences and shows results per sequence.
  * This shows variation or runtime between different sequences.
  */
 void AlignPairwiseVariation(benchmark::State& st) {

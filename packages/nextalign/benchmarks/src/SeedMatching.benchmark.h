@@ -12,13 +12,12 @@
 
 
 /**
- * Average benchmark for alignPairwise().
- * Runs `alignPairwise()` for NUM_SEQUENCES_AVG sequences and averages the result.
+ * Average benchmark for seedAlignment().
+ * Runs `seedAlignment()` for NUM_SEQUENCES_AVG sequences and averages the result.
  * This is an estimate of runtime performance in a real world scenario, when many sequences are ran in a batch.
  */
 void SeedMatchAverage(benchmark::State& st) {
   const auto n = NUM_SEQUENCES_AVG;
-  const NextalignOptions options = {};
   SeedAlignment aln;
   st.SetComplexityN(totalNucs);
 
@@ -39,8 +38,8 @@ BENCHMARK(SeedMatchAverage)      //
 
 
 /**
- * Variation benchmark for nextalign().
- * Runs `nextalign()` for NUM_SEQUENCES sequences and shows results per sequence.
+ * Variation benchmark for seedAlignment().
+ * Runs `seedAlignment()` for NUM_SEQUENCES_VAR sequences and shows results per sequence.
  * This shows variation or runtime between different sequences.
  */
 void SeedMatchVariation(benchmark::State& st) {
