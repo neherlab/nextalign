@@ -141,24 +141,6 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
   return {.meanShift = meanShift, .bandWidth = bandWidthFinal};
 }
 
-// self made argmax function
-template<typename Container>
-std::pair<int, int> argmax(const Container& d) {
-  const int size = d.size();
-  int tmpmax = d[0];
-  int tmpii = 0;
-
-  for (int i = 1; i < size; ++i) {
-    const auto& x = gsl::at(d, i);
-    if (x > tmpmax) {
-      tmpmax = x;
-      tmpii = i;
-    }
-  }
-
-  return std::make_pair(tmpii, tmpmax);
-}
-
 ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, int bandWidth, int meanShift) {
   // TODO: Avoid creating this lambda function
   const auto indexToShift = [&bandWidth, &meanShift]//
