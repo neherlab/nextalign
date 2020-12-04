@@ -56,7 +56,7 @@ void SeedMatchVariation(benchmark::State& st) {
   setCounters(st, 1);
 }
 
-BENCHMARK(SeedMatchVariation)          //
-  ->DenseRange(0, NUM_SEQUENCES_VAR, 1)//
-  ->Unit(benchmark::kMillisecond)      //
+BENCHMARK(SeedMatchVariation)              //
+  ->DenseRange(0, NUM_SEQUENCES_VAR - 1, 1)//
+  ->Unit(benchmark::kMillisecond)          //
   ->Complexity(benchmark::oNSquared);
