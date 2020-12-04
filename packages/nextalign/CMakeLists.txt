@@ -35,9 +35,6 @@ add_library(${PROJECT_NAME} STATIC
   src/parseGeneMapGff.cpp
   src/parseSequences.cpp
   src/safeCast.h
-  src/seqan2.cpp
-  src/seqan2.h
-  src/seqan2nowarn.h
   )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
@@ -53,7 +50,6 @@ target_include_directories(${PROJECT_NAME}
 
   PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/include"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../3rdparty/seqan/include"
   )
 
 target_link_libraries(${PROJECT_NAME}
