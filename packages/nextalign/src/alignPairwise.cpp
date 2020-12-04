@@ -289,8 +289,8 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
 
   std::vector<int> lastScoreByShift;
   std::vector<int> lastIndexByShift;
-  lastScoreByShift.reserve(scores.size());
-  lastIndexByShift.reserve(scores.size());
+  lastScoreByShift.resize(scores.size());
+  lastIndexByShift.resize(scores.size());
 
   int si = 0;
   int bestScore = 0;
