@@ -210,7 +210,7 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, int b
   std::array<int, 4> cmp;
   int qPos;
   int origin;
-  int score;
+  int score, tmpScore;
   int qGapOpen;
   int rGapOpen;
 #pragma clang diagnostic pop
@@ -232,22 +232,30 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, int b
         if (paths[si][ri] == 2 || paths[si][ri] == 3) {
           tmpMatch += gapClose;
         }
-
         // determine whether the previous move was a reference or query gap
         rGapOpen = si < 2 * bandWidth ? (paths[si + 1][ri + 1] == 2 ? 0 : gapOpen) : 0;
         qGapOpen = si > 0 ? (paths[si - 1][ri] == 3 ? 0 : gapOpen) : 0;
 
-        // calculate scores
-        cmp = {
-          0,                        // unaligned
-          scores[si][ri] + tmpMatch,// match -- shift stays the same
-          si < 2 * bandWidth ? scores[si + 1][ri + 1] + gapExtend + rGapOpen : gapExtend,// putting a gap into ref
-          si > 0 ? scores[si - 1][ri] + gapExtend + qGapOpen : gapExtend,                // putting a gap into query
-        };
-        // determine best move and best score
-        const auto [tmpOrigin, tmpScore] = argmax(cmp);
-        origin = tmpOrigin;
-        score = tmpScore;
+        score = 0;
+        origin = 0;
+
+        tmpScore = scores[si][ri] + tmpMatch;
+        if (tmpScore>score) {
+          score = tmpScore;
+          origin = 1;
+        }
+
+        tmpScore = si < 2 * bandWidth ? scores[si + 1][ri + 1] + gapExtend + rGapOpen : gapExtend;
+        if (tmpScore>score) {
+          score = tmpScore;
+          origin = 2;
+        }
+
+        tmpScore = si > 0 ? scores[si - 1][ri] + gapExtend + qGapOpen : gapExtend;
+        if (tmpScore>score) {
+          score = tmpScore;
+          origin = 3;
+        }
       } else {
         // past query sequence -- mark as sequence end
         score = END_OF_SEQUENCE;
