@@ -15,8 +15,6 @@ class ForwardTraceBench : public benchmark::Fixture {
 protected:
   std::vector<SeedAlignment> seedAlignments;
 
-  SeedAlignment seed;
-  std::string query;
 
   ForwardTraceBench() {
     const auto n = NUM_SEQUENCES_AVG;
@@ -60,14 +58,14 @@ BENCHMARK_REGISTER_F(ForwardTraceBench, Average)
 
 
 /**
- * Variation benchmark for nextalign().
- * Runs `nextalign()` for NUM_SEQUENCES_VAR sequences and shows results per sequence.
+ * Variation benchmark for scoreMatrix().
+ * Runs `scoreMatrix()` for NUM_SEQUENCES_VAR sequences and shows results per sequence.
  * This shows variation or runtime between different sequences.
  */
 BENCHMARK_DEFINE_F(ForwardTraceBench, Variation)(benchmark::State& st) {
   const auto& index = st.range(0);
   const auto& [seqName, query] = sequences[index];
-  seed = seedAlignments[index];
+  SeedAlignment seed = seedAlignments[index];
   ForwardTrace forwardTrace;
   st.SetLabel(seqName);
   st.SetComplexityN(query.size());
