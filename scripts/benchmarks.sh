@@ -79,6 +79,13 @@ DEV_CLI_OPTIONS="${DEV_CLI_OPTIONS:=}"
 # gdb (or lldb) command with arguments
 GDB_DEFAULT="gdb --quiet -ix ${THIS_DIR}/lib/.gdbinit -x ${THIS_DIR}/lib/.gdbexec --args"
 GDB=""
+
+# AddressSanitizer and MemorySanitizer don't work with gdb
+case ${CMAKE_BUILD_TYPE} in
+ASAN | MSAN) GDB_DEFAULT="" ;;
+*) ;;
+esac
+
 USE_GDB=${USE_GDB:=0}
 if [ "${USE_GDB}" == "true" ] || [ "${USE_GDB}" == "1" ]; then
   GDB="${GDB_DEFAULT}"
