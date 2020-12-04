@@ -46,6 +46,11 @@ Sequence alignment
      If you don't want to install Node.js and nodemon, or don't want the automatic rebuild, you can use `make dev-nowatch` instead of `make dev`.
 
 
+### Tests
+
+Test are run as a part of the main development script (`make dev`). We are using [Google Test](https://github.com/google/googletest/blob/master/googletest/docs/primer.md)
+See [Google Test documentation](https://github.com/google/googletest/blob/master/googletest/docs/primer.md) and [Google Mock documentation](https://github.com/google/googletest/blob/master/googlemock/README.md) for more details.
+
 ## License
 
 <a target="_blank" rel="noopener noreferrer" href="LICENSE" alt="License file">MIT License</a>
