@@ -28,5 +28,5 @@
     "temp",
     "tmp"
   ],
-  "exec": "reset; bash -c \"CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:=Debug} ./scripts/benchmarks.sh\" || cd ."
+  "exec": "reset; bash -c \"CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:=Release} ./scripts/benchmarks.sh\" || cd ."
 }
