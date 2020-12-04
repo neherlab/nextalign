@@ -5,10 +5,15 @@ project(nextalign_benchmarks)
 
 find_package(benchmark REQUIRED)
 find_package(fmt 7.1.0 REQUIRED)
-find_package(range-v3 0.11.0 REQUIRED)
+find_package(Microsoft.GSL 3.1.0 REQUIRED)
 
 add_executable(${PROJECT_NAME}
-  alignPairwise.benchmark.cpp
+  src/AlignPairwise.benchmark.h
+  src/Nextalign.benchmark.h
+  src/SeedMatching.benchmark.h
+  src/main.cpp
+  src/utils/getData.h
+  src/utils/setCounters.h
   )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
@@ -19,5 +24,5 @@ target_link_libraries(${PROJECT_NAME}
   nextalign
   benchmark::benchmark
   fmt::fmt
-  range-v3::range-v3
+  Microsoft.GSL::GSL
   )
