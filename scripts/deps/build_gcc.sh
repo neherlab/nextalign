@@ -26,13 +26,8 @@ elif [[ $OSTYPE == "darwin"* ]]; then
 fi
 
 VERSION_DEFAULT="10.2.0"
-VERSION="${1:=VERSION_DEFAULT}"
+VERSION=${VERSION_DEFAULT}
 VERSION_MAJOR="$(echo ${VERSION} | cut -d. -f1)"
-
-source $(
-  cd $(dirname "${BASH_SOURCE[0]}")
-  pwd
-)/settings
 
 NAME="gcc"
 SRC_DIR="${PROJECT_ROOT_DIR}/tmp"
