@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 enum IupacNucCodes {
   U [[maybe_unused]] = 0,
   T [[maybe_unused]] = 1,
@@ -20,6 +22,6 @@ enum IupacNucCodes {
   SIZE = 16,
 };
 
-int lookupNucMatchScore(IupacNucCodes x, IupacNucCodes y);
+using ScoreLookupFunction = std::function<int(char, char)>;
 
-bool isMatch(char x, char y);
+int lookupNucMatchScore(char x, char y);

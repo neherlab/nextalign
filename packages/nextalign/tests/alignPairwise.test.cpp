@@ -1,8 +1,10 @@
+#include "../src/alignPairwise.h"
+
 #include <gtest/gtest.h>
 
 #include <string>
 
-#include "../src/alignPairwise.h"
+#include "../src/matchNuc.h"
 
 const NextalignOptions options = {};
 const int min_length = 5;
@@ -15,7 +17,7 @@ TEST(alignPairwise, MatchesIdenticalStrings) {
   const std::string ref = "ACGCTCGCT";
   // clang-format on
 
-  const auto result = alignPairwise(qry, ref, min_length);
+  const auto result = alignPairwise(qry, ref, &lookupNucMatchScore, min_length);
   EXPECT_EQ(ref, result.ref);
   EXPECT_EQ(qry, result.query);
 }
@@ -30,7 +32,7 @@ TEST(alignPairwise, PadsMissingLeft) {
   // FIXME: actual qryAln    "-C--TCGCT"
   // clang-format on
 
-  const auto result = alignPairwise(qry, ref, min_length);
+  const auto result = alignPairwise(qry, ref, &lookupNucMatchScore, min_length);
   EXPECT_EQ(ref, result.ref);
   EXPECT_EQ(qryAln, result.query);
 }
@@ -44,7 +46,7 @@ TEST(alignPairwise, PadsMissingRight) {
   const std::string qryAln = "ACGCTC---";
   // clang-format on
 
-  const auto result = alignPairwise(qry, ref, min_length);
+  const auto result = alignPairwise(qry, ref, &lookupNucMatchScore, min_length);
   EXPECT_EQ(ref, result.ref);
   EXPECT_EQ(qryAln, result.query);
 }
@@ -58,7 +60,7 @@ TEST(alignPairwise, HandlesQueryContainedInRef) {
   const std::string qryAln = "---ACGCTC---";
   // clang-format on
 
-  const auto result = alignPairwise(qry, ref, min_length);
+  const auto result = alignPairwise(qry, ref, &lookupNucMatchScore, min_length);
   EXPECT_EQ(ref, result.ref);
   EXPECT_EQ(qryAln, result.query);
 }
@@ -72,7 +74,7 @@ TEST(alignPairwise, HandlesRefContainedInQuery) {
   const std::string refAln = "---ACGCTC---";
   // clang-format on
 
-  const auto result = alignPairwise(qry, ref, min_length);
+  const auto result = alignPairwise(qry, ref, &lookupNucMatchScore, min_length);
   EXPECT_EQ(refAln, result.ref);
   EXPECT_EQ(qry, result.query);
 }
@@ -87,7 +89,7 @@ TEST(alignPairwise, AddsGapsWhenOneMismatch) {
   // FIXME: actual qryAln    "GCCACTC-C-CT"
   // clang-format on
 
-  const auto result = alignPairwise(qry, ref, min_length);
+  const auto result = alignPairwise(qry, ref, &lookupNucMatchScore, min_length);
   EXPECT_EQ(ref, result.ref);
   EXPECT_EQ(qryAln, result.query);
 }
@@ -102,7 +104,7 @@ TEST(alignPairwise, AddsGapsInRefWhenOneAmbiguousButMatchingChar) {
   // FIXME: actual refAln    "GCCACTC-C-CT"
   // clang-format on
 
-  const auto result = alignPairwise(qry, ref, min_length);
+  const auto result = alignPairwise(qry, ref, &lookupNucMatchScore, min_length);
   EXPECT_EQ(refAln, result.ref);
   EXPECT_EQ(qry, result.query);
 }
@@ -117,7 +119,7 @@ TEST(alignPairwise, CorrectlyAlignsAmbiguousGapPlacingCase) {
   // FIXME: actual qryAln    "ACAT----C--TT"
   // clang-format on
 
-  const auto result = alignPairwise(qry, ref, min_length);
+  const auto result = alignPairwise(qry, ref, &lookupNucMatchScore, min_length);
   EXPECT_EQ(ref, result.ref);
   EXPECT_EQ(qryAln, result.query);
 }
@@ -133,7 +135,7 @@ TEST(alignPairwise, CorrectlyAlignsAmbiguousGapPlacingCaseReversed) {
   // FIXME: actual refAln    "ACAT----C--TT"
   // clang-format on
 
-  const auto result = alignPairwise(qry, ref, min_length);
+  const auto result = alignPairwise(qry, ref, &lookupNucMatchScore, min_length);
   EXPECT_EQ(refAln, result.ref);
   EXPECT_EQ(qry, result.query);
 }
@@ -150,7 +152,7 @@ TEST(alignPairwise, CorrectlyAlignsLongComplexQuery) {
   // FIXME actual qryAln     "CTTGGAGGTTCCGTGGCTATAAAGATAACAGAACATTCTTGGAATGCTGATC---A-A-GCTCATGGGACANNNNNCATGGTGGACAGCCTTTGT"
   // clang-format on
 
-  const auto result = alignPairwise(qry, ref, min_length);
+  const auto result = alignPairwise(qry, ref, &lookupNucMatchScore, min_length);
   EXPECT_EQ(refAln, result.ref);
   EXPECT_EQ(qryAln, result.query);
 }

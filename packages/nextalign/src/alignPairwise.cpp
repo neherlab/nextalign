@@ -141,7 +141,8 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
   return {.meanShift = meanShift, .bandWidth = bandWidthFinal};
 }
 
-ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, int bandWidth, int meanShift) {
+ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction,
+  int bandWidth, int meanShift) {
   // TODO: Avoid creating this lambda function
   const auto indexToShift = [&bandWidth, &meanShift]//
     (int si) {                                      //
@@ -209,7 +210,8 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, int b
         origin = 3;
       } else if (qPos < querySize) {
         // if the shifted position is within the query sequence
-        tmpMatch = isMatch(query[qPos], ref[ri]) ? match : misMatch;
+        tmpMatch = scoreLookupFunction(query[qPos], ref[ri]) > 0 ? match : misMatch;
+
         // if the previous move included a gap (this for the match case, so we are coming from [si][ri]), add gap-close cost
         if (paths[si][ri] == 2 || paths[si][ri] == 3) {
           tmpMatch += gapClose;
@@ -376,7 +378,8 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
   };
 }
 
-Alignment alignPairwise(const std::string& query, const std::string& ref, int minimalLength) {
+Alignment alignPairwise(
+  const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction, int minimalLength) {
   const int querySize = query.size();
   if (querySize < minimalLength) {
     throw ErrorAlignmentSequenceTooShort();
@@ -390,7 +393,7 @@ Alignment alignPairwise(const std::string& query, const std::string& ref, int mi
     throw ErrorAlignmentBadSeedMatches();
   }
 
-  const ForwardTrace& forwardTrace = scoreMatrix(query, ref, bandWidth, meanShift);
+  const ForwardTrace& forwardTrace = scoreMatrix(query, ref, scoreLookupFunction, bandWidth, meanShift);
   const auto& scores = forwardTrace.scores;
   const auto& paths = forwardTrace.paths;
 

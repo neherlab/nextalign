@@ -7,6 +7,7 @@
 
 #include "../include/nextalign/nextalign.h"
 #include "../src/alignPairwise.h"
+#include "../src/matchNuc.h"
 #include "utils/getData.h"
 #include "utils/setCounters.h"
 
@@ -25,7 +26,7 @@ void AlignPairwiseAverage(benchmark::State& st) {
   for (const auto& _ : st) {
     for (int i = 0; i < n; ++i) {
       const auto& [seqName, query] = sequences[i];
-      benchmark::DoNotOptimize(aln = alignPairwise(query, reference, 100));
+      benchmark::DoNotOptimize(aln = alignPairwise(query, reference, &lookupNucMatchScore, 100));
     }
   }
 
@@ -51,7 +52,7 @@ void AlignPairwiseVariation(benchmark::State& st) {
   st.SetComplexityN(query.size());
 
   for (const auto& _ : st) {
-    benchmark::DoNotOptimize(aln = alignPairwise(query, reference, 100));
+    benchmark::DoNotOptimize(aln = alignPairwise(query, reference, &lookupNucMatchScore, 100));
   }
 
   setCounters(st, 1);

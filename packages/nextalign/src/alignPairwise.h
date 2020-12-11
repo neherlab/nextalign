@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "matchNuc.h"
+
 struct NextalignOptions;
 
 struct SeedMatch {
@@ -34,9 +36,11 @@ struct AlignmentParameters {
 
 SeedAlignment seedAlignment(const std::string& query, const std::string& ref);
 
-ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, int bandWidth, int meanShift);
+ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction,
+  int bandWidth, int meanShift);
 
 Alignment backTrace(const std::string& query, const std::string& ref, const std::vector<std::vector<int>>& scores,
   const std::vector<std::vector<int>>& paths, int meanShift);
 
-Alignment alignPairwise(const std::string& query, const std::string& ref, const int min_length);
+Alignment alignPairwise(
+  const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction, int minimalLength);

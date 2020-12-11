@@ -75,8 +75,12 @@ static constexpr const std::array<int, IupacNucCodes::SIZE*IupacNucCodes::SIZE> 
 
 }// namespace
 
-int lookupNucMatchScore(IupacNucCodes x, IupacNucCodes y) {
+int lookupNucMatchScoreIupac(IupacNucCodes x, IupacNucCodes y) {
   return scoringMatrixNuc[x * IupacNucCodes::SIZE + y];//NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+}
+
+int lookupNucMatchScore(char x, char y) {
+  return lookupNucMatchScoreIupac(toIupac(x), toIupac(y));
 }
 
 bool isMatch(char x, char y) {
@@ -91,5 +95,5 @@ bool isMatch(char x, char y) {
   if (x == 'N') {
     return true;
   }
-  return lookupNucMatchScore(toIupac(x), toIupac(y)) > 0;
+  return lookupNucMatchScoreIupac(toIupac(x), toIupac(y)) > 0;
 }
