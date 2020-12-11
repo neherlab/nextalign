@@ -38,6 +38,11 @@ add_library(${PROJECT_NAME} STATIC
   src/safeCast.h
   src/translate.cpp
   src/translate.h
+  src/utils/config.h
+  src/utils/contract.h
+  src/utils/debugbreak.h
+  src/utils/ieee754_comparison.h
+  src/utils/macro_overload.h
   )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)

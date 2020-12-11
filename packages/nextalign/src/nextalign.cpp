@@ -1,5 +1,6 @@
 #include <fmt/format.h>
 #include <nextalign/types.h>
+#include <utils/contract.h>
 
 #include <string>
 
