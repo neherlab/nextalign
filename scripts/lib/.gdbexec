@@ -1,6 +1,6 @@
 
 set confirm off
-catch throw
+# catch throw
 catch signal
 
 # Setup gdb-dashboard to only show source and stack modules
