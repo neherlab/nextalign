@@ -16,7 +16,7 @@ Peptide translate(const std::string_view& seq) {
   const int peptideLength = seqLength / 3;
 
 
-  Peptide peptide(AMINOACID_GAP, peptideLength);
+  Peptide peptide(peptideLength, AMINOACID_GAP);
   for (int i_aa = 0; i_aa < peptideLength; ++i_aa) {
     const auto i_nuc = i_aa * 3;
     const auto codon = seq.substr(i_nuc, i_nuc + 3);
