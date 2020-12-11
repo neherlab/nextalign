@@ -5,6 +5,8 @@
 
 #include "alignPairwise.h"
 #include "helpers.h"
+#include "safeCast.h"
+#include "translate.h"
 
 class ErrorGeneMapGeneNotFound : std::runtime_error {
   static std::string formatError(const std::string& geneName) {
@@ -17,16 +19,10 @@ public:
 
 void matchSeeds() {}
 
-std::string extractGeneSequence(const std::string& ref, const Gene& gene) {
-  NA_UNUSED(ref);
-  NA_UNUSED(gene);
-  return "GENE SEQUENCE";
+std::string_view extractGeneSequence(const std::string_view& seq, const Gene& gene) {
+  return seq.substr(gene.start, gene.end);
 }
 
-std::string translate(const std::string& seq) {
-  NA_UNUSED(seq);
-  return "PEPTIDE";
-}
 
 struct CodonAlignmentResult {
   // SOMETHING
@@ -60,8 +56,8 @@ Alignment alignBetter(const Alignment& alignment, const GeneMap& geneMap, const 
 
     const auto& gene = found->second;
 
-    const std::string geneSeq = extractGeneSequence(alignment.ref, gene);// TODO: ref or query or both?
-    const std::string peptide = translate(geneSeq);
+    const auto geneSeq = extractGeneSequence(alignment.ref, gene);// TODO: ref or query or both?
+    const auto peptide = translate(geneSeq);
 
     const CodonAlignmentResult codonAlignmentResult = codonAlign(peptide);
 

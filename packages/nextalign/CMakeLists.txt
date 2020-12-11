@@ -16,7 +16,6 @@ find_package(Microsoft.GSL 3.1.0 REQUIRED)
 find_package(boost_base 1.68.0 REQUIRED)
 find_package(fast-cpp-csv-parser 20191004 REQUIRED)
 find_package(fmt 7.1.0 REQUIRED)
-find_package(frozen 1.0.0 REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC
   include/nextalign/geneUtils.h
@@ -27,6 +26,8 @@ add_library(${PROJECT_NAME} STATIC
   include/nextalign/types.h
   src/alignPairwise.cpp
   src/alignPairwise.h
+  src/decode.cpp
+  src/decode.h
   src/geneUtils.cpp
   src/matchNuc.cpp
   src/matchNuc.h
@@ -35,6 +36,8 @@ add_library(${PROJECT_NAME} STATIC
   src/parseGeneMapGff.cpp
   src/parseSequences.cpp
   src/safeCast.h
+  src/translate.cpp
+  src/translate.h
   )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
@@ -52,6 +55,11 @@ target_include_directories(${PROJECT_NAME}
   "${CMAKE_CURRENT_SOURCE_DIR}/include"
   )
 
+target_include_directories(${PROJECT_NAME} SYSTEM
+  PRIVATE
+  "${CMAKE_SOURCE_DIR}/3rdparty/frozen/include"
+  )
+
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
 
@@ -60,7 +68,6 @@ target_link_libraries(${PROJECT_NAME}
   boost_base::boost_base
   fast-cpp-csv-parser::fast-cpp-csv-parser
   fmt::fmt
-  frozen::frozen
   )
 
 set(NEXTALIGN_BUILD_TESTS ON CACHE BOOL "Build unit tests")
