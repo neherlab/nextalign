@@ -68,7 +68,16 @@ class ErrorGffParserGeneFrameInvalid : public std::runtime_error {
 public:
   explicit ErrorGffParserGeneFrameInvalid(const std::string& geneName, int frame)
       : std::runtime_error(fmt::format(
-          R"(GFF parser: in gene "{:s}": frame "{:d}" is invalid, expected an integer 0, 1, or 2)", geneName, frame)) {}
+          R"(GFF parser: in gene "{:s}": frame "{:d}" is invalid, expected an integer 1, 2, or 3 (NOTE: indices in GFF files are one-based))",
+          geneName, frame)) {}
+};
+
+class ErrorGffParserGeneFrameInconsistent : public std::runtime_error {
+public:
+  explicit ErrorGffParserGeneFrameInconsistent(const std::string& geneName, int frame, int start, int frameExpected)
+      : std::runtime_error(fmt::format(
+          R"(GFF parser: in gene "{:s}": frame "{:d}" is inconsistent: with gene start position ${:d}" it is expected to be in frame "{:d}". (NOTE: indices in GFF files are one-based))",
+          geneName, frame, start, frameExpected)) {}
 };
 
 
@@ -134,8 +143,13 @@ void validateGene(const Gene& gene) {
     throw ErrorGffParserGeneRangeInvalid(gene.geneName, gene.start, gene.end);
   }
 
-  if (gene.frame < 0 || gene.frame > 2) {
+  if (gene.frame < 1 || gene.frame > 3) {
     throw ErrorGffParserGeneFrameInvalid(gene.geneName, gene.frame);
+  }
+
+  const auto frameExpected = (gene.start % 3) + 1;
+  if (gene.frame != frameExpected) {
+    throw ErrorGffParserGeneFrameInconsistent(gene.geneName, gene.frame, gene.start, frameExpected);
   }
 
   if (gene.strand != "+" && gene.strand != "-") {
@@ -182,7 +196,7 @@ GeneMap parseGeneMapGff(std::istream& is) {
     const auto attribMap = parseAttributes(attribute);
     const auto& geneName = getGeneName(attribMap);
 
-    const Gene gene = {
+    Gene gene = {
       .geneName = geneName,
       .start = start,
       .end = end,
@@ -191,6 +205,15 @@ GeneMap parseGeneMapGff(std::istream& is) {
     };
 
     validateGene(gene);
+
+    // to zero-based indices
+    gene.start = gene.start - 1;
+
+    // "-1": to zero-based indices, "+1": to semi-open range (exclude upper bound)
+    gene.end = gene.end - 1 + 1;
+
+    // to zero-based indices
+    gene.frame = gene.frame - 1;
 
     geneMap.emplace(geneName, gene);
   }

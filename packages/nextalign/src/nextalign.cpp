@@ -51,7 +51,7 @@ Alignment alignBetter(const Alignment& alignment, const GeneMap& geneMap, const 
   for (const auto& geneName : options.genes) {
     // TODO: Should probably validate gene names before even running
     const auto& found = geneMap.find(geneName);
-    if (found != geneMap.end()) {
+    if (found == geneMap.end()) {
       throw ErrorGeneMapGeneNotFound(geneName);
     }
 

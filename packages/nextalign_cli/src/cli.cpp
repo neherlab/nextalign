@@ -4,6 +4,8 @@
 #include <nextalign/parseSequences.h>
 #include <nextalign/types.h>
 
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <cxxopts.hpp>
 #include <fstream>
 
@@ -149,6 +151,25 @@ GeneMap parseGeneMapGffFile(const std::string &filename) {
   return geneMap;
 }
 
+std::set<std::string> parseGenes(const CliParams &cliParams) {
+  std::set<std::string> genes;
+  boost::algorithm::split(genes, cliParams.genes, boost::is_any_of(","));
+  return genes;
+}
+
+void validateGenes(const std::set<std::string> &genes, const GeneMap &geneMap) {
+  if (genes.empty()) {
+    fmt::print("Warning: no target genes provided for codon-aware alignment. Alignment quality is degraded.\n");
+  }
+
+  for (const auto &gene : genes) {
+    const auto &it = geneMap.find(gene);
+    if (it == geneMap.end()) {
+      fmt::print(stderr, "Error: gene \"{}\" is not in gene map", gene);
+      std::exit(1);
+    }
+  }
+}
 
 std::string formatCliParams(const CliParams &cliParams) {
   fmt::memory_buffer buf;
@@ -167,17 +188,20 @@ std::string formatRef(const std::string &refName, const std::string &ref) {
   return fmt::format("\nReference:\n  name: \"{:s}\"\n  length: {:d}\n", refName, ref.size());
 }
 
-std::string formatGeneMap(const GeneMap &geneMap) {
-  constexpr const auto TABLE_WIDTH = 64;
+std::string formatGeneMap(const GeneMap &geneMap, const std::set<std::string> &genes) {
+  constexpr const auto TABLE_WIDTH = 75;
 
   fmt::memory_buffer buf;
   fmt::format_to(buf, "\nGene map:\n");
   fmt::format_to(buf, "{:s}\n", std::string(TABLE_WIDTH, '-'));
-  fmt::format_to(buf, "| {:16s} | {:8s} | {:8s} | {:8s} | {:8s} |\n", "Name", "Start", "End", "Strand", "Frame");
+  fmt::format_to(buf, "| {:8s} | {:16s} | {:8s} | {:8s} | {:8s} | {:8s} |\n", "Selected", "   Gene Name", "  Start",
+    "  End", " Strand", "  Frame");
   fmt::format_to(buf, "{:s}\n", std::string(TABLE_WIDTH, '-'));
   for (const auto &[geneName, gene] : geneMap) {
-    fmt::format_to(
-      buf, "| {:16s} | {:8d} | {:8d} | {:8s} | {:8d} |\n", geneName, gene.start, gene.end, gene.strand, gene.frame);
+    const auto selected = std::find(genes.cbegin(), genes.cend(), geneName) != genes.cend();
+    const auto selectedStr = selected ? "  yes" : " ";
+    fmt::format_to(buf, "| {:8s} | {:16s} | {:8d} | {:8d} | {:8s} | {:8d} |\n", selectedStr, geneName, gene.start + 1,
+      gene.end + 1, gene.strand, gene.frame + 1);
   }
   fmt::format_to(buf, "{:s}\n", std::string(TABLE_WIDTH, '-'));
   return fmt::to_string(buf);
@@ -189,13 +213,16 @@ int main(int argc, char *argv[]) {
     const auto cliParams = parseCommandLine(argc, argv);
     fmt::print(stdout, formatCliParams(cliParams));
 
-    const NextalignOptions options = {};
+    NextalignOptions options;
 
     const auto [refName, ref] = parseRefFastaFile(cliParams.reference);
     fmt::print(stdout, formatRef(refName, ref));
 
     const auto geneMap = parseGeneMapGffFile(cliParams.genemap);
-    fmt::print(stdout, formatGeneMap(geneMap));
+    options.genes = parseGenes(cliParams);
+    validateGenes(options.genes, geneMap);
+
+    fmt::print(stdout, formatGeneMap(geneMap, options.genes));
 
     std::ifstream fastaFile(cliParams.sequences);
     const auto fastaStream = makeFastaStream(fastaFile);
