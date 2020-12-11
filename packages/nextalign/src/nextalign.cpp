@@ -21,7 +21,7 @@ public:
 void matchSeeds() {}
 
 std::string_view extractGeneSequence(const std::string_view& seq, const Gene& gene) {
-  return seq.substr(gene.start, gene.end);
+  return seq.substr(gene.start, gene.length);
 }
 
 

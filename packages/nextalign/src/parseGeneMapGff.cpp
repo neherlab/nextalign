@@ -64,6 +64,14 @@ public:
           fmt::format("GFF parser: in gene \"{:s}\": range is invalid: ({:d}, {:d})", geneName, start, end)) {}
 };
 
+class ErrorGffParserGeneLengthInvalid : public std::runtime_error {
+public:
+  explicit ErrorGffParserGeneLengthInvalid(const std::string& geneName, int length, int start, int end)
+      : std::runtime_error(
+          fmt::format("GFF parser: gene \"{:s}\": length {:d} is not divisible by 3. Start: {:d}, end: {:d}", geneName,
+            length, start, end)) {}
+};
+
 class ErrorGffParserGeneFrameInvalid : public std::runtime_error {
 public:
   explicit ErrorGffParserGeneFrameInvalid(const std::string& geneName, int frame)
@@ -143,6 +151,11 @@ void validateGene(const Gene& gene) {
     throw ErrorGffParserGeneRangeInvalid(gene.geneName, gene.start, gene.end);
   }
 
+  const auto length = gene.end - gene.start + 1;
+  if ((length % 3) != 0) {
+    throw ErrorGffParserGeneLengthInvalid(gene.geneName, length, gene.start, gene.end);
+  }
+
   if (gene.frame < 1 || gene.frame > 3) {
     throw ErrorGffParserGeneFrameInvalid(gene.geneName, gene.frame);
   }
@@ -214,6 +227,8 @@ GeneMap parseGeneMapGff(std::istream& is) {
 
     // to zero-based indices
     gene.frame = gene.frame - 1;
+
+    gene.length = gene.end - gene.start;
 
     geneMap.emplace(geneName, gene);
   }

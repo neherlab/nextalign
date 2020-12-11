@@ -189,19 +189,19 @@ std::string formatRef(const std::string &refName, const std::string &ref) {
 }
 
 std::string formatGeneMap(const GeneMap &geneMap, const std::set<std::string> &genes) {
-  constexpr const auto TABLE_WIDTH = 75;
+  constexpr const auto TABLE_WIDTH = 86;
 
   fmt::memory_buffer buf;
   fmt::format_to(buf, "\nGene map:\n");
   fmt::format_to(buf, "{:s}\n", std::string(TABLE_WIDTH, '-'));
-  fmt::format_to(buf, "| {:8s} | {:16s} | {:8s} | {:8s} | {:8s} | {:8s} |\n", "Selected", "   Gene Name", "  Start",
-    "  End", " Strand", "  Frame");
+  fmt::format_to(buf, "| {:8s} | {:16s} | {:8s} | {:8s} | {:8s} | {:8s} | {:8s} |\n", "Selected", "   Gene Name",
+    "  Start", "  End", " Length", "  Frame", " Strand");
   fmt::format_to(buf, "{:s}\n", std::string(TABLE_WIDTH, '-'));
   for (const auto &[geneName, gene] : geneMap) {
     const auto selected = std::find(genes.cbegin(), genes.cend(), geneName) != genes.cend();
     const auto selectedStr = selected ? "  yes" : " ";
-    fmt::format_to(buf, "| {:8s} | {:16s} | {:8d} | {:8d} | {:8s} | {:8d} |\n", selectedStr, geneName, gene.start + 1,
-      gene.end + 1, gene.strand, gene.frame + 1);
+    fmt::format_to(buf, "| {:8s} | {:16s} | {:8d} | {:8d} | {:8d} | {:8d} | {:8s} |\n", selectedStr, geneName,
+      gene.start + 1, gene.end + 1, gene.length, gene.frame + 1, gene.strand);
   }
   fmt::format_to(buf, "{:s}\n", std::string(TABLE_WIDTH, '-'));
   return fmt::to_string(buf);

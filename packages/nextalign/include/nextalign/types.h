@@ -14,6 +14,7 @@ struct Gene {
   int end;
   std::string strand;
   int frame;
+  int length;
 };
 
 
