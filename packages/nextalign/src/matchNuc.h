@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "types.internal.h"
+
 enum IupacNucCodes {
   U [[maybe_unused]] = 0,
   T [[maybe_unused]] = 1,
@@ -21,7 +23,5 @@ enum IupacNucCodes {
   N [[maybe_unused]] = 15,
   SIZE = 16,
 };
-
-using ScoreLookupFunction = std::function<int(char, char)>;
 
 int lookupNucMatchScore(char x, char y);

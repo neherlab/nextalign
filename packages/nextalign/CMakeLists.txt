@@ -31,6 +31,8 @@ add_library(${PROJECT_NAME} STATIC
   src/decode.cpp
   src/decode.h
   src/geneUtils.cpp
+  src/matchAa.cpp
+  src/matchAa.h
   src/matchNuc.cpp
   src/matchNuc.h
   src/nextalign.cpp
@@ -40,6 +42,7 @@ add_library(${PROJECT_NAME} STATIC
   src/safeCast.h
   src/translate.cpp
   src/translate.h
+  src/types.internal.h
   src/utils/config.h
   src/utils/contract.h
   src/utils/debugbreak.h
