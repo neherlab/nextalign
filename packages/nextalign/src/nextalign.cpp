@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "alignCodon.h"
 #include "alignPairwise.h"
 #include "helpers.h"
 #include "safeCast.h"
@@ -25,17 +26,7 @@ std::string_view extractGeneSequence(const std::string_view& seq, const Gene& ge
 }
 
 
-struct CodonAlignmentResult {
-  // SOMETHING
-};
-
-
-CodonAlignmentResult codonAlign(const std::string& peptide) {
-  NA_UNUSED(peptide);
-  return {};
-}
-
-Alignment reimplant(const Alignment& alignment, CodonAlignmentResult codonAlignmentResult) {
+Alignment reimplant(const Alignment& alignment, const CodonAlignmentResult& codonAlignmentResult) {
   NA_UNUSED(alignment.ref);
   NA_UNUSED(alignment.query);
   NA_UNUSED(alignment.alignmentScore);
@@ -57,10 +48,10 @@ Alignment alignBetter(const Alignment& alignment, const GeneMap& geneMap, const 
 
     const auto& gene = found->second;
 
-    const auto geneSeq = extractGeneSequence(alignment.ref, gene);// TODO: ref or query or both?
-    const auto peptide = translate(geneSeq);
+    const auto refPeptide = translate(extractGeneSequence(alignment.ref, gene));
+    const auto queryPeptide = translate(extractGeneSequence(alignment.query, gene));
 
-    const CodonAlignmentResult codonAlignmentResult = codonAlign(peptide);
+    const CodonAlignmentResult codonAlignmentResult = alignCodon(refPeptide, queryPeptide);
 
     alignmentImproved = reimplant(alignmentImproved, codonAlignmentResult);
   }

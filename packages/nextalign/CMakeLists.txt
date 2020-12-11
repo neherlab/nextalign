@@ -24,6 +24,8 @@ add_library(${PROJECT_NAME} STATIC
   include/nextalign/parseGeneMapGff.h
   include/nextalign/parseSequences.h
   include/nextalign/types.h
+  src/alignCodon.cpp
+  src/alignCodon.h
   src/alignPairwise.cpp
   src/alignPairwise.h
   src/decode.cpp
