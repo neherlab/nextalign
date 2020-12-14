@@ -10,8 +10,10 @@ find_package(fmt 7.1.0 REQUIRED)
 add_executable(${PROJECT_NAME}
   alignPairwise.test.cpp
   data/sampleGeneMap.h
+  decode.test.cpp
   parseGeneMapGff.test.cpp
   parseSequences.test.cpp
+  translate.test.cpp
   )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <translate.h>
-
 #include <string_view>
+
+#include "translate.h"
 
 constexpr const Aminoacid AMINOACID_UNKNOWN = 'X';
 constexpr const Aminoacid AMINOACID_GAP = '-';

@@ -4,6 +4,8 @@
 #include <frozen/string.h>
 #include <translate.h>
 
+#include "utils/contract.h"
+
 
 static constexpr const frozen::map<frozen::string, char, 65> codonTable = {
   {"---", AMINOACID_GAP},
@@ -74,6 +76,8 @@ static constexpr const frozen::map<frozen::string, char, 65> codonTable = {
 };
 
 Aminoacid decode(const std::string_view& codon) {
+  invariant_equal(3, codon.size());
+
   const auto it = codonTable.find(codon);
   if (it != codonTable.end()) {
     return it->second;

@@ -1,12 +1,11 @@
 #include "translate.h"
 
-#include <utils/contract.h>
-
 #include <string>
 #include <string_view>
 
 #include "decode.h"
 #include "safeCast.h"
+#include "utils/contract.h"
 
 
 Peptide translate(const std::string_view& seq) {
@@ -19,7 +18,7 @@ Peptide translate(const std::string_view& seq) {
   Peptide peptide(peptideLength, AMINOACID_GAP);
   for (int i_aa = 0; i_aa < peptideLength; ++i_aa) {
     const auto i_nuc = i_aa * 3;
-    const auto codon = seq.substr(i_nuc, i_nuc + 3);
+    const auto codon = seq.substr(i_nuc, 3);
     const auto aminoacid = decode(codon);
 
     invariant_less(i_aa, peptide.size());
