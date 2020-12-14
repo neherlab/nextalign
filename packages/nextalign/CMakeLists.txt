@@ -48,6 +48,7 @@ add_library(${PROJECT_NAME} STATIC
   src/utils/debugbreak.h
   src/utils/ieee754_comparison.h
   src/utils/macro_overload.h
+  src/utils/vector2d.h
   )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)

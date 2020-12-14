@@ -10,6 +10,7 @@
 
 #include "matchNuc.h"
 #include "safeCast.h"
+#include "utils/vector2d.h"
 
 namespace details {
   int round(double x) {
@@ -151,12 +152,8 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
 
   // allocate a matrix to record the matches
   const int rowLength = safe_cast<int>(ref.size() + 1);
-  std::vector<std::vector<int>> scores;// TODO: Avoid 2D vectors, use contiguous storage instead
-  std::vector<std::vector<int>> paths;
-  for (int shift = -bandWidth; shift < bandWidth + 1; ++shift) {
-    scores.emplace_back(rowLength);
-    paths.emplace_back(rowLength);
-  }
+  vector2d<int> scores(bandWidth, rowLength);// TODO: Avoid 2D vectors, use contiguous storage instead
+  vector2d<int> paths(bandWidth, rowLength);
 
   // fill scores with alignment scores
   // The inner index scores[][ri] is the index of the reference sequence
@@ -213,29 +210,29 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
         tmpMatch = scoreLookupFunction(query[qPos], ref[ri]) > 0 ? match : misMatch;
 
         // if the previous move included a gap (this for the match case, so we are coming from [si][ri]), add gap-close cost
-        if (paths[si][ri] == 2 || paths[si][ri] == 3) {
+        if (paths(si, ri) == 2 || paths(si, ri) == 3) {
           tmpMatch += gapClose;
         }
         // determine whether the previous move was a reference or query gap
-        rGapOpen = si < 2 * bandWidth ? (paths[si + 1][ri + 1] == 2 ? 0 : gapOpen) : 0;
-        qGapOpen = si > 0 ? (paths[si - 1][ri] == 3 ? 0 : gapOpen) : 0;
+        rGapOpen = si < 2 * bandWidth ? (paths(si + 1, ri + 1) == 2 ? 0 : gapOpen) : 0;
+        qGapOpen = si > 0 ? (paths(si - 1, ri) == 3 ? 0 : gapOpen) : 0;
 
         score = 0;
         origin = 0;
 
-        tmpScore = scores[si][ri] + tmpMatch;
+        tmpScore = scores(si, ri) + tmpMatch;
         if (tmpScore>score) {
           score = tmpScore;
           origin = 1;
         }
 
-        tmpScore = si < 2 * bandWidth ? scores[si + 1][ri + 1] + gapExtend + rGapOpen : gapExtend;
+        tmpScore = si < 2 * bandWidth ? scores(si + 1, ri + 1) + gapExtend + rGapOpen : gapExtend;
         if (tmpScore>score) {
           score = tmpScore;
           origin = 2;
         }
 
-        tmpScore = si > 0 ? scores[si - 1][ri] + gapExtend + qGapOpen : gapExtend;
+        tmpScore = si > 0 ? scores(si - 1, ri) + gapExtend + qGapOpen : gapExtend;
         if (tmpScore>score) {
           score = tmpScore;
           origin = 3;
@@ -245,17 +242,17 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
         score = END_OF_SEQUENCE;
         origin = END_OF_SEQUENCE;
       }
-      paths[si][ri + 1] = origin;
-      scores[si][ri + 1] = score;
+      paths(si, ri + 1) = origin;
+      scores(si, ri + 1) = score;
     }
   }
 
   return {.scores = scores, .paths = paths};
 }
 
-Alignment backTrace(const std::string& query, const std::string& ref, const std::vector<std::vector<int>>& scores,
-  const std::vector<std::vector<int>>& paths, int meanShift) {
-  const int rowLength = scores[0].size();
+Alignment backTrace(const std::string& query, const std::string& ref, const vector2d<int>& scores,
+  const vector2d<int>& paths, int meanShift) {
+  const int rowLength = scores.num_cols();
   const int scoresSize = safe_cast<int>(scores.size());
   const int querySize = safe_cast<int>(query.size());
   const int refSize = safe_cast<int>(ref.size());
@@ -288,7 +285,7 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
   int bestScore = 0;
   for (int i = 0; i < scoresSize; i++) {
     lastIndexByShift[i] = rowLength - 1 < querySize + indexToShift(i) ? rowLength - 1 : query.size() + indexToShift(i);
-    lastScoreByShift[i] = scores[i][lastIndexByShift[i]];
+    lastScoreByShift[i] = scores(i, lastIndexByShift[i]);
     if (lastScoreByShift[i] > bestScore) {
       bestScore = lastScoreByShift[i];
       si = i;
@@ -317,7 +314,7 @@ Alignment backTrace(const std::string& query, const std::string& ref, const std:
   // do backtrace for aligned region
   while (rPos > 0 && qPos > 0) {
     // tmpMatch = ref[rPos] === query[qPos] || query[qPos] === "N" ? match : misMatch;
-    origin = paths[si][rPos + 1];
+    origin = paths(si, rPos + 1);
     if (origin == 1) {
       // match -- decrement both strands and add match to alignment
       aln_query += query[qPos];
