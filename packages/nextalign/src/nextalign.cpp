@@ -6,6 +6,7 @@
 
 #include "alignCodon.h"
 #include "alignPairwise.h"
+#include "extractGene.h"
 #include "helpers.h"
 #include "mapCoordinates.h"
 #include "safeCast.h"
@@ -21,10 +22,6 @@ public:
 };
 
 void matchSeeds() {}
-
-std::string_view extractGeneSequence(const std::string_view& seq, const Gene& gene) {
-  return seq.substr(gene.start, gene.length);
-}
 
 
 Alignment reimplant(const Alignment& alignment, const CodonAlignmentResult& codonAlignmentResult) {
@@ -53,8 +50,8 @@ Alignment alignBetter(const Alignment& alignment, const GeneMap& geneMap, const 
 
     const auto& gene = found->second;
 
-    const auto refPeptide = translate(extractGeneSequence(ref, gene));
-    const auto queryPeptide = translate(extractGeneSequence(query, gene));
+    const auto refPeptide = translate(extractGeneRef(ref, gene));
+    const auto queryPeptide = translate(extractGeneQuery(query, gene, coordMap));
 
     const CodonAlignmentResult codonAlignmentResult = alignCodon(refPeptide, queryPeptide);
 

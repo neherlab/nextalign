@@ -30,6 +30,8 @@ add_library(${PROJECT_NAME} STATIC
   src/alignPairwise.h
   src/decode.cpp
   src/decode.h
+  src/extractGene.cpp
+  src/extractGene.h
   src/geneUtils.cpp
   src/mapCoordinates.cpp
   src/mapCoordinates.h
