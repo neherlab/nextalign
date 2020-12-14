@@ -11,6 +11,7 @@ add_executable(${PROJECT_NAME}
   alignPairwise.test.cpp
   data/sampleGeneMap.h
   decode.test.cpp
+  mapCoordinates.test.cpp
   parseGeneMapGff.test.cpp
   parseSequences.test.cpp
   translate.test.cpp

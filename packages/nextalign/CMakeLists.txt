@@ -31,6 +31,8 @@ add_library(${PROJECT_NAME} STATIC
   src/decode.cpp
   src/decode.h
   src/geneUtils.cpp
+  src/mapCoordinates.cpp
+  src/mapCoordinates.h
   src/matchAa.cpp
   src/matchAa.h
   src/matchNuc.cpp

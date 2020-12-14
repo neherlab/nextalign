@@ -7,6 +7,7 @@
 #include "alignCodon.h"
 #include "alignPairwise.h"
 #include "helpers.h"
+#include "mapCoordinates.h"
 #include "safeCast.h"
 #include "translate.h"
 
@@ -38,6 +39,10 @@ Alignment reimplant(const Alignment& alignment, const CodonAlignmentResult& codo
 Alignment alignBetter(const Alignment& alignment, const GeneMap& geneMap, const NextalignOptions& options) {
   Alignment alignmentImproved = alignment;
 
+  const auto& ref = alignment.ref;
+  const auto& query = alignment.query;
+  const auto coordMap = mapCoordinates(ref);
+
   // For each gene in the requested subset
   for (const auto& geneName : options.genes) {
     // TODO: Should probably validate gene names before even running
@@ -48,8 +53,8 @@ Alignment alignBetter(const Alignment& alignment, const GeneMap& geneMap, const 
 
     const auto& gene = found->second;
 
-    const auto refPeptide = translate(extractGeneSequence(alignment.ref, gene));
-    const auto queryPeptide = translate(extractGeneSequence(alignment.query, gene));
+    const auto refPeptide = translate(extractGeneSequence(ref, gene));
+    const auto queryPeptide = translate(extractGeneSequence(query, gene));
 
     const CodonAlignmentResult codonAlignmentResult = alignCodon(refPeptide, queryPeptide);
 
