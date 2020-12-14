@@ -15,6 +15,7 @@ add_executable(${PROJECT_NAME}
   mapCoordinates.test.cpp
   parseGeneMapGff.test.cpp
   parseSequences.test.cpp
+  removeGaps.test.cpp
   translate.test.cpp
   )
 

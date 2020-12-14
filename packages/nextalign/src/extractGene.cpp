@@ -6,17 +6,18 @@
 #include <vector>
 
 #include "alignPairwise.h"
+#include "removeGaps.h"
 
-std::string_view extractGeneRef(const std::string_view& ref, const Gene& gene) {
+std::string extractGeneRef(const std::string_view& ref, const Gene& gene) {
   precondition_less(gene.length, ref.size());
   precondition_less_equal(gene.length, ref.size());
-  return ref.substr(gene.start, gene.length);
+  return removeGaps(ref.substr(gene.start, gene.length));
 }
 
 /**
  * Extracts gene from the query sequence according to coordinate map relative to the reference sequence
  */
-std::string_view extractGeneQuery(const std::string_view& query, const Gene& gene, const std::vector<int>& coordMap) {
+std::string extractGeneQuery(const std::string_view& query, const Gene& gene, const std::vector<int>& coordMap) {
   precondition_less(gene.start, coordMap.size());
   precondition_less(gene.end, coordMap.size());
 
@@ -32,5 +33,5 @@ std::string_view extractGeneQuery(const std::string_view& query, const Gene& gen
   // Length of the gene should not exceed the length of the sequence
   invariant_less_equal(length, query.size());
 
-  return query.substr(start, length);
+  return removeGaps(query.substr(start, length));
 }
