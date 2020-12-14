@@ -25,6 +25,9 @@ dev-clang-analyzer:
 prod:
 	@CMAKE_BUILD_TYPE=Release scripts/build_locally.sh
 
+profile:
+	@CMAKE_BUILD_TYPE=RelWithDebInfo scripts/build_locally.sh
+
 benchmarks:
 	@$(MAKE) --no-print-directory benchmarks-impl
 

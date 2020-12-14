@@ -13,5 +13,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -pg")
+
 add_subdirectory(packages/nextalign)
 add_subdirectory(packages/nextalign_cli)
