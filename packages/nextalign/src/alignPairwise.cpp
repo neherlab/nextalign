@@ -151,9 +151,12 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
     };
 
   // allocate a matrix to record the matches
-  const int rowLength = safe_cast<int>(ref.size() + 1);
-  vector2d<int> scores(bandWidth, rowLength);// TODO: Avoid 2D vectors, use contiguous storage instead
-  vector2d<int> paths(bandWidth, rowLength);
+  const int querySize = safe_cast<int>(query.size());
+  const int refSize = safe_cast<int>(ref.size());
+  const int n_rows = bandWidth * 2 + 1;
+  const int n_cols = refSize + 1;
+  vector2d<int> scores(n_rows, n_cols);// TODO: Avoid 2D vectors, use contiguous storage instead
+  vector2d<int> paths(n_rows, n_cols);
 
   // fill scores with alignment scores
   // The inner index scores[][ri] is the index of the reference sequence
@@ -177,8 +180,6 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
   // TODO: Try to narrow the scope of these variables. Do all of these variables
   //  need to be forward-declared an uninitialized?
   const int END_OF_SEQUENCE = -1;
-  const int querySize = safe_cast<int>(query.size());
-  const int refSize = safe_cast<int>(ref.size());
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cppcoreguidelines-init-variables"
@@ -253,7 +254,7 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
 Alignment backTrace(const std::string& query, const std::string& ref, const vector2d<int>& scores,
   const vector2d<int>& paths, int meanShift) {
   const int rowLength = scores.num_cols();
-  const int scoresSize = safe_cast<int>(scores.size());
+  const int scoresSize = safe_cast<int>(scores.num_rows());
   const int querySize = safe_cast<int>(query.size());
   const int refSize = safe_cast<int>(ref.size());
   const int bandWidth = (scoresSize - 1) / 2;
@@ -278,8 +279,8 @@ Alignment backTrace(const std::string& query, const std::string& ref, const vect
 
   std::vector<int> lastScoreByShift;
   std::vector<int> lastIndexByShift;
-  lastScoreByShift.resize(scores.size());
-  lastIndexByShift.resize(scores.size());
+  lastScoreByShift.resize(scores.num_rows());
+  lastIndexByShift.resize(scores.num_rows());
 
   int si = 0;
   int bestScore = 0;

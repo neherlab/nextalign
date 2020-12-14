@@ -87,10 +87,6 @@ public:
     return m_data.cend();
   }
 
-  inline size_t size() const {
-    return m_data.size();
-  }
-
   void resize(int rows, int cols) {
     m_data.resize(rows * cols);
     m_rows = rows;
