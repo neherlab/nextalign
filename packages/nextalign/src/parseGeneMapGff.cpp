@@ -8,6 +8,7 @@
 #include <istream>
 #include <string>
 
+#include "alignPairwise.h"
 #include "csvParser.h"
 
 
@@ -210,26 +211,27 @@ GeneMap parseGeneMapGff(std::istream& is) {
     const auto& geneName = getGeneName(attribMap);
 
     Gene gene = {
-      .geneName = geneName,
-      .start = start,
-      .end = end,
-      .strand = strand,
-      .frame = frame,
+      .geneName = geneName,     //
+      .start = start,           // 1-based
+      .end = end,               // 1-based, open (upper bound included)
+      .strand = strand,         //
+      .frame = frame,           // // 1-based
+      .length = end - start + 1,// This is how you find length of a 1-based, open range
     };
 
     validateGene(gene);
 
-    // to zero-based indices
+    // "-1": convert to zero-based indices
     gene.start = gene.start - 1;
 
-    // "-1": to zero-based indices, "+1": to semi-open range (exclude upper bound)
+    // "-1": convert to zero-based indices
+    // "+1": convert to semi-open range (exclude upper bound)
     gene.end = gene.end - 1 + 1;
 
-    // to zero-based indices
+    // "-1": convert to zero-based indices
     gene.frame = gene.frame - 1;
 
-    gene.length = gene.end - gene.start;
-
+    postcondition_equal(gene.length, gene.end - gene.start);
     geneMap.emplace(geneName, gene);
   }
 
