@@ -9,6 +9,7 @@
 #include "extractGene.h"
 #include "helpers.h"
 #include "mapCoordinates.h"
+#include "reimplant.h"
 #include "safeCast.h"
 #include "translate.h"
 
@@ -22,15 +23,6 @@ public:
 };
 
 void matchSeeds() {}
-
-
-Alignment reimplant(const Alignment& alignment, const CodonAlignmentResult& codonAlignmentResult) {
-  NA_UNUSED(alignment.ref);
-  NA_UNUSED(alignment.query);
-  NA_UNUSED(alignment.alignmentScore);
-  NA_UNUSED(codonAlignmentResult);
-  return alignment;
-}
 
 
 Alignment alignBetter(const Alignment& alignment, const GeneMap& geneMap, const NextalignOptions& options) {
@@ -59,7 +51,7 @@ Alignment alignBetter(const Alignment& alignment, const GeneMap& geneMap, const 
 
     const CodonAlignmentResult codonAlignmentResult = alignCodon(refPeptide, queryPeptide);
 
-    alignmentImproved = reimplant(alignmentImproved, codonAlignmentResult);
+    reimplant(alignmentImproved, codonAlignmentResult, gene);
   }
 
   return alignmentImproved;

@@ -43,6 +43,9 @@ add_library(${PROJECT_NAME} STATIC
   src/parseGb.cpp
   src/parseGeneMapGff.cpp
   src/parseSequences.cpp
+  src/reimplant.cpp
+  src/reimplant.h
+  src/removeGaps.h
   src/safeCast.h
   src/translate.cpp
   src/translate.h
@@ -53,7 +56,6 @@ add_library(${PROJECT_NAME} STATIC
   src/utils/ieee754_comparison.h
   src/utils/macro_overload.h
   src/utils/vector2d.h
-  src/removeGaps.h
   )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)

@@ -3,8 +3,8 @@
 #include <string>
 
 struct CodonAlignmentResult {
-  std::string query;
-  std::string ref;
+  std::string queryPeptide;
+  std::string refPeptide;
   int alignmentScore;
 };
 

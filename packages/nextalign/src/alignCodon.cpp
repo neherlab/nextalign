@@ -8,8 +8,8 @@
 CodonAlignmentResult alignCodon(const std::string& queryPeptide, const std::string& refPeptide) {
   const auto alignment = alignPairwise(queryPeptide, refPeptide, &lookupAaMatchScore, 100);
   return {
-    .query = alignment.query,
-    .ref = alignment.ref,
+    .queryPeptide = alignment.query,
+    .refPeptide = alignment.ref,
     .alignmentScore = alignment.alignmentScore,
   };
 }
