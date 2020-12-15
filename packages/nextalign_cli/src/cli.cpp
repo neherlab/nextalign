@@ -231,6 +231,11 @@ int main(int argc, char *argv[]) {
       std::exit(1);
     }
 
+    std::ofstream outputFastaFile(cliParams.output);
+    if (!outputFastaFile.good()) {
+      fmt::print(stderr, "Error: unable to write \"{:s}\"\n", cliParams.output);
+      std::exit(1);
+    }
 
     constexpr const auto TABLE_WIDTH = 71;
     fmt::print(stdout, "\nSequences:\n");
@@ -239,12 +244,13 @@ int main(int argc, char *argv[]) {
     fmt::print(stdout, "{:s}\n", std::string(TABLE_WIDTH, '-'));
     int i = 0;
     while (fastaStream->good()) {
-      const auto entry = fastaStream->next();
-      fmt::print(stdout, "| {:5d} | {:<40s} | ", i, entry.first);
+      const auto &[seqName, seq] = fastaStream->next();
+      fmt::print(stdout, "| {:5d} | {:<40s} | ", i, seqName);
 
       try {
-        const auto &alignment = nextalign(entry.second, ref, geneMap, options);
+        const auto &alignment = nextalign(seq, ref, geneMap, options);
         fmt::print(stdout, "{:>16d} |\n", alignment.alignmentScore);
+        outputFastaFile << fmt::format(">{:s}\n{:s}\n", seqName, alignment.query);
       } catch (const std::exception &e) {
         fmt::print(stdout, "{:>16s} |\n", e.what());
       }

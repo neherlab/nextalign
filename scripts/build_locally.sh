@@ -139,9 +139,14 @@ pushd "${BUILD_DIR}" > /dev/null
       ${GTPP} ${GDB} ./nextalign_tests --gtest_output=xml || cd .
   popd > /dev/null
 
+  mkdir -p "${PROJECT_ROOT_DIR}/tmp"
   print 27 "Run CLI";
-  pushd "${BUILD_DIR}/packages/${PROJECT_NAME}_cli/" > /dev/null
-      ${GDB} ./nextalign_cli ${DEV_CLI_OPTIONS} || cd .
+
+  CLI_DIR="${BUILD_DIR}/packages/${PROJECT_NAME}_cli"
+  CLI_EXE="nextalign_cli"
+  echo "Running \"${BUILD_DIR}/packages/${PROJECT_NAME}_cli/${CLI_EXE} ${DEV_CLI_OPTIONS}\""
+  pushd "${CLI_DIR}" > /dev/null
+      ${GDB} "${CLI_EXE}" ${DEV_CLI_OPTIONS} || cd .
   popd > /dev/null
 
   print 22 "Done";
