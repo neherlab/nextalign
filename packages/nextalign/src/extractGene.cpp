@@ -9,12 +9,6 @@
 #include "removeGaps.h"
 #include "safeCast.h"
 
-void resizeToMultipleOf3InPlace(std::string& seq) {
-  const auto length = safe_cast<int>(seq.size());
-  const auto excess = length % 3;
-  seq.resize(length - excess);
-}
-
 
 std::string_view extractGeneRef(const std::string_view& ref, const Gene& gene) {
   precondition_less(gene.length, ref.size());
