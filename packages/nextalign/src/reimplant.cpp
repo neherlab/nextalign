@@ -27,13 +27,16 @@ Alignment reimplant(Alignment& alignmentImproved, const CodonAlignmentResult& co
 
   for (int i_aa = 0; i_aa < queryPeptideLength; ++i_aa) {
     invariant_less(i_aa, queryPeptideLength);
-    const auto& aa = queryPeptide[i_aa];
+    const auto& aa_query = queryPeptide[i_aa];
+
+    invariant_less(i_aa, refPeptideLength);
+    const auto& aa_ref = refPeptide[i_aa];
 
     const int i_nuc = gene.start + i_aa * 3;
     invariant_less(i_nuc, queryLength);
     const auto hint = std::string_view{query}.substr(i_nuc, 3);
 
-    const auto codon = encode(aa, hint);
+    const auto codon = encode(aa_query, hint);
   }
 
 
