@@ -242,8 +242,12 @@ int main(int argc, char *argv[]) {
       const auto entry = fastaStream->next();
       fmt::print(stdout, "| {:5d} | {:<40s} | ", i, entry.first);
 
-      const auto &alignment = nextalign(entry.second, ref, geneMap, options);
-      fmt::print(stdout, "{:>16d} |\n", alignment.alignmentScore);
+      try {
+        const auto &alignment = nextalign(entry.second, ref, geneMap, options);
+        fmt::print(stdout, "{:>16d} |\n", alignment.alignmentScore);
+      } catch (const std::exception &e) {
+        fmt::print(stdout, "{:>16s} |\n", e.what());
+      }
 
       ++i;
     }
