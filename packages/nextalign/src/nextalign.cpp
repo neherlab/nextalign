@@ -25,9 +25,17 @@ public:
 void matchSeeds() {}
 
 
-Alignment alignBetter(
+AlignmentImproved alignBetter(
   const std::string& ref, const Alignment& alignment, const GeneMap& geneMap, const NextalignOptions& options) {
-  Alignment alignmentImproved = alignment;
+  AlignmentImproved alignmentImproved = {
+    // base Alignment
+    {
+      .query = alignment.query,
+      .ref = alignment.ref,
+      .alignmentScore = alignment.alignmentScore,
+    },
+    {}// insertions
+  };
 
   const auto coordMap = mapCoordinates(alignment.ref);
 
@@ -53,16 +61,18 @@ Alignment alignBetter(
 
     const CodonAlignmentResult codonAlignmentResult = alignCodon(refPeptide, queryPeptide);
 
+    // TODO: how to combine scores?
+    alignmentImproved.alignmentScore += codonAlignmentResult.alignmentScore;
+
     reimplant(alignmentImproved, codonAlignmentResult, gene);
   }
 
   return alignmentImproved;
 }
 
-Alignment nextalign(
+AlignmentImproved nextalign(
   const std::string& query, const std::string& ref, const GeneMap& geneMap, const NextalignOptions& options) {
   matchSeeds();// TODO: mmmm..?
   const auto alignment = alignPairwise(query, ref, &lookupNucMatchScore, 100);
-  auto alignmentImproved = alignBetter(ref, alignment, geneMap, options);
-  return alignmentImproved;
+  return alignBetter(ref, alignment, geneMap, options);
 }

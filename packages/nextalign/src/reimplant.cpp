@@ -13,7 +13,8 @@
 #include "utils/contract.h"
 
 
-Alignment reimplant(Alignment& alignmentImproved, const CodonAlignmentResult& codonAlignmentResult, const Gene& gene) {
+AlignmentImproved reimplant(
+  AlignmentImproved& alignmentImproved, const CodonAlignmentResult& codonAlignmentResult, const Gene& gene) {
   auto& query = alignmentImproved.query;
   const auto queryLength = safe_cast<int>(query.size());
 
@@ -34,6 +35,12 @@ Alignment reimplant(Alignment& alignmentImproved, const CodonAlignmentResult& co
       query[i_nuc + 0] = '-';
       query[i_nuc + 1] = '-';
       query[i_nuc + 2] = '-';
+    }
+
+    const auto& aa_ref = refPeptide[i_aa];
+    if (aa_ref == AMINOACID_GAP) {
+      const auto& seq = query.substr(i_nuc, 3);
+      alignmentImproved.insertions.emplace_back(Insertion{.begin = i_nuc, .end = i_nuc + 3, .seq = seq});
     }
   }
 

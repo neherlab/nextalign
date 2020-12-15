@@ -1,7 +1,14 @@
 #pragma once
 
-struct Alignment;
+
+#include <nextalign/types.h>
+
+#include "alignPairwise.h"
+
+struct AlignmentImproved;
 struct CodonAlignmentResult;
 struct Gene;
 
-Alignment reimplant(Alignment& alignmentImproved, const CodonAlignmentResult& codonAlignmentResult, const Gene& gene);
+
+AlignmentImproved reimplant(
+  AlignmentImproved& alignmentImproved, const CodonAlignmentResult& codonAlignmentResult, const Gene& gene);
