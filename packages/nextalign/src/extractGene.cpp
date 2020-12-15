@@ -44,6 +44,11 @@ std::string extractGeneQuery(const std::string_view& query, const Gene& gene, co
   const auto unstripped = query.substr(start, length);
   auto stripped = removeGaps(unstripped);
 
+  const auto numGaps = safe_cast<int>(unstripped.size() - stripped.size());
+  if (numGaps % 3 != 0) {
+    throw ErrorExtractGeneLengthInvalid(gene.geneName, numGaps);
+  }
+
   invariant_less_equal(stripped.size(), query.size());// Length of the gene should not exceed the length of the sequence
   invariant_divisible_by(stripped.size(), 3);         // Gene length should be a multiple of 3
   return stripped;
