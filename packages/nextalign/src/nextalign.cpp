@@ -51,8 +51,11 @@ Alignment alignBetter(const Alignment& alignment, const GeneMap& geneMap, const 
 
     const auto& gene = found->second;
 
-    const auto refPeptide = translate(extractGeneRef(ref, gene));
-    const auto queryPeptide = translate(extractGeneQuery(query, gene, coordMap));
+    const auto& refGene = extractGeneRef(ref, gene);
+    const auto refPeptide = translate(refGene);
+
+    const auto& queryGene = extractGeneQuery(query, gene, coordMap);
+    const auto queryPeptide = translate(queryGene);
 
     const CodonAlignmentResult codonAlignmentResult = alignCodon(refPeptide, queryPeptide);
 
