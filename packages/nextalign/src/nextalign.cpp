@@ -38,7 +38,8 @@ Alignment alignBetter(const Alignment& alignment, const GeneMap& geneMap, const 
 
   const auto& ref = alignment.ref;
   const auto& query = alignment.query;
-  const auto coordMap = mapCoordinates(ref);
+  //  const auto coordMap = mapCoordinates(ref);
+  const auto coordMap = std::vector<int>{};
 
   // For each gene in the requested subset
   for (const auto& geneName : options.genes) {
