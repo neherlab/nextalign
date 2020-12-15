@@ -173,6 +173,8 @@ struct op_divisible_by {
 
 #define print_error(filePath, line, functionName, msgtype, errMsg)                                             \
   do {                                                                                                         \
+    fflush(stdout);                                                                                            \
+    fflush(stderr);                                                                                            \
     fprintf(stderr, "%s:%i:\nin function \"%s\":\n%s: %s\n\n", filePath, line, functionName, msgtype, errMsg); \
     fflush(stderr);                                                                                            \
   } while (0);
