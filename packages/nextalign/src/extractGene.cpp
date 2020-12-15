@@ -7,6 +7,7 @@
 
 #include "alignPairwise.h"
 #include "removeGaps.h"
+#include "safeCast.h"
 
 std::string extractGeneRef(const std::string_view& ref, const Gene& gene) {
   precondition_less(gene.length, ref.size());
@@ -34,8 +35,22 @@ std::string extractGeneQuery(const std::string_view& query, const Gene& gene, co
   invariant_less(start, query.size());
   invariant_less(end, query.size());
 
-  // Length of the gene should not exceed the length of the sequence
-  invariant_less_equal(length, query.size());
 
-  return removeGaps(query.substr(start, length));
+  const auto unstripped = query.substr(start, length);
+  auto stripped = removeGaps(unstripped);
+
+  // HACK: adjust gene length to be a multiple of 3
+  const auto strippedLength = safe_cast<int>(stripped.size());
+  const auto excess = strippedLength % 3;
+  if (excess != 0) {
+    stripped = stripped.substr(0, strippedLength - excess);
+  }
+
+  // Length of the gene should not exceed the length of the sequence
+  invariant_less_equal(stripped.size(), query.size());
+
+  // Gene length should be a multiple of 3
+  invariant_divisible_by(stripped.size(), 3);
+
+  return stripped;
 }
