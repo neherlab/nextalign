@@ -23,7 +23,7 @@ void AlignPairwiseAverage(benchmark::State& st) {
   Alignment aln;
   st.SetComplexityN(totalNucs);
 
-  for (const auto& _ : st) {
+  for (const auto _ : st) {
     for (int i = 0; i < n; ++i) {
       const auto& [seqName, query] = sequences[i];
       benchmark::DoNotOptimize(aln = alignPairwise(query, reference, &lookupNucMatchScore, 100));
@@ -51,7 +51,7 @@ void AlignPairwiseVariation(benchmark::State& st) {
   st.SetLabel(seqName);
   st.SetComplexityN(query.size());
 
-  for (const auto& _ : st) {
+  for (const auto _ : st) {
     benchmark::DoNotOptimize(aln = alignPairwise(query, reference, &lookupNucMatchScore, 100));
   }
 

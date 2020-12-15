@@ -38,7 +38,7 @@ BENCHMARK_DEFINE_F(ForwardTraceBench, Average)(benchmark::State& st) {
   ForwardTrace forwardTrace;
   st.SetComplexityN(totalNucs);
 
-  for (const auto& _ : st) {
+  for (const auto _ : st) {
     for (int i = 0; i < n; ++i) {
       const auto& [seqName, query] = sequences[i];
       const auto& seedAlignment = seedAlignments[i];
@@ -70,7 +70,7 @@ BENCHMARK_DEFINE_F(ForwardTraceBench, Variation)(benchmark::State& st) {
   st.SetLabel(seqName);
   st.SetComplexityN(query.size());
 
-  for (const auto& _ : st) {
+  for (const auto _ : st) {
     benchmark::DoNotOptimize(
       forwardTrace = scoreMatrix(query, reference, &lookupNucMatchScore, seed.bandWidth, seed.meanShift));
   }

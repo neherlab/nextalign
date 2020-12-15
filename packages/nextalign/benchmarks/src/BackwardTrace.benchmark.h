@@ -40,7 +40,7 @@ BENCHMARK_DEFINE_F(BackwardTraceBench, Average)(benchmark::State& st) {
   Alignment aln;
   st.SetComplexityN(totalNucs);
 
-  for (const auto& _ : st) {
+  for (const auto _ : st) {
     for (int i = 0; i < n; ++i) {
       const auto& [seqName, query] = sequences[i];
       const auto& seed = seedAlignments[i];
@@ -90,7 +90,7 @@ BENCHMARK_DEFINE_F(BackwardTraceBench2, Variation)(benchmark::State& st) {
   st.SetLabel(seqName);
   st.SetComplexityN(query.size());
 
-  for (const auto& _ : st) {
+  for (const auto _ : st) {
     benchmark::DoNotOptimize(aln = backTrace(query, ref, forwardTrace.scores, forwardTrace.paths, seed.meanShift));
   }
 
