@@ -9,10 +9,30 @@
 #include "removeGaps.h"
 #include "safeCast.h"
 
+void resizeToMultipleOf3InPlace(std::string& seq) {
+  const auto length = safe_cast<int>(seq.size());
+  const auto excess = length % 3;
+  seq.resize(length - excess);
+}
+
+
 std::string extractGeneRef(const std::string_view& ref, const Gene& gene) {
   precondition_less(gene.length, ref.size());
   precondition_less_equal(gene.length, ref.size());
-  return removeGaps(ref.substr(gene.start, gene.length));
+
+  const auto unstripped = ref.substr(gene.start, gene.length);
+  auto stripped = removeGaps(unstripped);
+
+  // HACK: adjust gene length to be a multiple of 3
+  resizeToMultipleOf3InPlace(stripped);
+
+  // Length of the gene should not exceed the length of the sequence
+  invariant_less_equal(stripped.size(), ref.size());
+
+  // Gene length should be a multiple of 3
+  invariant_divisible_by(stripped.size(), 3);
+
+  return stripped;
 }
 
 /**
@@ -40,11 +60,7 @@ std::string extractGeneQuery(const std::string_view& query, const Gene& gene, co
   auto stripped = removeGaps(unstripped);
 
   // HACK: adjust gene length to be a multiple of 3
-  const auto strippedLength = safe_cast<int>(stripped.size());
-  const auto excess = strippedLength % 3;
-  if (excess != 0) {
-    stripped = stripped.substr(0, strippedLength - excess);
-  }
+  resizeToMultipleOf3InPlace(stripped);
 
   // Length of the gene should not exceed the length of the sequence
   invariant_less_equal(stripped.size(), query.size());
