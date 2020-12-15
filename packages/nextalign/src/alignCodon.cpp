@@ -6,7 +6,7 @@
 
 
 CodonAlignmentResult alignCodon(const std::string& queryPeptide, const std::string& refPeptide) {
-  const auto alignment = alignPairwise(queryPeptide, refPeptide, &lookupAaMatchScore, 100);
+  const auto alignment = alignPairwise(queryPeptide, refPeptide, &lookupAaMatchScore, 10);
   return {
     .queryPeptide = alignment.query,
     .refPeptide = alignment.ref,
