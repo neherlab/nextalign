@@ -31,7 +31,7 @@ Alignment alignBetter(
 
   const auto coordMap = mapCoordinates(alignment.ref);
 
-  // Each position in the raw ref sequence should have a corresponding position in aligned ref sequence
+  // Each position in the raw ref sequence should have a corresponding mapped position in aligned ref sequence
   invariant_equal(coordMap.size(), ref.size());
 
   // For each gene in the requested subset
