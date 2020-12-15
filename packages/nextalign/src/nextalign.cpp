@@ -25,13 +25,14 @@ public:
 void matchSeeds() {}
 
 
-Alignment alignBetter(const Alignment& alignment, const GeneMap& geneMap, const NextalignOptions& options) {
+Alignment alignBetter(
+  const std::string& ref, const Alignment& alignment, const GeneMap& geneMap, const NextalignOptions& options) {
   Alignment alignmentImproved = alignment;
 
-  const auto& ref = alignment.ref;
-  const auto& query = alignment.query;
-  //  const auto coordMap = mapCoordinates(ref);
-  const auto coordMap = std::vector<int>{};
+  const auto coordMap = mapCoordinates(alignment.ref);
+
+  // Each position in the raw ref sequence should have a corresponding position in aligned ref sequence
+  invariant_equal(coordMap.size(), ref.size());
 
   // For each gene in the requested subset
   for (const auto& geneName : options.genes) {
@@ -43,10 +44,11 @@ Alignment alignBetter(const Alignment& alignment, const GeneMap& geneMap, const 
 
     const auto& gene = found->second;
 
+    // TODO: can be done once during initialization
     const auto& refGene = extractGeneRef(ref, gene);
     const auto refPeptide = translate(refGene);
 
-    const auto& queryGene = extractGeneQuery(query, gene, coordMap);
+    const auto& queryGene = extractGeneQuery(alignment.query, gene, coordMap);
     const auto queryPeptide = translate(queryGene);
 
     const CodonAlignmentResult codonAlignmentResult = alignCodon(refPeptide, queryPeptide);
@@ -61,6 +63,6 @@ Alignment nextalign(
   const std::string& query, const std::string& ref, const GeneMap& geneMap, const NextalignOptions& options) {
   matchSeeds();// TODO: mmmm..?
   const auto alignment = alignPairwise(query, ref, &lookupNucMatchScore, 100);
-  auto alignmentImproved = alignBetter(alignment, geneMap, options);
+  auto alignmentImproved = alignBetter(ref, alignment, geneMap, options);
   return alignmentImproved;
 }

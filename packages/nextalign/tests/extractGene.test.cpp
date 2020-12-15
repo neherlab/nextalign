@@ -12,24 +12,25 @@
 
 TEST(extractGeneRef, ExtractsRefGene) {
   // clang-format off
-  //                                       2             17
-  // gene                                  |              |
-  const std::string ref =               "ACTCCG---TGCGCTGCTG";
-  // query                               ACTGGTCTAGTCG---TAG
-  const std::string expected_gene_ref =   "TCCGTGCGCTGC";
-  // expected_gene_query                   TGGTCTAGTCGT
+  // gene                                    2          14
+  // gene                                    |           |
+  const std::string ref =                 "ACTCCGTGCGCTGCTG";
+  const std::string ref_aligned =         "ACTCCG---TGCGCTGCTG";
+  const std::string query_aligned =       "ACTGGTCTA---GCA";
+  const std::string expected_gene_ref =     "TCCGTGCGCTGC";
+  const std::string expected_gene_query =   "TGGTCTAGC";
   // clang-format on
 
   const Gene gene = {
     .geneName = "Hello",
     .start = 2,
-    .end = 17,
+    .end = 14,
     .strand = "+",
     .frame = 0,
-    .length = 15,
+    .length = 12,
   };
 
-  const std::string gene_ref = extractGeneRef(ref, gene);
+  const auto gene_ref = std::string(extractGeneRef(ref, gene));
 
   EXPECT_EQ(gene_ref, expected_gene_ref);
 }
@@ -37,28 +38,26 @@ TEST(extractGeneRef, ExtractsRefGene) {
 
 TEST(extractGeneQuery, ExtractsQueryGene) {
   // clang-format off
-  //                                       2             17
-  // gene                                  |              |
-  const std::string ref =               "ACTCCG---TGCGCTGCTG";
-  const std::string query =             "ACTGGTCTAGTCG---TAG";
-  // expected gene_ref                     TCCGTGCGCTGC
-  const std::string expected_gene_query = "TGGTCTAGTCGT";
+  // gene                                    2          14
+  // gene                                    |           |
+  const std::string ref =                 "ACTCCGTGCGCTGCTG";
+  const std::string ref_aligned =         "ACTCCG---TGCGCTGCTG";
+  const std::string query_aligned =       "ACTGGTCTA---GCA";
+  const std::string expected_gene_ref =     "TCCGTGCGCTGC";
+  const std::string expected_gene_query =   "TGGTCTAGC";
   // clang-format on
-
-  //  const auto coordMap = mapCoordinates(ref);
-  const auto coordMap = std::vector<int>{};
 
   const Gene gene = {
     .geneName = "Hello",
     .start = 2,
-    .end = 17,
+    .end = 14,
     .strand = "+",
     .frame = 0,
-    .length = 15,
+    .length = 12,
   };
 
-  const std::string gene_query = extractGeneQuery(query, gene, coordMap);
-
+  const auto coordMap = mapCoordinates(ref);
+  const std::string gene_query = extractGeneQuery(query_aligned, gene, coordMap);
 
   EXPECT_EQ(gene_query, expected_gene_query);
 }

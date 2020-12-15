@@ -4,9 +4,10 @@
 #include <vector>
 
 #include "safeCast.h"
+#include "utils/contract.h"
 
 /**
- * Makes a map from reference coordinates to alignment coordinates
+ * Makes a map from raw coordinates to alignment coordinates
  * (Excluding the gaps in reference).
  *
  * Example:
