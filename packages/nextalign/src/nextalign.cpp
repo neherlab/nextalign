@@ -11,6 +11,7 @@
 #include "helpers.h"
 #include "mapCoordinates.h"
 #include "safeCast.h"
+#include "stripInsertions.h"
 #include "translate.h"
 #include "translateReverse.h"
 
@@ -22,8 +23,6 @@ class ErrorGeneMapGeneNotFound : std::runtime_error {
 public:
   explicit ErrorGeneMapGeneNotFound(const std::string& geneName) : std::runtime_error(formatError(geneName)) {}
 };
-
-void matchSeeds() {}
 
 
 AlignmentImproved alignBetter(
@@ -93,7 +92,18 @@ AlignmentImproved alignBetter(
 
 AlignmentImproved nextalign(
   const std::string& query, const std::string& ref, const GeneMap& geneMap, const NextalignOptions& options) {
-  matchSeeds();// TODO: mmmm..?
+
   const auto alignment = alignPairwise(query, ref, &lookupNucMatchScore, 100);
-  return alignBetter(ref, alignment, geneMap, options);
+  
+  //  const auto alignmentBetter = alignBetter(ref, alignment, geneMap, options);
+
+  const auto stripped = stripInsertions(alignment.ref, alignment.query);
+
+  AlignmentImproved result;
+  result.query = stripped.queryStripped;
+  result.ref = alignment.ref;
+  result.alignmentScore = alignment.alignmentScore;
+  result.insertions = stripped.insertions;
+
+  return result;
 }

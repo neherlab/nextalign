@@ -45,6 +45,8 @@ add_library(${PROJECT_NAME} STATIC
   src/parseSequences.cpp
   src/removeGaps.h
   src/safeCast.h
+  src/stripInsertions.cpp
+  src/stripInsertions.h
   src/translate.cpp
   src/translate.h
   src/translateReverse.cpp

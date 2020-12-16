@@ -1,9 +1,9 @@
 #pragma once
 
+#include <nextalign/types.h>
+
 #include <gsl/string_span>
 #include <string_view>
-
-#include "nextalign/types.h"
 
 
 struct CodonAlignmentResult;
