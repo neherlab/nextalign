@@ -13,8 +13,6 @@
 std::string_view extractGeneRef(const std::string_view& ref, const Gene& gene) {
   precondition_less(gene.length, ref.size());
   precondition_less_equal(gene.length, ref.size());
-
-  // TODO: should we also strip gaps from the raw gene?
   return ref.substr(gene.start, gene.length);
 }
 

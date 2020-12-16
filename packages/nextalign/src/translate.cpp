@@ -26,5 +26,6 @@ Peptide translate(const std::string_view& seq) {
   }
 
   postcondition_equal(peptide.size(), peptideLength);
+  postcondition_equal(seq.size(), peptide.size() * 3);
   return peptide;
 }

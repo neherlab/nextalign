@@ -43,12 +43,12 @@ add_library(${PROJECT_NAME} STATIC
   src/parseGb.cpp
   src/parseGeneMapGff.cpp
   src/parseSequences.cpp
-  src/reimplant.cpp
-  src/reimplant.h
   src/removeGaps.h
   src/safeCast.h
   src/translate.cpp
   src/translate.h
+  src/translateReverse.cpp
+  src/translateReverse.h
   src/types.internal.h
   src/utils/config.h
   src/utils/contract.h

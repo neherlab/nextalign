@@ -2,6 +2,7 @@
 #include <nextalign/types.h>
 #include <utils/contract.h>
 
+#include <gsl/string_span>
 #include <string>
 
 #include "alignCodon.h"
@@ -9,9 +10,9 @@
 #include "extractGene.h"
 #include "helpers.h"
 #include "mapCoordinates.h"
-#include "reimplant.h"
 #include "safeCast.h"
 #include "translate.h"
+#include "translateReverse.h"
 
 class ErrorGeneMapGeneNotFound : std::runtime_error {
   static std::string formatError(const std::string& geneName) {
@@ -27,11 +28,18 @@ void matchSeeds() {}
 
 AlignmentImproved alignBetter(
   const std::string& ref, const Alignment& alignment, const GeneMap& geneMap, const NextalignOptions& options) {
+
+  std::string newQueryMemory(ref.size(), '-');
+  gsl::string_span<> newQuery{newQueryMemory};
+
+  std::string newRefMemory(ref.size(), '-');
+  gsl::string_span<> newRef{newRefMemory};
+
   AlignmentImproved alignmentImproved = {
     // base Alignment
     {
-      .query = alignment.query,
-      .ref = alignment.ref,
+      .query = newQueryMemory,
+      .ref = newRefMemory,
       .alignmentScore = alignment.alignmentScore,
     },
     {}// insertions
@@ -41,6 +49,8 @@ AlignmentImproved alignBetter(
 
   // Each position in the raw ref sequence should have a corresponding mapped position in aligned ref sequence
   invariant_equal(coordMap.size(), ref.size());
+
+  std::vector<Insertion> insertions;
 
   // For each gene in the requested subset
   for (const auto& geneName : options.genes) {
@@ -61,10 +71,21 @@ AlignmentImproved alignBetter(
 
     const CodonAlignmentResult codonAlignmentResult = alignCodon(refPeptide, queryPeptide);
 
-    // TODO: how to combine scores?
-    alignmentImproved.alignmentScore += codonAlignmentResult.alignmentScore;
+    // TODO: Can it be that `gene.length` is different from `length` here?
+    //  If not, this can be removed and we can use `gene.length`.
+    //  But make sure to not overflow/underflow the buffer.
+    const int start = coordMap[gene.start];
+    const int end = coordMap[gene.end];
+    const int length = end - start;
+    auto reverseTranslatedQueryGene = newQuery.subspan(start, length);
+    translateReverseInPlace(
+      queryGene, codonAlignmentResult, /* out */ reverseTranslatedQueryGene, /* out */ insertions);
 
-    reimplant(alignmentImproved, codonAlignmentResult, gene);
+    //    auto reverseTranslatedRefGene = newRef.subspan(gene.start, gene.length);
+    //    std::vector<Insertion> ignored;
+    //    translateReverseInPlace(refGene, codonAlignmentResult, /* out */ reverseTranslatedRefGene, /* out */ ignored);
+
+    alignmentImproved.alignmentScore += codonAlignmentResult.alignmentScore;
   }
 
   return alignmentImproved;
