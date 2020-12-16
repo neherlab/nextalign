@@ -5,6 +5,7 @@
 #include <nextalign/types.h>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <cxxopts.hpp>
 #include <fstream>
@@ -20,16 +21,28 @@ struct CliParams {
   std::string genemap;
   std::string genes;
   std::string output;
+  std::optional<std::string> outputInsertions;
 };
 
 
+std::string formatInsertions(const std::vector<Insertion> &insertions);
 template<typename Result>
-auto getParamRequired(
-  const cxxopts::Options &cxxOpts, const cxxopts::ParseResult &cxxOptsParsed, const std::string &name) -> Result {
+Result getParamRequired(
+  const cxxopts::Options &cxxOpts, const cxxopts::ParseResult &cxxOptsParsed, const std::string &name) {
   if (!cxxOptsParsed.count(name)) {
     fmt::print(stderr, "Error: argument `--{:s}` is required\n\n", name);
     fmt::print(stderr, "{:s}\n", cxxOpts.help());
     std::exit(1);
+  }
+
+  return cxxOptsParsed[name].as<Result>();
+}
+
+template<typename Result>
+std::optional<Result> getParamOptional(
+  const cxxopts::Options &cxxOpts, const cxxopts::ParseResult &cxxOptsParsed, const std::string &name) {
+  if (!cxxOptsParsed.count(name)) {
+    return {};
   }
 
   return cxxOptsParsed[name].as<Result>();
@@ -89,10 +102,19 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
 
     (
       "o,output",
-      "(required) Path to output aligned sequence in FASTA format",
+      "(required) Path to output aligned sequences in FASTA format",
       cxxopts::value<std::string>(),
       "OUTPUT"
-    );
+    )
+
+    (
+      "I,output-insertions",
+      "(optional) Path to output stripped insertions data",
+      cxxopts::value<std::string>(),
+      "OUTPUT_INSERTIONS"
+    )
+
+;
   // clang-format on
 
   const auto cxxOptsParsed = cxxOpts.parse(argc, argv);
@@ -108,6 +130,7 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
   const auto genemap = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "genemap");
   const auto genes = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "genes");
   const auto output = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "output");
+  const auto outputInsertions = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-insertions");
 
   return {
     jobs,
@@ -116,6 +139,7 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
     genemap,
     genes,
     output,
+    outputInsertions,
   };
 }
 
@@ -180,6 +204,11 @@ std::string formatCliParams(const CliParams &cliParams) {
   fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--genemap", cliParams.genemap);
   fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--genes", cliParams.genes);
   fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--output", cliParams.output);
+
+  if (cliParams.outputInsertions) {
+    fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--output-insertions", *cliParams.outputInsertions);
+  }
+
   return fmt::to_string(buf);
 }
 
@@ -207,6 +236,14 @@ std::string formatGeneMap(const GeneMap &geneMap, const std::set<std::string> &g
   return fmt::to_string(buf);
 }
 
+std::string formatInsertions(const std::vector<Insertion> &insertions) {
+  std::vector<std::string> insertionStrings;
+  for (const auto &insertion : insertions) {
+    insertionStrings.emplace_back(fmt::format("{:d}:{:s}", insertion.begin, insertion.seq));
+  }
+
+  return boost::algorithm::join(insertionStrings, ";");
+}
 
 int main(int argc, char *argv[]) {
   try {
@@ -237,10 +274,21 @@ int main(int argc, char *argv[]) {
       std::exit(1);
     }
 
-    constexpr const auto TABLE_WIDTH = 71;
+    std::ofstream outputInsertionsFile;
+    if (cliParams.outputInsertions) {
+      outputInsertionsFile.open(*cliParams.outputInsertions);
+      if (!outputInsertionsFile.good()) {
+        fmt::print(stderr, "Error: unable to write \"{:s}\"\n", *cliParams.outputInsertions);
+        std::exit(1);
+      }
+
+      outputInsertionsFile << "seqName,insertions\n";
+    }
+
+    constexpr const auto TABLE_WIDTH = 86;
     fmt::print(stdout, "\nSequences:\n");
     fmt::print(stdout, "{:s}\n", std::string(TABLE_WIDTH, '-'));
-    fmt::print(stdout, "| {:5s} | {:40s} | {:16s} |\n", "Index", "Seq. name", "Align. score");
+    fmt::print(stdout, "| {:5s} | {:40s} | {:16s} | {:12s} |\n", "Index", "Seq. name", "Align. score", "Insertions");
     fmt::print(stdout, "{:s}\n", std::string(TABLE_WIDTH, '-'));
     int i = 0;
     while (fastaStream->good()) {
@@ -249,14 +297,20 @@ int main(int argc, char *argv[]) {
 
       try {
         const auto &alignment = nextalign(seq, ref, geneMap, options);
-        fmt::print(stdout, "{:>16d} |\n", alignment.alignmentScore);
+        const auto &insertions = alignment.insertions;
+        fmt::print(stdout, "{:>16d} | {:12d} | \n", alignment.alignmentScore, alignment.insertions.size());
         outputFastaFile << fmt::format(">{:s}\n{:s}\n", seqName, alignment.query);
+
+        if (cliParams.outputInsertions) {
+          outputInsertionsFile << fmt::format("\"{:s}\",\"{:s}\"\n", seqName, formatInsertions(insertions));
+        }
       } catch (const std::exception &e) {
         fmt::print(stdout, "{:>16s} |\n", e.what());
       }
 
       ++i;
     }
+
     fmt::print(stdout, "{:s}\n", std::string(TABLE_WIDTH, '-'));
 
   } catch (const cxxopts::OptionSpecException &e) {
