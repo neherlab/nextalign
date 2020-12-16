@@ -19,7 +19,7 @@ struct CliParams {
   std::string sequences;
   std::string reference;
   std::string genemap;
-  std::string genes;
+  std::optional<std::string> genes;
   std::string output;
   std::optional<std::string> outputInsertions;
 };
@@ -95,7 +95,7 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
 
     (
       "g,genes",
-       "(required) List of genes to account for during alignment",
+       "(optional) List of genes to account for during alignment. If not supplied or empty, all the genes from the gene map are used",
        cxxopts::value<std::string>(),
        "GENES"
     )
@@ -128,7 +128,7 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
   const auto sequences = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "sequences");
   const auto reference = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "reference");
   const auto genemap = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "genemap");
-  const auto genes = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "genes");
+  const auto genes = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "genes");
   const auto output = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "output");
   const auto outputInsertions = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-insertions");
 
@@ -175,21 +175,28 @@ GeneMap parseGeneMapGffFile(const std::string &filename) {
   return geneMap;
 }
 
-std::set<std::string> parseGenes(const CliParams &cliParams) {
+std::set<std::string> parseGenes(const CliParams &cliParams, const GeneMap &geneMap) {
   std::set<std::string> genes;
-  boost::algorithm::split(genes, cliParams.genes, boost::is_any_of(","));
+
+  if (cliParams.genes && !(cliParams.genes->empty())) {
+    boost::algorithm::split(genes, *(cliParams.genes), boost::is_any_of(","));
+    return genes;
+  }
+
+  // If `genes` is empty, return all gene names from the gene map
+  std::transform(                                  //
+    geneMap.begin(), geneMap.end(),                //
+    std::inserter(genes, genes.begin()),           //
+    [](const auto &entry) { return entry.first; });//
+
   return genes;
 }
 
 void validateGenes(const std::set<std::string> &genes, const GeneMap &geneMap) {
-  if (genes.empty()) {
-    fmt::print("Warning: no target genes provided for codon-aware alignment. Alignment quality is degraded.\n");
-  }
-
   for (const auto &gene : genes) {
     const auto &it = geneMap.find(gene);
     if (it == geneMap.end()) {
-      fmt::print(stderr, "Error: gene \"{}\" is not in gene map", gene);
+      fmt::print(stderr, "Error: gene \"{}\" is not in gene map\n", gene);
       std::exit(1);
     }
   }
@@ -202,7 +209,11 @@ std::string formatCliParams(const CliParams &cliParams) {
   fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--sequences", cliParams.sequences);
   fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--reference", cliParams.reference);
   fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--genemap", cliParams.genemap);
-  fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--genes", cliParams.genes);
+
+  if (cliParams.genes) {
+    fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--genes", *cliParams.genes);
+  }
+
   fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--output", cliParams.output);
 
   if (cliParams.outputInsertions) {
@@ -256,7 +267,7 @@ int main(int argc, char *argv[]) {
     fmt::print(stdout, formatRef(refName, ref));
 
     const auto geneMap = parseGeneMapGffFile(cliParams.genemap);
-    options.genes = parseGenes(cliParams);
+    options.genes = parseGenes(cliParams, geneMap);
     validateGenes(options.genes, geneMap);
 
     fmt::print(stdout, formatGeneMap(geneMap, options.genes));
