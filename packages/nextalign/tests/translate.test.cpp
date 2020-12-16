@@ -1,6 +1,6 @@
-#include "../src/translate.h"
-
 #include <gtest/gtest.h>
+
+#include "../src/translate.h"
 
 TEST(translate, TranslatesSimple) {
   constexpr const auto* const nucs =

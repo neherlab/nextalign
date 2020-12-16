@@ -1,9 +1,9 @@
-#include "../src/mapCoordinates.h"
-
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <array>
+
+#include "../src/mapCoordinates.h"
 
 TEST(mapCoordinates, MapsSimple) {
   const std::string ref = "ACTC---CGTG---A";

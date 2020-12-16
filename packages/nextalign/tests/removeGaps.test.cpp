@@ -1,7 +1,7 @@
 
-#include "../src/removeGaps.h"
-
 #include <gtest/gtest.h>
+
+#include "../src/removeGaps.h"
 
 constexpr const auto* const INPUT = "--MY-SPACEBAR---IS--BROKEN-SEND---HELP-";
 constexpr const auto* const OUTPUT = "MYSPACEBARISBROKENSENDHELP";

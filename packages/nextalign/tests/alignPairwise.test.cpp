@@ -1,9 +1,8 @@
-#include "../src/alignPairwise.h"
-
 #include <gtest/gtest.h>
 
 #include <string>
 
+#include "../src/alignPairwise.h"
 #include "../src/matchNuc.h"
 
 const NextalignOptions options = {};

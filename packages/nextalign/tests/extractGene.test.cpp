@@ -1,5 +1,3 @@
-#include "../src/extractGene.h"
-
 #include <gtest/gtest.h>
 #include <nextalign/types.h>
 
@@ -7,6 +5,7 @@
 #include <string_view>
 #include <vector>
 
+#include "../src/extractGene.h"
 #include "../src/mapCoordinates.h"
 
 

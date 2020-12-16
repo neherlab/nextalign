@@ -1,6 +1,6 @@
-#include "../src/decode.h"
-
 #include <gtest/gtest.h>
+
+#include "../src/decode.h"
 
 TEST(decode, DecodesGap) {
   EXPECT_EQ(decode("---"), AMINOACID_GAP);

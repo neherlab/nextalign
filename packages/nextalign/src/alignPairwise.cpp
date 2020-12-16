@@ -222,19 +222,19 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
         origin = 0;
 
         tmpScore = scores(si, ri) + tmpMatch;
-        if (tmpScore>score) {
+        if (tmpScore > score) {
           score = tmpScore;
           origin = 1;
         }
 
         tmpScore = si < 2 * bandWidth ? scores(si + 1, ri + 1) + gapExtend + rGapOpen : gapExtend;
-        if (tmpScore>score) {
+        if (tmpScore > score) {
           score = tmpScore;
           origin = 2;
         }
 
         tmpScore = si > 0 ? scores(si - 1, ri) + gapExtend + qGapOpen : gapExtend;
-        if (tmpScore>score) {
+        if (tmpScore > score) {
           score = tmpScore;
           origin = 3;
         }

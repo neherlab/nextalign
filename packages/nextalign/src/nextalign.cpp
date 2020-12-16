@@ -94,7 +94,7 @@ AlignmentImproved nextalign(
   const std::string& query, const std::string& ref, const GeneMap& geneMap, const NextalignOptions& options) {
 
   const auto alignment = alignPairwise(query, ref, &lookupNucMatchScore, 100);
-  
+
   //  const auto alignmentBetter = alignBetter(ref, alignment, geneMap, options);
 
   const auto stripped = stripInsertions(alignment.ref, alignment.query);

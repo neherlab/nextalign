@@ -1,6 +1,6 @@
-#include "../src/stripInsertions.h"
-
 #include <gtest/gtest.h>
+
+#include "../src/stripInsertions.h"
 
 TEST(stripInsertions, StripsAnInsertion) {
   // clang-format off
