@@ -1,5 +1,6 @@
 #include <fmt/format.h>
 #include <nextalign/parseSequences.h>
+#include <nextalign/types.h>
 
 #include <boost/algorithm/string.hpp>
 #include <map>
@@ -51,6 +52,7 @@ class FastaStreamImpl : public FastaStream {
   std::istream& istream;
   std::map<std::string, int> seqNames;
 
+  int currentIndex = 0;
   std::string currentSeqName;
   std::string currentSeq;
 
@@ -58,7 +60,7 @@ class FastaStreamImpl : public FastaStream {
    * Keeps track of sequence names for deduplication
    * and prepares (seqName, seq) entry for returning as the next element of the stream.
    */
-  std::pair<std::string, std::string> prepareResult() {
+  AlgorithmInput prepareResult() {
     if (currentSeqName.empty()) {
       currentSeqName = "Untitled";
     }
@@ -72,7 +74,7 @@ class FastaStreamImpl : public FastaStream {
       seqNames.emplace(currentSeqName, 1);
     }
 
-    return std::make_pair(currentSeqName, sanitizeSequence(currentSeq));
+    return {.index = currentIndex, .seqName = currentSeqName, .seq = sanitizeSequence(currentSeq)};
   }
 
 
@@ -97,7 +99,7 @@ public:
   }
 
 
-  std::pair<std::string, std::string> next() override {
+  AlgorithmInput next() override {
     if (!good()) {
       throw ErrorFastaStreamIllegalNextCall();
     }
@@ -109,6 +111,7 @@ public:
       if (boost::starts_with(line, ">")) {
         if (!currentSeq.empty()) {
           auto result = prepareResult();
+          ++currentIndex;
           currentSeq = "";
           currentSeqName = sanitizeSequenceName(line);
           return result;
@@ -135,13 +138,12 @@ std::unique_ptr<FastaStream> makeFastaStream(std::istream& istream) {
 }
 
 
-std::map<std::string, std::string> parseSequences(std::istream& istream) {
-  std::map<std::string, std::string> seqs;
+std::vector<AlgorithmInput> parseSequences(std::istream& istream) {
+  std::vector<AlgorithmInput> seqs;
 
   auto fastaStream = makeFastaStream(istream);
   while (fastaStream->good()) {
-    const auto seqEntry = fastaStream->next();
-    seqs.insert(seqEntry);
+    seqs.emplace_back(fastaStream->next());
   }
 
   return seqs;

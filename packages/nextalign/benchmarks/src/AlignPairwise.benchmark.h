@@ -25,8 +25,8 @@ void AlignPairwiseAverage(benchmark::State& st) {
 
   for (const auto _ : st) {
     for (int i = 0; i < n; ++i) {
-      const auto& [seqName, query] = sequences[i];
-      benchmark::DoNotOptimize(aln = alignPairwise(query, reference, &lookupNucMatchScore, 100));
+      const auto& input = sequences[i];
+      benchmark::DoNotOptimize(aln = alignPairwise(input.seq, reference, &lookupNucMatchScore, 100));
     }
   }
 
@@ -46,13 +46,13 @@ BENCHMARK(AlignPairwiseAverage)  //
  */
 void AlignPairwiseVariation(benchmark::State& st) {
   const auto& index = st.range(0);
-  const auto& [seqName, query] = sequences[index];
+  const auto& input = sequences[index];
   Alignment aln;
-  st.SetLabel(seqName);
-  st.SetComplexityN(query.size());
+  st.SetLabel(input.seqName);
+  st.SetComplexityN(input.seq.size());
 
   for (const auto _ : st) {
-    benchmark::DoNotOptimize(aln = alignPairwise(query, reference, &lookupNucMatchScore, 100));
+    benchmark::DoNotOptimize(aln = alignPairwise(input.seq, reference, &lookupNucMatchScore, 100));
   }
 
   setCounters(st, 1);

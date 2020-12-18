@@ -9,6 +9,7 @@ const auto [sequences, reference, geneMap, totalNucs] = getData();
 #include "AlignPairwise.benchmark.h"
 #include "SeedMatching.benchmark.h"
 #include "ForwardTrace.benchmark.h"
+#include "BackwardTrace.benchmark.h"
 // clang-format on
 
 

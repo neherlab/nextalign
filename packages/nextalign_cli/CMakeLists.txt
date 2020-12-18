@@ -10,6 +10,7 @@ set(CMAKE_INSTALL_MESSAGE LAZY)
 find_package(boost_base 1.68.0 REQUIRED)
 find_package(cxxopts 2.2.1 REQUIRED)
 find_package(fmt 7.1.0 REQUIRED)
+find_package(TBB REQUIRED)
 
 add_executable(${PROJECT_NAME}
   src/cli.cpp
@@ -32,4 +33,5 @@ target_link_libraries(${PROJECT_NAME}
   cxxopts::cxxopts
   fmt::fmt
   nextalign
+  TBB::tbb
   )

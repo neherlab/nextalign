@@ -20,8 +20,8 @@ protected:
     const auto n = NUM_SEQUENCES_AVG;
     seedAlignments.resize(n);
     for (int i = 0; i < n; ++i) {
-      const auto& [seqName, query] = sequences[i];
-      seedAlignments[i] = seedAlignment(query, reference);
+      const auto& input = sequences[i];
+      seedAlignments[i] = seedAlignment(input.seq, reference);
     }
   }
 };
@@ -40,9 +40,9 @@ BENCHMARK_DEFINE_F(ForwardTraceBench, Average)(benchmark::State& st) {
 
   for (const auto _ : st) {
     for (int i = 0; i < n; ++i) {
-      const auto& [seqName, query] = sequences[i];
+      const auto& input = sequences[i];
       const auto& seedAlignment = seedAlignments[i];
-      benchmark::DoNotOptimize(forwardTrace = scoreMatrix(query, reference, &lookupNucMatchScore,
+      benchmark::DoNotOptimize(forwardTrace = scoreMatrix(input.seq, reference, &lookupNucMatchScore,
                                  seedAlignment.bandWidth, seedAlignment.meanShift));
     }
   }
@@ -64,15 +64,15 @@ BENCHMARK_REGISTER_F(ForwardTraceBench, Average)
  */
 BENCHMARK_DEFINE_F(ForwardTraceBench, Variation)(benchmark::State& st) {
   const auto& index = st.range(0);
-  const auto& [seqName, query] = sequences[index];
+  const auto& input = sequences[index];
   SeedAlignment seed = seedAlignments[index];
   ForwardTrace forwardTrace;
-  st.SetLabel(seqName);
-  st.SetComplexityN(query.size());
+  st.SetLabel(input.seqName);
+  st.SetComplexityN(input.seq.size());
 
   for (const auto _ : st) {
     benchmark::DoNotOptimize(
-      forwardTrace = scoreMatrix(query, reference, &lookupNucMatchScore, seed.bandWidth, seed.meanShift));
+      forwardTrace = scoreMatrix(input.seq, reference, &lookupNucMatchScore, seed.bandWidth, seed.meanShift));
   }
 
   setCounters(st, 1);

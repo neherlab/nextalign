@@ -3,15 +3,14 @@
 #include <nextalign/parseGeneMapGff.h>
 #include <nextalign/parseSequences.h>
 #include <nextalign/types.h>
+#include <tbb/global_control.h>
+#include <tbb/pipeline.h>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <cxxopts.hpp>
 #include <fstream>
-
-// TODO(ivan-aksamentov): detect number of cores
-const int numCores = 4;
 
 
 struct CliParams {
@@ -67,8 +66,8 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
 
     (
       "j,jobs",
-      "(optional) Number of CPU threads used by the algorithm. If not specified, using number of available logical CPU cores",
-      cxxopts::value<int>()->default_value(std::to_string(numCores)),
+      "(optional) Number of CPU threads used by the algorithm. If not specified or non-positive, will use all available threads",
+      cxxopts::value<int>()->default_value(std::to_string(0)),
       "JOBS"
     )
 
@@ -143,7 +142,7 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
   };
 }
 
-std::pair<std::string, std::string> parseRefFastaFile(const std::string &filename) {
+AlgorithmInput parseRefFastaFile(const std::string &filename) {
   std::ifstream file(filename);
   if (!file.good()) {
     fmt::print(stderr, "Error: unable to read \"{:s}\"\n", filename);
@@ -256,6 +255,85 @@ std::string formatInsertions(const std::vector<Insertion> &insertions) {
   return boost::algorithm::join(insertionStrings, ";");
 }
 
+/**
+ * Runs nextalign algorithm in a parallel pipeline
+ */
+void run(
+  /* in  */ int parallelism,
+  /* in  */ const CliParams &cliParams,
+  /* out */ std::unique_ptr<FastaStream> &inputFastaStream,
+  /* in  */ const std::string &ref,
+  /* in  */ const GeneMap &geneMap,
+  /* in  */ const NextalignOptions &options,
+  /* out */ std::ostream &outputFastaStream,
+  /* out */ std::ostream &outputInsertionsStream) {
+  tbb::task_group_context context;
+
+  /** Input filter is a serial input filter function, which accepts an input stream,
+   * reads and parses the contents of it, and returns parsed sequences */
+  const auto inputFilter = tbb::make_filter<void, AlgorithmInput>(tbb::filter::serial_in_order,//
+    [&inputFastaStream](tbb::flow_control &fc) -> AlgorithmInput {
+      if (!inputFastaStream->good()) {
+        fc.stop();
+        return {};
+      }
+
+      return inputFastaStream->next();
+    });
+
+
+  /** A set of parallel transform filter functions, each accepts a parsed sequence from the input filter,
+   * runs nextalign algorithm sequentially and returning its result.
+   * The number of filters is determined by the `--jobs` CLI argument */
+  const auto transformFilters = tbb::make_filter<AlgorithmInput, AlgorithmOutput>(tbb::filter::parallel,//
+    [&ref, &geneMap, &options](const AlgorithmInput &input) -> AlgorithmOutput {
+      try {
+        const auto result = nextalign(input.seq, ref, geneMap, options);
+        return {.index = input.index, .seqName = input.seqName, .hasError = false, .result = result, .error = nullptr};
+      } catch (const std::exception &e) {
+        const auto &error = std::current_exception();
+        return {.index = input.index, .seqName = input.seqName, .hasError = true, .result = {}, .error = error};
+      }
+    });
+
+
+  /** Output filter is a serial ordered filter function which accepts the results from transform filters,
+   * one at a time, displays and writes them to output streams */
+  const auto outputFilter = tbb::make_filter<AlgorithmOutput, void>(tbb::filter::serial_in_order,//
+    [&cliParams, &outputFastaStream, &outputInsertionsStream](const AlgorithmOutput &output) {
+      const auto index = output.index;
+      const auto &seqName = output.seqName;
+
+      const auto &error = output.error;
+      if (error) {
+        try {
+          std::rethrow_exception(error);
+        } catch (const std::exception &e) {
+          fmt::print(stdout, "{:s}:{:s}\n", seqName, e.what());
+          return;
+        }
+      }
+
+      const auto &query = output.result.query;
+      const auto &alignmentScore = output.result.alignmentScore;
+      const auto &insertions = output.result.insertions;
+      fmt::print(stdout, "| {:5d} | {:<40s} | {:>16d} | {:12d} | \n",//
+        index, seqName, alignmentScore, insertions.size());
+
+      outputFastaStream << fmt::format(">{:s}\n{:s}\n", seqName, query);
+
+      if (cliParams.outputInsertions) {
+        outputInsertionsStream << fmt::format("\"{:s}\",\"{:s}\"\n", seqName, formatInsertions(insertions));
+      }
+    });
+
+  try {
+    tbb::parallel_pipeline(parallelism, inputFilter & transformFilters & outputFilter, context);
+  } catch (const std::exception &e) {
+    fmt::print(stdout, "{:s}\n", e.what());
+  }
+}
+
 int main(int argc, char *argv[]) {
   try {
     const auto cliParams = parseCommandLine(argc, argv);
@@ -263,7 +341,9 @@ int main(int argc, char *argv[]) {
 
     NextalignOptions options;
 
-    const auto [refName, ref] = parseRefFastaFile(cliParams.reference);
+    const auto refInput = parseRefFastaFile(cliParams.reference);
+    const auto &refName = refInput.seqName;
+    const auto &ref = refInput.seq;
     fmt::print(stdout, formatRef(refName, ref));
 
     const auto geneMap = parseGeneMapGffFile(cliParams.genemap);
@@ -273,7 +353,7 @@ int main(int argc, char *argv[]) {
     fmt::print(stdout, formatGeneMap(geneMap, options.genes));
 
     std::ifstream fastaFile(cliParams.sequences);
-    const auto fastaStream = makeFastaStream(fastaFile);
+    auto fastaStream = makeFastaStream(fastaFile);
     if (!fastaFile.good()) {
       fmt::print(stderr, "Error: unable to read \"{:s}\"\n", cliParams.sequences);
       std::exit(1);
@@ -296,34 +376,30 @@ int main(int argc, char *argv[]) {
       outputInsertionsFile << "seqName,insertions\n";
     }
 
+
+    int parallelism = -1;
+    if (cliParams.jobs > 0) {
+      tbb::global_control globalControl{
+        tbb::global_control::max_allowed_parallelism, static_cast<size_t>(cliParams.jobs)};
+      parallelism = cliParams.jobs;
+    }
+
+    fmt::print("\nParallelism: {:d}\n", parallelism);
+
     constexpr const auto TABLE_WIDTH = 86;
     fmt::print(stdout, "\nSequences:\n");
     fmt::print(stdout, "{:s}\n", std::string(TABLE_WIDTH, '-'));
     fmt::print(stdout, "| {:5s} | {:40s} | {:16s} | {:12s} |\n", "Index", "Seq. name", "Align. score", "Insertions");
     fmt::print(stdout, "{:s}\n", std::string(TABLE_WIDTH, '-'));
-    int i = 0;
-    while (fastaStream->good()) {
-      const auto &[seqName, seq] = fastaStream->next();
-      fmt::print(stdout, "| {:5d} | {:<40s} | ", i, seqName);
 
-      try {
-        const auto &alignment = nextalign(seq, ref, geneMap, options);
-        const auto &insertions = alignment.insertions;
-        fmt::print(stdout, "{:>16d} | {:12d} | \n", alignment.alignmentScore, alignment.insertions.size());
-        outputFastaFile << fmt::format(">{:s}\n{:s}\n", seqName, alignment.query);
 
-        if (cliParams.outputInsertions) {
-          outputInsertionsFile << fmt::format("\"{:s}\",\"{:s}\"\n", seqName, formatInsertions(insertions));
-        }
-      } catch (const std::exception &e) {
-        fmt::print(stdout, "{:>16s} |\n", e.what());
-      }
-
-      ++i;
+    try {
+      run(parallelism, cliParams, fastaStream, ref, geneMap, options, outputFastaFile, outputInsertionsFile);
+    } catch (const std::exception &e) {
+      fmt::print(stdout, "{:>16s} |\n", e.what());
     }
 
     fmt::print(stdout, "{:s}\n", std::string(TABLE_WIDTH, '-'));
-
   } catch (const cxxopts::OptionSpecException &e) {
     std::cerr << "Error: " << e.what() << std::endl;
     std::exit(1);

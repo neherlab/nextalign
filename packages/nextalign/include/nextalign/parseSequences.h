@@ -1,9 +1,10 @@
 #pragma once
 
+#include <nextalign/types.h>
+
 #include <istream>
 #include <map>
 #include <memory>
-
 
 class FastaStream {
 public:
@@ -23,11 +24,11 @@ public:
   [[nodiscard]] virtual bool good() const = 0;
 
   /** Retrieves the next sequence in the stream */
-  virtual std::pair<std::string, std::string> next() = 0;
+  virtual AlgorithmInput next() = 0;
 };
 
 /** Creates an instance of fasta stream, given a file or string stream */
 std::unique_ptr<FastaStream> makeFastaStream(std::istream& istream);
 
-/** Parses all sequences of a given file of string stream */
-std::map<std::string, std::string> parseSequences(std::istream& istream);
+/** Parses all sequences of a given file or string stream */
+std::vector<AlgorithmInput> parseSequences(std::istream& istream);

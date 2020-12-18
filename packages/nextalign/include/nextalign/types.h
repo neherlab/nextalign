@@ -5,6 +5,13 @@
 #include <string>
 #include <vector>
 
+struct AlgorithmInput {
+  int index;
+  std::string seqName;
+  std::string seq;
+};
+
+
 struct NextalignOptions {
   std::set<std::string> genes;
 };
@@ -36,4 +43,12 @@ struct Insertion {
 
 struct AlignmentImproved : public Alignment {
   std::vector<Insertion> insertions;
+};
+
+struct AlgorithmOutput {
+  int index;
+  std::string seqName;
+  bool hasError;
+  AlignmentImproved result;
+  std::exception_ptr error;
 };

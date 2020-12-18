@@ -21,9 +21,10 @@ protected:
     seedAlignments.resize(n);
     forwardTraces.resize(n);
     for (int i = 0; i < n; ++i) {
-      const auto& [seqName, query] = sequences[i];
-      seedAlignments[i] = seedAlignment(query, ref);
-      forwardTraces[i] = scoreMatrix(query, ref, seedAlignments[i].bandWidth, seedAlignments[i].meanShift);
+      const auto& input = sequences[i];
+      seedAlignments[i] = seedAlignment(input.seq, reference);
+      forwardTraces[i] = scoreMatrix(
+        input.seq, reference, &lookupNucMatchScore, seedAlignments[i].bandWidth, seedAlignments[i].meanShift);
     }
   }
 };
@@ -42,10 +43,11 @@ BENCHMARK_DEFINE_F(BackwardTraceBench, Average)(benchmark::State& st) {
 
   for (const auto _ : st) {
     for (int i = 0; i < n; ++i) {
-      const auto& [seqName, query] = sequences[i];
+      const auto& input = sequences[i];
       const auto& seed = seedAlignments[i];
       const auto& forwardTrace = forwardTraces[i];
-      benchmark::DoNotOptimize(aln = backTrace(query, ref, forwardTrace.scores, forwardTrace.paths, seed.meanShift));
+      benchmark::DoNotOptimize(
+        aln = backTrace(input.seq, reference, forwardTrace.scores, forwardTrace.paths, seed.meanShift));
     }
   }
 
@@ -69,9 +71,10 @@ protected:
     seedAlignments.resize(n);
     forwardTraces.resize(n);
     for (int i = 0; i < n; ++i) {
-      const auto& [seqName, query] = sequences[i];
-      seedAlignments[i] = seedAlignment(query, ref);
-      forwardTraces[i] = scoreMatrix(query, ref, seedAlignments[i].bandWidth, seedAlignments[i].meanShift);
+      const auto& input = sequences[i];
+      seedAlignments[i] = seedAlignment(input.seq, reference);
+      forwardTraces[i] = scoreMatrix(
+        input.seq, reference, &lookupNucMatchScore, seedAlignments[i].bandWidth, seedAlignments[i].meanShift);
     }
   }
 };
@@ -83,15 +86,16 @@ protected:
  */
 BENCHMARK_DEFINE_F(BackwardTraceBench2, Variation)(benchmark::State& st) {
   const auto& index = st.range(0);
-  const auto& [seqName, query] = sequences[index];
+  const auto& input = sequences[index];
   SeedAlignment seed = seedAlignments[index];
   ForwardTrace forwardTrace = forwardTraces[index];
   Alignment aln;
-  st.SetLabel(seqName);
-  st.SetComplexityN(query.size());
+  st.SetLabel(input.seqName);
+  st.SetComplexityN(input.seq.size());
 
   for (const auto _ : st) {
-    benchmark::DoNotOptimize(aln = backTrace(query, ref, forwardTrace.scores, forwardTrace.paths, seed.meanShift));
+    benchmark::DoNotOptimize(
+      aln = backTrace(input.seq, reference, forwardTrace.scores, forwardTrace.paths, seed.meanShift));
   }
 
   setCounters(st, 1);

@@ -4,7 +4,28 @@
 
 #include <sstream>
 
-using ExpectedResults = std::vector<std::pair<std::string, std::string>>;
+using ExpectedResults = std::vector<AlgorithmInput>;
+
+
+bool operator==(const AlgorithmInput& left, const AlgorithmInput& right) {
+  // clang-format off
+  return left.index == right.index &&
+         left.seq == right.seq &&
+         left.seqName == right.seqName;
+  // clang-format on
+}
+
+std::ostream& operator<<(std::ostream& os, const AlgorithmInput& input) {
+  const int maxSeqLength = 32;
+
+  os << "{ ";
+  os << "index: " << input.index << ", ";
+  os << "seqName: " << input.seqName << ", ";
+  os << "seq: " << input.seq.substr(0, maxSeqLength) << "(truncated)... , ";
+  os << "}";
+  return os;
+}
+
 
 TEST(parseSequences, SanitizesSequences) {
   std::stringstream input;
@@ -25,10 +46,10 @@ X Y:)Z
   const auto results = parseSequences(input);
 
   const ExpectedResults expected = {
-    {"Hello/Sequence/ID1234", "ABC?DEF.GHL*MNOPXYZ"},
+    {0, "Hello/Sequence/ID1234", "ABC?DEF.GHL*MNOPXYZ"},
   };
   EXPECT_EQ(results.size(), expected.size());
-  EXPECT_THAT(results, testing::UnorderedElementsAreArray(expected));
+  EXPECT_THAT(results, testing::ElementsAreArray(expected));
 }
 
 
@@ -44,10 +65,10 @@ TEST(parseSequences, ConvertsSequencesToUppercase) {
   const auto results = parseSequences(input);
 
   const ExpectedResults expected = {
-    {"Some/Sequence", "HICANYOUMAKEITUPPERCASEPLEASE?CHEERS"},
+    {0, "Some/Sequence", "HICANYOUMAKEITUPPERCASEPLEASE?CHEERS"},
   };
   EXPECT_EQ(results.size(), expected.size());
-  EXPECT_THAT(results, testing::UnorderedElementsAreArray(expected));
+  EXPECT_THAT(results, testing::ElementsAreArray(expected));
 }
 
 TEST(parseSequences, DeduplicatesSequenceNames) {
@@ -73,14 +94,14 @@ TEST(parseSequences, DeduplicatesSequenceNames) {
   const auto results = parseSequences(input);
 
   const ExpectedResults expected = {
-    {"Hello", "ABCD"},
-    {"World", "EFGH"},
-    {"Foo", "BAR"},
-    {"World (1)", "IJKLMN"},
-    {"Hello (1)", "OPQRS"},
+    {0, "Hello", "ABCD"},
+    {1, "World", "EFGH"},
+    {2, "Foo", "BAR"},
+    {3, "World (1)", "IJKLMN"},
+    {4, "Hello (1)", "OPQRS"},
   };
   EXPECT_EQ(results.size(), expected.size());
-  EXPECT_THAT(results, testing::UnorderedElementsAreArray(expected));
+  EXPECT_THAT(results, testing::ElementsAreArray(expected));
 }
 
 TEST(parseSequences, AssignsSequenceNameToUntitledSequences) {
@@ -96,11 +117,11 @@ TEST(parseSequences, AssignsSequenceNameToUntitledSequences) {
   const auto results = parseSequences(input);
 
   const ExpectedResults expected = {
-    {"Untitled", "ABCD"},
-    {"Untitled (1)", "EFGH"},
+    {0, "Untitled", "ABCD"},
+    {1, "Untitled (1)", "EFGH"},
   };
   EXPECT_EQ(results.size(), expected.size());
-  EXPECT_THAT(results, testing::UnorderedElementsAreArray(expected));
+  EXPECT_THAT(results, testing::ElementsAreArray(expected));
 }
 
 TEST(parseSequences, AllowsPlainText) {
@@ -114,8 +135,8 @@ TEST(parseSequences, AllowsPlainText) {
   const auto results = parseSequences(input);
 
   const ExpectedResults expected = {
-    {"Untitled", "THISISPLAINTEXT"},
+    {0, "Untitled", "THISISPLAINTEXT"},
   };
   EXPECT_EQ(results.size(), expected.size());
-  EXPECT_THAT(results, testing::UnorderedElementsAreArray(expected));
+  EXPECT_THAT(results, testing::ElementsAreArray(expected));
 }

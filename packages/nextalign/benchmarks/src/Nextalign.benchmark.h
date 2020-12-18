@@ -24,8 +24,8 @@ void NextalignAverage(benchmark::State& st) {
 
   for (const auto _ : st) {
     for (int i = 0; i < n; ++i) {
-      const auto& [seqName, query] = sequences[i];
-      benchmark::DoNotOptimize(aln = nextalign(query, reference, geneMap, options));
+      const auto& input = sequences[i];
+      benchmark::DoNotOptimize(aln = nextalign(input.seq, reference, geneMap, options));
     }
   }
 
@@ -45,14 +45,14 @@ BENCHMARK(NextalignAverage)      //
  */
 void NextalignVariation(benchmark::State& st) {
   const auto& index = st.range(0);
-  const auto& [seqName, query] = sequences[index];
+  const auto& input = sequences[index];
   const NextalignOptions options = {};
   Alignment aln;
-  st.SetLabel(seqName);
-  st.SetComplexityN(query.size());
+  st.SetLabel(input.seqName);
+  st.SetComplexityN(input.seq.size());
 
   for (const auto _ : st) {
-    benchmark::DoNotOptimize(aln = nextalign(query, reference, geneMap, options));
+    benchmark::DoNotOptimize(aln = nextalign(input.seq, reference, geneMap, options));
   }
 
   setCounters(st, 1);
