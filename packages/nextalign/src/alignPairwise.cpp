@@ -143,7 +143,7 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
 }
 
 ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction,
-  int bandWidth, int meanShift) {
+  const std::vector<int>& gapOpenClose, int bandWidth, int meanShift) {
   // TODO: Avoid creating this lambda function
   const auto indexToShift = [&bandWidth, &meanShift]//
     (int si) {                                      //
@@ -171,8 +171,8 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
   // 2) if X is a base and Y is '-', rPos advances the same and the shift increases
   //    -> diagonal step in the matrix from (ri,si-1) to (ri+1,si)
   const int gapExtend = alignmentParameters.gapExtend;
-  const int gapOpen = alignmentParameters.gapOpen;
-  const int gapClose = alignmentParameters.gapClose;
+  int gapOpen = alignmentParameters.gapOpen;
+  int gapClose = alignmentParameters.gapClose;
   const int misMatch = alignmentParameters.misMatch;
   const int match = alignmentParameters.match;
 
@@ -197,6 +197,8 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
 #pragma clang diagnostic pop
 
   for (ri = 0; ri < refSize; ri++) {
+    gapOpen = gapOpenClose[ri];
+    gapClose = gapOpenClose[ri];
     for (si = 2 * bandWidth; si >= 0; si--) {
       shift = indexToShift(si);
       qPos = ri - shift;
@@ -378,6 +380,13 @@ Alignment backTrace(const std::string& query, const std::string& ref, const vect
 
 Alignment alignPairwise(
   const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction, int minimalLength) {
+  std::vector<int> gapOpenClose(ref.size());
+  fill(gapOpenClose.begin(), gapOpenClose.end(), -2);
+  return alignPairwise(query, ref, scoreLookupFunction, gapOpenClose, minimalLength);
+}
+
+Alignment alignPairwise(
+  const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction, const std::vector<int>& gapOpenClose, int minimalLength) {
   const int querySize = query.size();
   if (querySize < minimalLength) {
     throw ErrorAlignmentSequenceTooShort();
@@ -391,7 +400,7 @@ Alignment alignPairwise(
     throw ErrorAlignmentBadSeedMatches();
   }
 
-  const ForwardTrace& forwardTrace = scoreMatrix(query, ref, scoreLookupFunction, bandWidth, meanShift);
+  const ForwardTrace& forwardTrace = scoreMatrix(query, ref, scoreLookupFunction, gapOpenClose, bandWidth, meanShift);
   const auto& scores = forwardTrace.scores;
   const auto& paths = forwardTrace.paths;
 

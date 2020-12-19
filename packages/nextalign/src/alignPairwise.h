@@ -37,7 +37,7 @@ struct AlignmentParameters {
 
 SeedAlignment seedAlignment(const std::string& query, const std::string& ref);
 
-ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction,
+ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction, const std::vector<int>& gapOpenClose,
   int bandWidth, int meanShift);
 
 Alignment backTrace(const std::string& query, const std::string& ref, const vector2d<int>& scores,
@@ -45,3 +45,6 @@ Alignment backTrace(const std::string& query, const std::string& ref, const vect
 
 Alignment alignPairwise(
   const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction, int minimalLength);
+
+Alignment alignPairwise(
+  const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction, const std::vector<int>& gapOpenClose, int minimalLength);
