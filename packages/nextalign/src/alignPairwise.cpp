@@ -144,11 +144,6 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
 
 ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction,
   int bandWidth, int meanShift) {
-  // TODO: Avoid creating this lambda function
-  const auto indexToShift = [&bandWidth, &meanShift]//
-    (int si) {                                      //
-      return si - bandWidth + meanShift;
-    };
 
   // allocate a matrix to record the matches
   const int querySize = safe_cast<int>(query.size());
@@ -186,7 +181,6 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
 #pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
   int si;
   int ri;
-  int shift;
   int tmpMatch;
   std::array<int, 4> cmp;
   int qPos;
@@ -197,10 +191,7 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
 #pragma clang diagnostic pop
 
   for (ri = 0; ri < refSize; ri++) {
-    for (si = 2 * bandWidth; si >= 0; si--) {
-      shift = indexToShift(si);
-      qPos = ri - shift;
-
+    for (si = 2 * bandWidth, qPos=ri - meanShift - bandWidth; si >= 0; si--, qPos++) {
       if (qPos < 0) {
         // precedes query sequence -- no score, origin is query gap
         // we could fill all of this at once
@@ -293,7 +284,6 @@ Alignment backTrace(const std::string& query, const std::string& ref, const vect
     }
   }
 
-  const int shift = indexToShift(si);
   int origin;//NOLINT(cppcoreguidelines-init-variables)
 
   // determine position tuple qPos, rPos corresponding to the place it the matrix
