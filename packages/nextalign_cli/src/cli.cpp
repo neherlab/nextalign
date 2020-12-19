@@ -269,16 +269,29 @@ void run(
   /* out */ std::ostream &outputInsertionsStream) {
   tbb::task_group_context context;
 
+  std::ifstream file(cliParams.sequences);
+  if (!file.good()) {
+    fmt::print(stderr, "Error: unable to read \"{:s}\"\n", cliParams.sequences);
+    std::exit(1);
+  }
+
+  // Dummy parser data
+  const auto inputs = parseSequences(file);
+  int i = 0;// circular buffer index
+
   /** Input filter is a serial input filter function, which accepts an input stream,
    * reads and parses the contents of it, and returns parsed sequences */
   const auto inputFilter = tbb::make_filter<void, AlgorithmInput>(tbb::filter::serial_in_order,//
-    [&inputFastaStream](tbb::flow_control &fc) -> AlgorithmInput {
-      if (!inputFastaStream->good()) {
-        fc.stop();
-        return {};
+    [&i, &inputs](tbb::flow_control &fc) -> AlgorithmInput {
+      // Dummy parser, just returns sequences from the circular buffer
+      const auto &input = inputs[i];
+      ++i;
+
+      if (i == inputs.size()) {
+        i = 0;// reset circular buffer position
       }
 
-      return inputFastaStream->next();
+      return input;
     });
 
 
