@@ -90,10 +90,33 @@ AlignmentImproved alignBetter(
   return alignmentImproved;
 }
 
+//TODO: extract constants
+std::vector<int> gapOpenCloseScores(
+  const std::string& ref, const GeneMap& geneMap, const NextalignOptions& options) {
+  std::vector<int> gapOpenClose(ref.size());
+  fill(gapOpenClose.begin(), gapOpenClose.end(), -2);
+
+  for (const auto& geneName : options.genes) {
+    // TODO: Should probably validate gene names before even running
+    const auto& found = geneMap.find(geneName);
+    if (found == geneMap.end()) {
+      throw ErrorGeneMapGeneNotFound(geneName);
+    }
+
+    const auto& gene = found->second;
+    for (int i=gene.start; i<=gene.end; i+=3){
+      gapOpenClose[i] = -1;
+    }
+  }
+  return gapOpenClose;
+}
+
 AlignmentImproved nextalign(
   const std::string& query, const std::string& ref, const GeneMap& geneMap, const NextalignOptions& options) {
 
-  const auto alignment = alignPairwise(query, ref, &lookupNucMatchScore, 100);
+  // TODO: This wants to be done once upstream (doesn't depend on query)
+  std::vector<int> gapOpenClose = gapOpenCloseScores(ref, geneMap, options);
+  const auto alignment = alignPairwise(query, ref, &lookupNucMatchScore, gapOpenClose, 100);
 
   //  const auto alignmentBetter = alignBetter(ref, alignment, geneMap, options);
 
