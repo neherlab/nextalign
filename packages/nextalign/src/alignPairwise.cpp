@@ -284,6 +284,7 @@ Alignment backTrace(const std::string& query, const std::string& ref, const vect
     }
   }
 
+  const int shift = si - bandWidth + meanShift;
   int origin;//NOLINT(cppcoreguidelines-init-variables)
 
   // determine position tuple qPos, rPos corresponding to the place it the matrix
