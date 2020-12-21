@@ -6,6 +6,7 @@ Nextalign
 > Viral genome sequence alignment
 > </h4>
 
+> ⚠️ IMPORTANT: Nextalign is a new project and is under heavy development. There might be serious bugs. Please report all errors and inconsistencies using [Github Issues](https://github.com/neherlab/nextalign/issues/new).
 
 <h2 id="about" align="center">
 👋 About
@@ -57,7 +58,7 @@ Nextalign produces the following outputs:
 
 ### Feedback
 
-Do you find Nextalign useful? Tell us about it.
+Do you find Nextalign useful? Tell us about your use-case and experience with it.
 
 If you want to report an error, request a new feature, please open
 a [new Github Issue](https://github.com/neherlab/nextalign/issues/new).
