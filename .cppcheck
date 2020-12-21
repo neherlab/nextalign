@@ -4,7 +4,7 @@
 --inconclusive
 --inline-suppr
 --quiet
---std=c++20
+--std=c++17
 --suppress=*:*3rdparty/*:*tests/*:*tmp/*:*temp/*
 --suppress=invalidPointerCast:*ieee754_comparison.h
 -i .build
