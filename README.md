@@ -39,12 +39,12 @@ TODO: provide prebuilt binaries for major platforms
 
 Nextalign accepts the following inputs:
 
-| Required | Input | Flag | Description | Example |
-|----------|-------|------|-------------| ------- |
-| yes | Sequences | `--sequences=<path>` | Path to a file containing sequences to align ("query" sequences). Every sequence in this file will be pairwise-aligned with the reference sequence. Accepted formats: fasta. | [`--sequences=data/example/sequences.fasta`](data/example/sequences.fasta) |
-| yes | Reference sequence | `--reference=<path>` | Path to a file containing reference sequence to align against. Accepted formats: fasta (1 sequence only), plain text | [`--reference=data/example/reference.txt`](data/example/reference.txt) |
-| yes | Gene map | `--genemap=<path>` | Path to a file containing gene map (genome annotation). Accepted formats: [GFF](https://www.ensembl.org/info/website/upload/gff.html), containing `gene` features and `gene_name` attributes | [`--genemap=data/example/genemap.gff`](data/example/genemap.gff) |
-| no | Genes | `--genes=<gene1,gene2,...>` | A comma-separated list of genes to use for alignment refinement. All listed genes should be present in the gene map. If flag is not provided or empty, all genes present in gene map are used.  | `--genes=E,ORF1a` |
+| Required | Input | Flag | Description |
+|----------|-------|------|-------------|
+| yes | Sequences | `--sequences=<path>` | Path to a file containing sequences to align ("query" sequences). Every sequence in this file will be pairwise-aligned with the reference sequence. Accepted formats: fasta. Example: [`--sequences=data/example/sequences.fasta`](data/example/sequences.fasta) |
+| yes | Reference sequence | `--reference=<path>` | Path to a file containing reference sequence to align against. Accepted formats: fasta (1 sequence only), plain text. Example: [`--reference=data/example/reference.txt`](data/example/reference.txt)  |
+| yes | Gene map | `--genemap=<path>` | Path to a file containing gene map (genome annotation). Accepted formats: [GFF](https://www.ensembl.org/info/website/upload/gff.html), containing `gene` features and `gene_name` attributes. Example: [`--genemap=data/example/genemap.gff`](data/example/genemap.gff) |
+| no | Genes | `--genes=<gene1,gene2,...>` | A comma-separated list of genes to use for alignment refinement. All listed genes should be present in the gene map. Affects performance and accuracy. If flag is not provided or empty, all genes present in gene map are used. Example: `--genes=E,ORF1a` |
 
 #### ⬅️ Outputs
 
@@ -53,7 +53,7 @@ Nextalign produces the following outputs:
 | Required | Input | Flag | Description | 
 |----------|-------|------|-------------| 
 | yes | Sequence output| `--output=<path>` | Aligned sequences will be written to this file. Format: fasta. |
-| no | Insertions output | `--output-insertions=<path>` | A list of insertions which have been stripped will be written to this file. Format: CSV. |
+| no | Insertions output | `--output-insertions=<path>` | A list of insertions which have been stripped from aligned sequences will be written to this file. Format: CSV. |
 
 ### Feedback
 
