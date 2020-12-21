@@ -13,3 +13,7 @@ cmake
 txt
 cmake_find_package
 cmake_paths
+
+[options]
+tbb:shared=False
+gtest:shared=True

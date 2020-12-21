@@ -34,4 +34,5 @@ target_link_libraries(${PROJECT_NAME}
   fmt::fmt
   nextalign
   TBB::tbb
+  -static -static-libstdc++ -static-libgcc
   )
