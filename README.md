@@ -29,7 +29,13 @@ TODO: expand this section and make it scientifically sound
 
 TODO: expand this section
 
-### ➡️ Inputs
+### Installation
+
+TODO: provide prebuilt binaries for major platforms
+
+### Usage
+
+#### ➡️ Inputs
 
 Nextalign accepts the following inputs:
 
@@ -40,7 +46,7 @@ Nextalign accepts the following inputs:
 | yes | Gene map | `--genemap=<path>` | Path to a file containing gene map (genome annotation). Accepted formats: [GFF](https://www.ensembl.org/info/website/upload/gff.html), containing `gene` features and `gene_name` attributes | [`--genemap=data/example/genemap.gff`](data/example/genemap.gff) |
 | no | Genes | `--genes=<gene1,gene2,...>` | A comma-separated list of genes to use for alignment refinement. All listed genes should be present in the gene map. If flag is not provided or empty, all genes present in gene map are used.  | `--genes=E,ORF1a` |
 
-### ⬅️ Outputs
+#### ⬅️ Outputs
 
 Nextalign produces the following outputs:
 
@@ -48,6 +54,18 @@ Nextalign produces the following outputs:
 |----------|-------|------|-------------| 
 | yes | Sequence output| `--output=<path>` | Aligned sequences will be written to this file. Format: fasta. |
 | no | Insertions output | `--output-insertions=<path>` | A list of insertions which have been stripped will be written to this file. Format: CSV. |
+
+### Feedback
+
+Do you find Nextalign useful? Tell us about it.
+
+If you want to report an error, request a new feature, please open
+a [new Github Issue](https://github.com/neherlab/nextalign/issues/new).
+
+For a general conversation, feel free to join Nextstrain Discussion
+at [discussion.nextstrain.org](https://discussion.nextstrain.org/).
+
+
 
 ---
 
@@ -307,10 +325,11 @@ In this case, binaries will be produced in directories postfixed with `-Clang`, 
 
 Hint:
 
-> On Ubuntu you can build LLVM project (including Clang) with a script provided in `scripts/deps/build_llvm.sh`. It depends on binutils which should be built with `scripts/deps/build_binutils.sh` prior to that. There is also a script to build GCC: `scripts/deps/build_gcc.sh`. Refer to comments inside these scripts for the list of dependencies required.
->
-> The projects' build system is setup to automatically pickup the `gcc` and `g++` executables from `3rdparty/gcc/bin/`, and `clang` and `clang++` executables from `3rdparty/llvm/bin/` if any of those exist.
+> 💡 On Ubuntu you can build LLVM project (including Clang) with a script provided in `scripts/deps/build_llvm.sh`. It depends on binutils which should be built with `scripts/deps/build_binutils.sh` prior to that. There is also a script to build GCC: `scripts/deps/build_gcc.sh`. Refer to comments inside these scripts for the list of dependencies required. As a result of these scripts, the ready-to-use compilers will be in `3rdparty/gcc` and `3rdparty/llvm`,
 
+> 💡 The projects' build system is setup to automatically pickup the `gcc` and `g++` executables from `3rdparty/gcc/bin/`, and `clang` and `clang++` executables from `3rdparty/llvm/bin/` if any of those exist.
+
+---
 
 <h3 id="performance" align="center">
 🚅 Performance
@@ -321,11 +340,26 @@ Hint:
 Runtime performance is important for this project and for production builds we use a gold-plugin-enabled linker
 executable.
 
-Hint:
 
-> On Ubuntu you can build it along with other binutils using the provided script in `scripts/deps/build_binutils.sh`. The results of the build will be in `3rdparty/binutils`.
->
-> The projects' build system is setup to automatically pickup the `ld` linker from `3rdparty/binutils/bin/` if it exists.
+> 💡 On Ubuntu you can build it along with other binutils using the provided script in `scripts/deps/build_binutils.sh`. The results of the build will be in `3rdparty/binutils`.
+
+> 💡 The projects' build system is setup to automatically pickup the `ld` linker from `3rdparty/binutils/bin/` if it exists.
+
+
+<h3 id="distribution" align="center">
+🚀 Distribution
+</h3>
+
+TODO: under construction
+
+#### Continuous integration
+
+TODO: under construction
+
+#### Build artifacts
+
+TODO: under construction
+
 
 <h3 id="troubleshooting" align="center">
 😮 Troubleshooting
@@ -358,14 +392,14 @@ TODO: use conan profile local to the project, to simplify usage of different com
 Try to remove the build directory (`.build`) and rebuild.
 
 <h3 id="team" align="center">
-Team
+🧑‍🤝‍🧑 Team
 </h3>
 
 TODO: under construction
 
 
 <h3 id="license" align="center">
-License
+⚖️ License
 </h3>
 
 <a target="_blank" rel="noopener noreferrer" href="LICENSE" alt="License file">MIT License</a>
