@@ -1,14 +1,64 @@
-<h1 id="nextclade" align="center">
+<h1 id="nextalign" align="center">
 Nextalign
 </h1>
 
-<h4 id="nextclade" align="center">
-Sequence alignment
-</h1>
+> <h4 align="center">
+> Viral genome sequence alignment
+> </h4>
 
-## 🧑‍💻 Developer's guide
 
-### ✨ Quick start
+<h2 id="about" align="center">
+👋 About
+</h2>
+
+Nextalign is the viral genome sequence alignment algorithm used in [Nextclade](https://github.com/nextstrain/nextclade),
+ported to C++ and made to a standalone command-line tool.
+
+Nextalign performs pairwise alignment of provided sequences against a given reference sequences.
+~With subsequent refinement of the alignment using gene information~
+
+This tools' primary focus is on SARS-CoV-2 genome, but it can be used on any virus.
+
+TODO: expand this section and make it scientifically sound
+
+---
+
+<h2 id="users-guide" align="center">
+👩‍🔬 User's guide
+</h2>
+
+TODO: expand this section
+
+### ➡️ Inputs
+
+Nextalign accepts the following inputs:
+
+| Required | Input | Flag | Description | Example |
+|----------|-------|------|-------------| ------- |
+| yes | Sequences | `--sequences=<path>` | Path to a file containing sequences to align ("query" sequences). Every sequence in this file will be pairwise-aligned with the reference sequence. Accepted formats: fasta. | [`--sequences=data/example/sequences.fasta`](data/example/sequences.fasta) |
+| yes | Reference sequence | `--reference=<path>` | Path to a file containing reference sequence to align against. Accepted formats: fasta (1 sequence only), plain text | [`--reference=data/example/reference.txt`](data/example/reference.txt) |
+| yes | Gene map | `--genemap=<path>` | Path to a file containing gene map (genome annotation). Accepted formats: [GFF](https://www.ensembl.org/info/website/upload/gff.html), containing `gene` features and `gene_name` attributes | [`--genemap=data/example/genemap.gff`](data/example/genemap.gff) |
+| no | Genes | `--genes=<gene1,gene2,...>` | A comma-separated list of genes to use for alignment refinement. All listed genes should be present in the gene map. If flag is not provided or empty, all genes present in gene map are used.  | `--genes=E,ORF1a` |
+
+### ⬅️ Outputs
+
+Nextalign produces the following outputs:
+
+| Required | Input | Flag | Description | 
+|----------|-------|------|-------------| 
+| yes | Sequence output| `--output=<path>` | Aligned sequences will be written to this file. Format: fasta. |
+| no | Insertions output | `--output-insertions=<path>` | A list of insertions which have been stripped will be written to this file. Format: CSV. |
+
+---
+
+
+<h2 id="developers-guide" align="center">
+🧑‍💻 Developer's guide
+</h2>
+
+<h3 id="quick-start" align="center">
+✨ Quick start
+</h3>
 
 1. Install and configure required dependencies
 
@@ -71,11 +121,15 @@ and modifying the `DEV_CLI_OPTIONS` variable.
 
 > 💡 By default, the output files are produced in `tmp/` directory in the root of the project.
 
-> ⚠️ Do not measure performance of the executables produced with `make dev` and do not use them for real workloads. Development builds, having no optimizations and having debugging tools enabled, are meant for developer's productivity and debugging, and can be orders of magnitudes slower than the production build. Instead, for any performance assessments, use [benchmarks](#-microbenchmarks), [profiling](#runtime-performance-profiling) or [production build](#-production-build). In real workloads always use the [production build](#-production-build).
+> ⚠️ Do not measure performance of the executables produced with `make dev` and do not use them for real workloads. Development builds, having no optimizations and having debugging tools enabled, are meant for developer's productivity and debugging, and can be orders of magnitudes slower than the production build. Instead, for any performance assessments, use [benchmarks](#microbenchmarks), [profiling](#runtime-performance-assessment) or [production build](#production-build). In real workloads always use the [production build](#production-build).
 
-### ⏩ Production build
+---
 
-Having the requirements from the ["Quick start" section](#-quick-start) installed, run
+<h3 id="production-build" align="center">
+⏩ Production build
+</h3>
+
+Having the requirements from the ["Quick start" section](#quick-start) installed, run
 
 ```bash
 make prod
@@ -84,7 +138,11 @@ make prod
 This will produce the optimized executable in `.build/Release/packages/nextalign_cli/nextalign_cli`, which you can run
 directly. This is what we (will) redistribute to the end users.
 
-### ⏱️ Runtime performance assessment
+---
+
+<h3 id="runtime-performance-assessment" align="center">
+⏱️ Runtime performance assessment
+</h3>
 
 #### 🪑 Microbenchmarks
 
@@ -158,7 +216,11 @@ make profile
 
 TODO: under construction
 
-### ✅ Assessment of correctness
+---
+
+<h3 id="assessment-of-correctness" align="center">
+✅ Assessment of correctness
+</h3>
 
 #### 🧪 Unit tests
 
@@ -173,7 +235,11 @@ and [Google Mock documentation](https://github.com/google/googletest/blob/master
 
 TODO: under construction
 
-### 🔬 Static analysis
+---
+
+<h3 id="static-analysis" align="center">
+🔬 Static analysis
+</h3>
 
 TODO: under construction
 
@@ -190,7 +256,11 @@ TODO: under construction
 `cppcheck` runs as a part of the main development script (`make dev`). The file `.cppcheck` in the root of the project
 contains arguments passed to `cppcheck`.
 
-### 🔥 Runtime analysis
+---
+
+<h3 id="runtime-analysis" align="center">
+🔥 Runtime analysis
+</h3>
 
 #### 🛀 Sanitizers
 
@@ -241,9 +311,10 @@ Hint:
 >
 > The projects' build system is setup to automatically pickup the `gcc` and `g++` executables from `3rdparty/gcc/bin/`, and `clang` and `clang++` executables from `3rdparty/llvm/bin/` if any of those exist.
 
-###
 
-### 🚅 Performance
+<h3 id="performance" align="center">
+🚅 Performance
+</h3>
 
 #### 🚅 Link-time optimization (LTO)
 
@@ -256,7 +327,9 @@ Hint:
 >
 > The projects' build system is setup to automatically pickup the `ld` linker from `3rdparty/binutils/bin/` if it exists.
 
-### 😮 Troubleshooting
+<h3 id="troubleshooting" align="center">
+😮 Troubleshooting
+</h3>
 
 #### 1. I have a newer version of a compiler, but conan and cmake keep using the old one
 
@@ -284,6 +357,15 @@ TODO: use conan profile local to the project, to simplify usage of different com
 
 Try to remove the build directory (`.build`) and rebuild.
 
-## License
+<h3 id="team" align="center">
+Team
+</h3>
+
+TODO: under construction
+
+
+<h3 id="license" align="center">
+License
+</h3>
 
 <a target="_blank" rel="noopener noreferrer" href="LICENSE" alt="License file">MIT License</a>
