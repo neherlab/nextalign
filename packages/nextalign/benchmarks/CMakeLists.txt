@@ -13,6 +13,7 @@ add_executable(${PROJECT_NAME}
   src/ForwardTrace.benchmark.h
   src/Nextalign.benchmark.h
   src/SeedMatching.benchmark.h
+  src/StripInsertions.benchmark.h
   src/main.cpp
   src/utils/getData.h
   src/utils/setCounters.h

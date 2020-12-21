@@ -10,6 +10,7 @@ const auto [sequences, reference, geneMap, totalNucs] = getData();
 #include "SeedMatching.benchmark.h"
 #include "ForwardTrace.benchmark.h"
 #include "BackwardTrace.benchmark.h"
+#include "StripInsertions.benchmark.h"
 // clang-format on
 
 
