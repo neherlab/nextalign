@@ -16,6 +16,7 @@ find_package(Microsoft.GSL 3.1.0 REQUIRED)
 find_package(boost_base 1.68.0 REQUIRED)
 find_package(fast-cpp-csv-parser 20191004 REQUIRED)
 find_package(fmt 7.1.0 REQUIRED)
+find_package(type_safe 0.2.1 REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC
   include/nextalign/geneUtils.h
@@ -28,6 +29,8 @@ add_library(${PROJECT_NAME} STATIC
   src/alignCodon.h
   src/alignPairwise.cpp
   src/alignPairwise.h
+  src/alphabet/sequence.cpp
+  src/alphabet/sequence.h
   src/decode.cpp
   src/decode.h
   src/extractGene.cpp
@@ -64,7 +67,13 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
 target_compile_definitions(${PROJECT_NAME}
-  PRIVATE -DPROJECT_NAME="${PROJECT_NAME}"
+  PRIVATE
+
+  -DPROJECT_NAME="${PROJECT_NAME}"
+
+  # Workaround for GCC 9 error in type_safe.
+  # See: https://github.com/foonathan/debug_assert/issues/17
+  -DDEBUG_ASSERT_PURE_FUNCTION=
   )
 
 target_include_directories(${PROJECT_NAME}
@@ -88,6 +97,7 @@ target_link_libraries(${PROJECT_NAME}
   boost_base::boost_base
   fast-cpp-csv-parser::fast-cpp-csv-parser
   fmt::fmt
+  type_safe::type_safe
   )
 
 set(NEXTALIGN_BUILD_TESTS ON CACHE BOOL "Build unit tests")
