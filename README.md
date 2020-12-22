@@ -3,7 +3,7 @@ Nextalign
 </h1>
 
 > <h4 align="center">
-> Viral genome sequence alignment
+> Viral genome reference alignment
 > </h4>
 
 > ⚠️ IMPORTANT: Nextalign is a new project and is under heavy development. There might be serious bugs. Please report all errors and inconsistencies using [Github Issues](https://github.com/neherlab/nextalign/issues/new).
@@ -15,12 +15,12 @@ Nextalign
 Nextalign is the viral genome sequence alignment algorithm used in [Nextclade](https://github.com/nextstrain/nextclade),
 ported to C++ and made to a standalone command-line tool.
 
-Nextalign performs pairwise alignment of provided sequences against a given reference sequences.
-~With subsequent refinement of the alignment using gene information~
+Nextalign performs pairwise alignment of provided sequences against a given reference sequences using
+a banded local alignment with affine gap-cost.
+Band width and rough relative positions are determined through seed matching.
 
-This tools' primary focus is on SARS-CoV-2 genome, but it can be used on any virus.
-
-TODO: expand this section and make it scientifically sound
+Currently, nextalign's primary focus is on SARS-CoV-2 genome, but it can be used on any virus with a sufficiently similar reference sequence (less than a 5% divergence).
+Nextalign will strip insertions relative to the reference and output them in a separate tabular file.
 
 ---
 
@@ -40,21 +40,21 @@ TODO: provide prebuilt binaries for major platforms
 
 Nextalign accepts the following inputs:
 
-| Required | Input | Flag | Description |
-|----------|-------|------|-------------|
-| yes | Sequences | `--sequences=<path>` | Path to a file containing sequences to align ("query" sequences). Every sequence in this file will be pairwise-aligned with the reference sequence. Accepted formats: fasta. Example: [`--sequences=data/example/sequences.fasta`](data/example/sequences.fasta) |
-| yes | Reference sequence | `--reference=<path>` | Path to a file containing reference sequence to align against. Accepted formats: fasta (1 sequence only), plain text. Example: [`--reference=data/example/reference.txt`](data/example/reference.txt)  |
-| yes | Gene map | `--genemap=<path>` | Path to a file containing gene map (genome annotation). Accepted formats: [GFF](https://www.ensembl.org/info/website/upload/gff.html), containing `gene` features and `gene_name` attributes. Example: [`--genemap=data/example/genemap.gff`](data/example/genemap.gff) |
-| no | Genes | `--genes=<gene1,gene2,...>` | A comma-separated list of genes to use for alignment refinement. All listed genes should be present in the gene map. Affects performance and accuracy. If flag is not provided or empty, all genes present in gene map are used. Example: `--genes=E,ORF1a` |
+| Required | Input              | Flag                        | Description                                                                                                                                                                                                                                                             |
+| -------- | ------------------ | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| yes      | Sequences          | `--sequences=<path>`        | Path to a file containing sequences to align ("query" sequences). Every sequence in this file will be pairwise-aligned with the reference sequence. Accepted formats: fasta. Example: [`--sequences=data/example/sequences.fasta`](data/example/sequences.fasta)        |
+| yes      | Reference sequence | `--reference=<path>`        | Path to a file containing reference sequence to align against. Accepted formats: fasta (1 sequence only), plain text. Example: [`--reference=data/example/reference.txt`](data/example/reference.txt)                                                                   |
+| yes      | Gene map           | `--genemap=<path>`          | Path to a file containing gene map (genome annotation). Accepted formats: [GFF](https://www.ensembl.org/info/website/upload/gff.html), containing `gene` features and `gene_name` attributes. Example: [`--genemap=data/example/genemap.gff`](data/example/genemap.gff) |
+| no       | Genes              | `--genes=<gene1,gene2,...>` | A comma-separated list of genes to use for alignment refinement. All listed genes should be present in the gene map. Affects performance and accuracy. If flag is not provided or empty, all genes present in gene map are used. Example: `--genes=E,ORF1a`             |
 
 #### ⬅️ Outputs
 
 Nextalign produces the following outputs:
 
-| Required | Input | Flag | Description | 
-|----------|-------|------|-------------| 
-| yes | Sequence output| `--output=<path>` | Aligned sequences will be written to this file. Format: fasta. |
-| no | Insertions output | `--output-insertions=<path>` | A list of insertions which have been stripped from aligned sequences will be written to this file. Format: CSV. |
+| Required | Input             | Flag                         | Description                                                                                                     |
+| -------- | ----------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| yes      | Sequence output   | `--output=<path>`            | Aligned sequences will be written to this file. Format: fasta.                                                  |
+| no       | Insertions output | `--output-insertions=<path>` | A list of insertions which have been stripped from aligned sequences will be written to this file. Format: CSV. |
 
 ### Feedback
 
@@ -66,10 +66,7 @@ a [new Github Issue](https://github.com/neherlab/nextalign/issues/new).
 For a general conversation, feel free to join Nextstrain Discussion
 at [discussion.nextstrain.org](https://discussion.nextstrain.org/).
 
-
-
 ---
-
 
 <h2 id="developers-guide" align="center">
 🧑‍💻 Developer's guide
@@ -81,27 +78,27 @@ at [discussion.nextstrain.org](https://discussion.nextstrain.org/).
 
 1. Install and configure required dependencies
 
-    - C++17-compliant C++ compiler
+   - C++17-compliant C++ compiler
 
-      > ⚠️ Only GCC >= 9 and Clang >= 10 are officially supported (but you can try older versions too and tell us how it goes).
+     > ⚠️ Only GCC >= 9 and Clang >= 10 are officially supported (but you can try older versions too and tell us how it goes).
 
-    - [cmake](https://cmake.org/) >= 3.10
+   - [cmake](https://cmake.org/) >= 3.10
 
-    - [conan](https://conan.io/) package manager
+   - [conan](https://conan.io/) package manager
 
-      > 💡 For Ubuntu Linux there is an installation script included in `./tools/install-conan`
+     > 💡 For Ubuntu Linux there is an installation script included in `./tools/install-conan`
 
-    - [cppcheck](http://cppcheck.sourceforge.net/)
+   - [cppcheck](http://cppcheck.sourceforge.net/)
 
-      > ⚠️ A version that supports C++17 is required
+     > ⚠️ A version that supports C++17 is required
 
-    - (optional, but recommended) [nodemon](https://www.npmjs.com/package/nodemon)
+   - (optional, but recommended) [nodemon](https://www.npmjs.com/package/nodemon)
 
-      > ⚠️ nodemon requires Node.js and npm. You can install it globally with:
-      >
-      > ```bash
-      > npm install --global nodemon
-      > ```
+     > ⚠️ nodemon requires Node.js and npm. You can install it globally with:
+     >
+     > ```bash
+     > npm install --global nodemon
+     > ```
 
 2. Clone and run
 
@@ -111,17 +108,18 @@ at [discussion.nextstrain.org](https://discussion.nextstrain.org/).
    make dev
 
    ```
+
    > ⚠️ Note the `--recursive` flag for `git` command - this repository contains git submodules
 
    This will:
 
-    - install or update conan packages
-    - run cmake and generate makefiles
-    - build the project and tests
-    - run static analysis on source files
-    - run tests
-    - run CLI with parameters defined in `DEV_CLI_OPTIONS` environment variable
-    - watch source files and rebuild on changes
+   - install or update conan packages
+   - run cmake and generate makefiles
+   - build the project and tests
+   - run static analysis on source files
+   - run tests
+   - run CLI with parameters defined in `DEV_CLI_OPTIONS` environment variable
+   - watch source files and rebuild on changes
 
    > 💡 If you don't want to install Node.js and nodemon, or don't want the automatic rebuild feature, you can use `make dev-nowatch` instead of `make dev`.
 
@@ -172,8 +170,8 @@ important [Runtime and Reporting Considerations](https://github.com/google/bench
 .
 
 > ⚠️ For the most accurate results, you should [disable CPU frequence scaling](https://github.com/google/benchmark#disabling-cpu-frequency-scaling) for the time of your benchmarking session. (More info: [[kernel](https://www.kernel.org/doc/html/v4.15/admin-guide/pm/cpufreq.html)]
-, [[arch](https://wiki.archlinux.org/index.php/CPU_frequency_scaling)]
-, [[debian](https://wiki.debian.org/CpuFrequencyScaling)])
+> , [[arch](https://wiki.archlinux.org/index.php/CPU_frequency_scaling)]
+> , [[debian](https://wiki.debian.org/CpuFrequencyScaling)])
 
 > 💡 As a simple solution, on most modern hardware and Linux distros, before running benchmarks you could temporarily switch to `performance` governor, with
 >
@@ -289,12 +287,12 @@ threading and programming mistakes which lead to [undefined behavior](https://en
 
 The project is set up to build with sanitizers, if one of the following `CMAKE_BUILD_TYPE`s is set:
 
-| CMAKE_BUILD_TYPE  |  Effect  |
-|-------------------|----------|
-| ASAN | [Address](https://clang.llvm.org/docs/AddressSanitizer.html) + [Leak](https://clang.llvm.org/docs/LeakSanitizer.html) sanitizers |
-| MSAN | [Memory sanitizer](https://clang.llvm.org/docs/MemorySanitizer.html) |
-| TSAN | [Thread sanitizer](https://clang.llvm.org/docs/ThreadSanitizer.html) |
-| UBSAN | [Undefined behavior sanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html) |
+| CMAKE_BUILD_TYPE | Effect                                                                                                                           |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| ASAN             | [Address](https://clang.llvm.org/docs/AddressSanitizer.html) + [Leak](https://clang.llvm.org/docs/LeakSanitizer.html) sanitizers |
+| MSAN             | [Memory sanitizer](https://clang.llvm.org/docs/MemorySanitizer.html)                                                             |
+| TSAN             | [Thread sanitizer](https://clang.llvm.org/docs/ThreadSanitizer.html)                                                             |
+| UBSAN            | [Undefined behavior sanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)                                      |
 
 > 💡 For example, if the program is crashing with a segfault, you could to try to run address sanitizer on it:
 >
@@ -341,11 +339,9 @@ Hint:
 Runtime performance is important for this project and for production builds we use a gold-plugin-enabled linker
 executable.
 
-
 > 💡 On Ubuntu you can build it along with other binutils using the provided script in `scripts/deps/build_binutils.sh`. The results of the build will be in `3rdparty/binutils`.
 
 > 💡 The projects' build system is setup to automatically pickup the `ld` linker from `3rdparty/binutils/bin/` if it exists.
-
 
 <h3 id="distribution" align="center">
 🚀 Distribution
@@ -360,7 +356,6 @@ TODO: under construction
 #### Build artifacts
 
 TODO: under construction
-
 
 <h3 id="troubleshooting" align="center">
 😮 Troubleshooting
@@ -377,11 +372,11 @@ As a workaround you may try to add the new compiler to the `PATH` and delete and
 - run `./tools/install-conan`
 - rebuild the project and and watch for `<VERSION>`:
 
-    ```
-    compiler=gcc
-    ...
-    compiler.version=<VERSION>
-    ```
+  ```
+  compiler=gcc
+  ...
+  compiler.version=<VERSION>
+  ```
 
 in console output of the "Install dependencies" build step, and/or set `CMAKE_VERBOSE_MAKEFILE=1` variable and check the
 compiler path used during "Build" step.
@@ -397,7 +392,6 @@ Try to remove the build directory (`.build`) and rebuild.
 </h3>
 
 TODO: under construction
-
 
 <h3 id="license" align="center">
 ⚖️ License
