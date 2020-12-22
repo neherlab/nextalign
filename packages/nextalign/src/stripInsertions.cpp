@@ -4,11 +4,11 @@
 
 #include <string>
 
-#include "safeCast.h"
+#include "alphabet/nucleotides.h"
+#include "src/utils/safe_cast.h"
 #include "utils/contract.h"
 
-
-StripInsertionsResult stripInsertions(const std::string& ref, const std::string& query) {
+StripInsertionsResult stripInsertions(const NucleotideSequence& ref, const NucleotideSequence& query) {
   const int refLength = safe_cast<int>(ref.size());
   const int queryLength = safe_cast<int>(query.size());
   precondition_equal(refLength, queryLength);
@@ -17,10 +17,10 @@ StripInsertionsResult stripInsertions(const std::string& ref, const std::string&
   result.queryStripped.reserve(refLength);
 
   int insertionStart = -1;
-  std::string currentInsertion;
+  NucleotideSequence currentInsertion;
   for (int i = 0; i < refLength; ++i) {
     const auto& c = ref[i];
-    if (c == '-') {
+    if (c == Nucleotide::GAP) {
       if (currentInsertion.empty()) {
         currentInsertion = query[i];
         insertionStart = i;
@@ -33,14 +33,19 @@ StripInsertionsResult stripInsertions(const std::string& ref, const std::string&
         const auto length = safe_cast<int>(currentInsertion.size());
         const auto end = insertionStart + length;
 
-        result.insertions.emplace_back(Insertion{.begin = insertionStart, .end = end, .seq = currentInsertion});
+        result.insertions.emplace_back(InsertionInternal{.begin = insertionStart, .end = end, .seq = currentInsertion});
 
-        currentInsertion = "";
+        currentInsertion = NucleotideSequence{};
         insertionStart = -1;
       }
     }
   }
 
   precondition_less_equal(result.queryStripped.size(), refLength);
+
+  for (auto c : result.queryStripped) {
+    precondition_less(c, Nucleotide::SIZE);
+  }
+
   return result;
 }

@@ -5,10 +5,23 @@
 #include <string>
 #include <vector>
 
-#include "matchNuc.h"
+#include "alphabet/aminoacids.h"
+#include "alphabet/nucleotides.h"
 #include "utils/vector2d.h"
 
 struct NextalignOptions;
+
+template<typename Letter>
+struct AlignmentResult {
+  Sequence<Letter> query;
+  Sequence<Letter> ref;
+  int alignmentScore;
+};
+
+using NucleotideAlignmentResult = AlignmentResult<Nucleotide>;
+
+using AminoacidAlignmentResult = AlignmentResult<Aminoacid>;
+
 
 struct SeedMatch {
   int shift;
@@ -35,13 +48,18 @@ struct AlignmentParameters {
 };
 
 
+template<typename Letter>
 SeedAlignment seedAlignment(const std::string& query, const std::string& ref);
 
-ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction,
-  int bandWidth, int meanShift);
+template<typename Letter>
+ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, int bandWidth, int meanShift);
 
-Alignment backTrace(const std::string& query, const std::string& ref, const vector2d<int>& scores,
+template<typename Letter>
+AlignmentResult<Letter> backTrace(const std::string& query, const std::string& ref, const vector2d<int>& scores,
   const vector2d<int>& paths, int meanShift);
 
-Alignment alignPairwise(
-  const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction, int minimalLength);
+NucleotideAlignmentResult alignPairwise(//
+  const NucleotideSequence& query, const NucleotideSequence& ref, int minimalLength);
+
+AminoacidAlignmentResult alignPairwise(//
+  const AminoacidSequence& query, const AminoacidSequence& ref, int minimalLength);

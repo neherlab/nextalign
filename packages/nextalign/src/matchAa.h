@@ -2,7 +2,6 @@
 
 #include <functional>
 
-#include "types.internal.h"
+#include "alphabet/aminoacids.h"
 
-
-int lookupAaMatchScore(char x, char y);
+int lookupMatchScore(Aminoacid x, Aminoacid y);

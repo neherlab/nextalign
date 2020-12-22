@@ -25,43 +25,28 @@ add_library(${PROJECT_NAME} STATIC
   include/nextalign/parseGeneMapGff.h
   include/nextalign/parseSequences.h
   include/nextalign/types.h
-  src/alignCodon.cpp
-  src/alignCodon.h
   src/alignPairwise.cpp
   src/alignPairwise.h
-  src/alphabet/sequence.cpp
-  src/alphabet/sequence.h
-  src/decode.cpp
-  src/decode.h
-  src/extractGene.cpp
-  src/extractGene.h
+  src/alphabet/aminoacids.h
+  src/alphabet/nucleotides.h
   src/geneUtils.cpp
-  src/mapCoordinates.cpp
-  src/mapCoordinates.h
   src/matchAa.cpp
   src/matchAa.h
   src/matchNuc.cpp
   src/matchNuc.h
   src/nextalign.cpp
-  src/parseGb.cpp
   src/parseGeneMapGff.cpp
   src/parseSequences.cpp
-  src/removeGaps.h
-  src/safeCast.h
+  src/utils/safe_cast.h
   src/stripInsertions.cpp
   src/stripInsertions.h
-  src/translate.cpp
-  src/translate.h
-  src/translateReverse.cpp
-  src/translateReverse.h
-  src/types.internal.h
   src/utils/config.h
   src/utils/contract.h
   src/utils/debugbreak.h
   src/utils/ieee754_comparison.h
   src/utils/macro_overload.h
   src/utils/vector2d.h
-  )
+  src/alphabet/aminoacids.cpp src/alphabet/nucleotides.cpp src/utils/map.h src/utils/contains.h src/alphabet/letter.h src/utils/to_underlying.h)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)

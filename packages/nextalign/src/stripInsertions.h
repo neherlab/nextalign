@@ -5,9 +5,17 @@
 #include <string>
 #include <vector>
 
-struct StripInsertionsResult {
-  std::string queryStripped;
-  std::vector<Insertion> insertions;
+#include "alphabet/nucleotides.h"
+
+struct InsertionInternal {
+  int begin;
+  int end;
+  NucleotideSequence seq;
 };
 
-StripInsertionsResult stripInsertions(const std::string& ref, const std::string& query);
+struct StripInsertionsResult {
+  NucleotideSequence queryStripped;
+  std::vector<InsertionInternal> insertions;
+};
+
+StripInsertionsResult stripInsertions(const NucleotideSequence& ref, const NucleotideSequence& query);
