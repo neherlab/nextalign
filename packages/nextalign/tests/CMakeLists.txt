@@ -8,15 +8,15 @@ find_package(boost_base 1.68.0 REQUIRED)
 find_package(fmt 7.1.0 REQUIRED)
 
 add_executable(${PROJECT_NAME}
-  #  alignPairwise.test.cpp
+  alignPairwise.test.cpp
   data/sampleGeneMap.h
   #  decode.test.cpp
   #  extractGene.test.cpp
   #  mapCoordinates.test.cpp
-  #  parseGeneMapGff.test.cpp
-  #  parseSequences.test.cpp
+  parseGeneMapGff.test.cpp
+  parseSequences.test.cpp
   #  removeGaps.test.cpp
-  #  stripInsertions.test.cpp
+  stripInsertions.test.cpp
   #  translate.test.cpp
   )
 
