@@ -396,9 +396,7 @@ void run(
 
       outputFastaStream << fmt::format(">{:s}\n{:s}\n", seqName, query);
 
-      if (cliParams.outputInsertions) {
-        outputInsertionsStream << fmt::format("\"{:s}\",\"{:s}\"\n", seqName, formatInsertions(insertions));
-      }
+      outputInsertionsStream << fmt::format("\"{:s}\",\"{:s}\"\n", seqName, formatInsertions(insertions));
     });
 
   try {
