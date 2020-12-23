@@ -26,7 +26,6 @@ AlignmentImproved nextalign(
 
   AlignmentImproved result;
   result.query = toString(stripped.queryStripped);
-  result.ref = toString(alignment.ref);
   result.alignmentScore = alignment.alignmentScore;
   result.insertions = map(stripped.insertions, toExternal, std::vector<Insertion>{});
 
