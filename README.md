@@ -24,8 +24,7 @@ ported to C++ and made to a standalone command-line tool.
 
 Nextalign performs pairwise alignment of provided sequences against a given reference sequence using a banded local alignment with affine gap-cost. Band width and rough relative positions are determined through seed matching.
 
-Currently, nextalign's primary focus is on SARS-CoV-2 genome, but it can be used on any virus, given a sufficiently similar reference sequence (less than a 5% divergence).
-Nextalign will strip insertions relative to the reference and output them in a separate CSV file.
+Currently Nextalign primarily focuses on SARS-CoV-2 genome, but it can be used on any virus, given a sufficiently similar reference sequence (less than a 5% divergence). Nextalign will strip insertions relative to the reference and output them in a separate CSV file.
 
 ---
 
