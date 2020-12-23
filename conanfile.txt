@@ -7,6 +7,7 @@ fmt/7.1.0
 gtest/1.10.0
 ms-gsl/3.1.0
 tbb/2020.3
+type_safe/0.2.1
 
 [generators]
 cmake

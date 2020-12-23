@@ -8,9 +8,14 @@
 #include <string>
 #include <vector>
 
+#include "alphabet/aminoacids.h"
+#include "alphabet/letter.h"
+#include "alphabet/nucleotides.h"
+#include "matchAa.h"
 #include "matchNuc.h"
-#include "safeCast.h"
+#include "src/utils/safe_cast.h"
 #include "utils/vector2d.h"
+
 
 namespace details {
   int round(double x) {
@@ -47,8 +52,9 @@ AlignmentParameters alignmentParameters = {
 
 
 // determine the position where a particular kmer (string of length k) matches the reference sequence
+template<typename Letter>
 SeedMatch seedMatch(
-  const std::string& kmer, const std::string& ref, const int start_pos, const int allowed_mismatches) {
+  const Sequence<Letter>& kmer, const Sequence<Letter>& ref, const int start_pos, const int allowed_mismatches) {
   const int refSize = safe_cast<int>(ref.size());
   const int kmerSize = safe_cast<int>(kmer.size());
   int tmpScore = 0;
@@ -77,8 +83,8 @@ SeedMatch seedMatch(
   return {.shift = maxShift, .score = maxScore};
 }
 
-
-SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
+template<typename Letter>
+SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter>& ref) {
   constexpr const int nSeeds = 9;
   constexpr const int seedLength = 21;
   constexpr const int allowed_mismatches = 3;
@@ -142,14 +148,12 @@ SeedAlignment seedAlignment(const std::string& query, const std::string& ref) {
   return {.meanShift = meanShift, .bandWidth = bandWidthFinal};
 }
 
-ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction,
-  int bandWidth, int meanShift) {
-  // TODO: Avoid creating this lambda function
+template<typename Letter>
+ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& ref, int bandWidth, int meanShift) {// TODO: Avoid creating this lambda function
   const auto indexToShift = [&bandWidth, &meanShift]//
     (int si) {                                      //
       return si - bandWidth + meanShift;
     };
-
   // allocate a matrix to record the matches
   const int querySize = safe_cast<int>(query.size());
   const int refSize = safe_cast<int>(ref.size());
@@ -200,7 +204,6 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
     for (si = 2 * bandWidth; si >= 0; si--) {
       shift = indexToShift(si);
       qPos = ri - shift;
-
       if (qPos < 0) {
         // precedes query sequence -- no score, origin is query gap
         // we could fill all of this at once
@@ -208,7 +211,7 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
         origin = 3;
       } else if (qPos < querySize) {
         // if the shifted position is within the query sequence
-        tmpMatch = scoreLookupFunction(query[qPos], ref[ri]) > 0 ? match : misMatch;
+        tmpMatch = lookupMatchScore(query[qPos], ref[ri]) > 0 ? match : misMatch;
 
         // if the previous move included a gap (this for the match case, so we are coming from [si][ri]), add gap-close cost
         if (paths(si, ri) == 2 || paths(si, ri) == 3) {
@@ -251,8 +254,9 @@ ForwardTrace scoreMatrix(const std::string& query, const std::string& ref, Score
   return {.scores = scores, .paths = paths};
 }
 
-Alignment backTrace(const std::string& query, const std::string& ref, const vector2d<int>& scores,
-  const vector2d<int>& paths, int meanShift) {
+template<typename Letter>
+AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<Letter>& ref,
+  const vector2d<int>& scores, const vector2d<int>& paths, int meanShift) {
   const int rowLength = scores.num_cols();
   const int scoresSize = safe_cast<int>(scores.num_rows());
   const int querySize = safe_cast<int>(query.size());
@@ -267,8 +271,8 @@ Alignment backTrace(const std::string& query, const std::string& ref, const vect
 
 
   std::vector<std::pair<char, char>> aln;
-  std::string aln_ref;
-  std::string aln_query;
+  Sequence<Letter> aln_ref;
+  Sequence<Letter> aln_query;
   aln_ref.reserve(rowLength + 3 * bandWidth);
   aln_query.reserve(rowLength + 3 * bandWidth);
 
@@ -302,13 +306,13 @@ Alignment backTrace(const std::string& query, const std::string& ref, const vect
   // add right overhang, i.e. unaligned parts of the query or reference the right end
   if (rPos < refSize - 1) {
     for (int ii = refSize - 1; ii > rPos; ii--) {
-      aln_query += '-';
+      aln_query += Letter::GAP;
       aln_ref += ref[ii];
     }
   } else if (qPos < querySize - 1) {
     for (int ii = querySize - 1; ii > qPos; ii--) {
       aln_query += query[ii];
-      aln_ref += '-';
+      aln_ref += Letter::GAP;
     }
   }
 
@@ -325,12 +329,12 @@ Alignment backTrace(const std::string& query, const std::string& ref, const vect
     } else if (origin == 2) {
       // insertion in query -- decrement query, increase shift
       aln_query += query[qPos];
-      aln_ref += '-';
+      aln_ref += Letter::GAP;
       qPos--;
       si++;
     } else if (origin == 3) {
       // deletion in query -- decrement reference, reduce shift
-      aln_query += '-';
+      aln_query += Letter::GAP;
       aln_ref += ref[rPos];
       rPos--;
       si--;
@@ -345,13 +349,13 @@ Alignment backTrace(const std::string& query, const std::string& ref, const vect
   // add left overhang
   if (rPos > 0) {
     for (int ii = rPos - 1; ii >= 0; ii--) {
-      aln_query += '-';
+      aln_query += Letter::GAP;
       aln_ref += ref[ii];
     }
   } else if (qPos > 0) {
     for (int ii = qPos - 1; ii >= 0; ii--) {
       aln_query += query[ii];
-      aln_ref += '-';
+      aln_ref += Letter::GAP;
     }
   }
 
@@ -361,13 +365,13 @@ Alignment backTrace(const std::string& query, const std::string& ref, const vect
   std::reverse(aln_ref.begin(), aln_ref.end());
 
   // TODO: these caused errors for me -- eliminated the pair vector
-  // const auto queryFinal = std::string(aln.size(), '-');
+  // const auto queryFinal = Sequence<Letter>(aln.size(), '-');
   // std::accumulate(aln.cbegin(), aln.cend(), query.begin(),//
-  //   [](const auto& x, std::string& res) { return res + x[0]; });
+  //   [](const auto& x, Sequence<Letter>& res) { return res + x[0]; });
 
-  // const auto refFinal = std::string(aln.size(), '-');
+  // const auto refFinal = Sequence<Letter>(aln.size(), '-');
   // std::accumulate(aln.cbegin(), aln.cend(), query.begin(),//
-  //   [](const auto& x, std::string& res) { return res + x[1]; });
+  //   [](const auto& x, Sequence<Letter>& res) { return res + x[1]; });
 
   return {
     .query = aln_query,
@@ -376,8 +380,11 @@ Alignment backTrace(const std::string& query, const std::string& ref, const vect
   };
 }
 
-Alignment alignPairwise(
-  const std::string& query, const std::string& ref, ScoreLookupFunction scoreLookupFunction, int minimalLength) {
+struct AlignPairwiseTag {};
+
+template<typename Letter>
+AlignmentResult<Letter> alignPairwise(
+  const Sequence<Letter>& query, const Sequence<Letter>& ref, int minimalLength, AlignPairwiseTag) {
   const int querySize = query.size();
   if (querySize < minimalLength) {
     throw ErrorAlignmentSequenceTooShort();
@@ -391,9 +398,20 @@ Alignment alignPairwise(
     throw ErrorAlignmentBadSeedMatches();
   }
 
-  const ForwardTrace& forwardTrace = scoreMatrix(query, ref, scoreLookupFunction, bandWidth, meanShift);
+  const ForwardTrace& forwardTrace = scoreMatrix(query, ref, bandWidth, meanShift);
   const auto& scores = forwardTrace.scores;
   const auto& paths = forwardTrace.paths;
 
   return backTrace(query, ref, scores, paths, meanShift);
+}
+
+
+NucleotideAlignmentResult alignPairwise(
+  const NucleotideSequence& query, const NucleotideSequence& ref, int minimalLength) {
+  return alignPairwise(query, ref, minimalLength, AlignPairwiseTag{});
+}
+
+AminoacidAlignmentResult alignPairwise(
+  const AminoacidSequence& query, const AminoacidSequence& ref, int minimalLength) {
+  return alignPairwise(query, ref, minimalLength, AlignPairwiseTag{});
 }
