@@ -1,5 +1,5 @@
 #include <fmt/format.h>
-#include <nextalign/parseGeneMapGff.h>
+#include <nextalign/nextalign.h>
 
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
@@ -8,8 +8,8 @@
 #include <istream>
 #include <string>
 
-#include "alignPairwise.h"
-#include "csvParser.h"
+#include "../align/alignPairwise.h"
+#include "parseCsv.h"
 
 
 constexpr const auto GFF_NUM_COLUMNS = 9;

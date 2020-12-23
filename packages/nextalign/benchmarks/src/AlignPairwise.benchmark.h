@@ -5,10 +5,10 @@
 #include <numeric>
 #include <vector>
 
+#include "../../src/align/alignPairwise.h"
+#include "../../src/match/matchNuc.h"
 #include "../include/nextalign/nextalign.h"
-#include "../src/alignPairwise.h"
 #include "../src/alphabet/nucleotides.h"
-#include "../src/matchNuc.h"
 #include "utils/getData.h"
 #include "utils/setCounters.h"
 

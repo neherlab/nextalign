@@ -1,8 +1,5 @@
 #include <fmt/format.h>
 #include <nextalign/nextalign.h>
-#include <nextalign/parseGeneMapGff.h>
-#include <nextalign/parseSequences.h>
-#include <nextalign/types.h>
 #include <tbb/global_control.h>
 #include <tbb/pipeline.h>
 

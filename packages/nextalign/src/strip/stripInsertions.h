@@ -1,11 +1,11 @@
 #pragma once
 
-#include <nextalign/types.h>
+#include <nextalign/nextalign.h>
 
 #include <string>
 #include <vector>
 
-#include "alphabet/nucleotides.h"
+#include "../alphabet/nucleotides.h"
 
 struct InsertionInternal {
   int begin;

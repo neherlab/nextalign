@@ -8,13 +8,13 @@
 #include <string>
 #include <vector>
 
-#include "alphabet/aminoacids.h"
-#include "alphabet/letter.h"
-#include "alphabet/nucleotides.h"
-#include "matchAa.h"
-#include "matchNuc.h"
-#include "src/utils/safe_cast.h"
-#include "utils/vector2d.h"
+#include "../alphabet/aminoacids.h"
+#include "../alphabet/letter.h"
+#include "../alphabet/nucleotides.h"
+#include "../match/matchAa.h"
+#include "../match/matchNuc.h"
+#include "../utils/safe_cast.h"
+#include "../utils/vector2d.h"
 
 
 namespace details {
@@ -149,7 +149,8 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
 }
 
 template<typename Letter>
-ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& ref, int bandWidth, int meanShift) {// TODO: Avoid creating this lambda function
+ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& ref, int bandWidth,
+  int meanShift) {                                  // TODO: Avoid creating this lambda function
   const auto indexToShift = [&bandWidth, &meanShift]//
     (int si) {                                      //
       return si - bandWidth + meanShift;

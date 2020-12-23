@@ -1,6 +1,5 @@
 #include <fmt/format.h>
-#include <nextalign/parseSequences.h>
-#include <nextalign/types.h>
+#include <nextalign/nextalign.h>
 
 #include <boost/algorithm/string.hpp>
 #include <map>
@@ -136,7 +135,6 @@ public:
 std::unique_ptr<FastaStream> makeFastaStream(std::istream& istream) {
   return std::make_unique<FastaStreamImpl>(istream);
 }
-
 
 std::vector<AlgorithmInput> parseSequences(std::istream& istream) {
   std::vector<AlgorithmInput> seqs;

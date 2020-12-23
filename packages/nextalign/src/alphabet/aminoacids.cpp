@@ -5,9 +5,9 @@
 
 #include <exception>
 
-#include "utils/contains.h"
-#include "utils/contract.h"
-#include "utils/map.h"
+#include "../utils/contains.h"
+#include "../utils/contract.h"
+#include "../utils/map.h"
 
 namespace {
   class ErrorAminoacidInvalid : public std::runtime_error {

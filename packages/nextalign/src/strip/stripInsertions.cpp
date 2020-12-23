@@ -1,12 +1,12 @@
 #include "stripInsertions.h"
 
-#include <nextalign/types.h>
+#include <nextalign/nextalign.h>
 
 #include <string>
 
-#include "alphabet/nucleotides.h"
-#include "src/utils/safe_cast.h"
-#include "utils/contract.h"
+#include "../alphabet/nucleotides.h"
+#include "../utils/contract.h"
+#include "../utils/safe_cast.h"
 
 StripInsertionsResult stripInsertions(const NucleotideSequence& ref, const NucleotideSequence& query) {
   const int refLength = safe_cast<int>(ref.size());

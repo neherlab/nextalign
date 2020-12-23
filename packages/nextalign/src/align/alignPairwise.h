@@ -1,13 +1,13 @@
 #pragma once
 
-#include <nextalign/types.h>
+#include <nextalign/nextalign.h>
 
 #include <string>
 #include <vector>
 
-#include "alphabet/aminoacids.h"
-#include "alphabet/nucleotides.h"
-#include "utils/vector2d.h"
+#include "../alphabet/aminoacids.h"
+#include "../alphabet/nucleotides.h"
+#include "../utils/vector2d.h"
 
 struct NextalignOptions;
 

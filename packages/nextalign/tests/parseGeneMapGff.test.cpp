@@ -1,11 +1,11 @@
 #include <fmt/format.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <nextalign/geneUtils.h>
-#include <nextalign/parseGeneMapGff.h>
+#include <nextalign/nextalign.h>
 
 #include <boost/algorithm/string/join.hpp>
 
+#include "../src/io/gene.io.h"
 #include "data/sampleGeneMap.h"
 
 using ExpectedResults = std::vector<GeneMap::value_type>;

@@ -2,6 +2,6 @@
 
 #include <functional>
 
-#include "alphabet/aminoacids.h"
+#include "../alphabet/aminoacids.h"
 
 int lookupMatchScore(Aminoacid x, Aminoacid y);

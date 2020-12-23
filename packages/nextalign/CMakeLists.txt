@@ -19,34 +19,36 @@ find_package(fmt 7.1.0 REQUIRED)
 find_package(type_safe 0.2.1 REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC
-  include/nextalign/geneUtils.h
   include/nextalign/nextalign.h
-  include/nextalign/parseGb.h
-  include/nextalign/parseGeneMapGff.h
-  include/nextalign/parseSequences.h
-  include/nextalign/types.h
-  src/alignPairwise.cpp
-  src/alignPairwise.h
+  src/align/alignPairwise.cpp
+  src/align/alignPairwise.h
+  src/alphabet/aminoacids.cpp
   src/alphabet/aminoacids.h
+  src/alphabet/letter.h
+  src/alphabet/nucleotides.cpp
   src/alphabet/nucleotides.h
-  src/geneUtils.cpp
-  src/matchAa.cpp
-  src/matchAa.h
-  src/matchNuc.cpp
-  src/matchNuc.h
+  src/io/gene.io.cpp
+  src/io/gene.io.h
+  src/io/parseGeneMapGff.cpp
+  src/io/parseSequences.cpp
+  src/match/matchAa.cpp
+  src/match/matchAa.h
+  src/match/matchNuc.cpp
+  src/match/matchNuc.h
   src/nextalign.cpp
-  src/parseGeneMapGff.cpp
-  src/parseSequences.cpp
-  src/utils/safe_cast.h
-  src/stripInsertions.cpp
-  src/stripInsertions.h
+  src/strip/stripInsertions.cpp
+  src/strip/stripInsertions.h
   src/utils/config.h
+  src/utils/contains.h
   src/utils/contract.h
   src/utils/debugbreak.h
   src/utils/ieee754_comparison.h
   src/utils/macro_overload.h
+  src/utils/map.h
+  src/utils/safe_cast.h
+  src/utils/to_underlying.h
   src/utils/vector2d.h
-  src/alphabet/aminoacids.cpp src/alphabet/nucleotides.cpp src/utils/map.h src/utils/contains.h src/alphabet/letter.h src/utils/to_underlying.h)
+  )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
