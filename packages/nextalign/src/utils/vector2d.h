@@ -30,13 +30,13 @@ public:
   inline T& at(size_t row, size_t col) {
     precondition_less(row, m_rows);
     precondition_less(col, m_cols);
-    return m_data.at(row * m_cols + col);
+    return m_data[row * m_cols + col];
   }
 
   inline const T& at(size_t row, size_t col) const {
     precondition_less(row, m_rows);
     precondition_less(col, m_cols);
-    return m_data.at(row * m_cols + col);
+    return m_data[row * m_cols + col];
   }
 
   inline T& operator()(size_t i) {
