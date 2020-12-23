@@ -15,7 +15,7 @@ namespace {
     explicit ErrorAminoacidInvalid(char aa) : std::runtime_error(fmt::format("Invalid aminoacid: \"{:c}\"", aa)) {}
   };
 
-  static constexpr const frozen::map<char, Aminoacid, 27> charToAminoacid = {
+  static constexpr const frozen::map<char, Aminoacid, 28> charToAminoacid = {
     /* 00 */ {'A', Aminoacid::A},
     /* 01 */ {'B', Aminoacid::B},
     /* 02 */ {'C', Aminoacid::C},
@@ -43,9 +43,10 @@ namespace {
     /* 24 */ {'Z', Aminoacid::Z},
     /* 25 */ {CHAR_AMINOACID_UNKNOWN, Aminoacid::X},
     /* 26 */ {CHAR_AMINOACID_STOP, Aminoacid::STOP},
+    /* 27 */ {CHAR_AMINOACID_GAP, Aminoacid::GAP},
   };
 
-  static constexpr const frozen::map<Aminoacid, char, 27> aminoacidToChar = {
+  static constexpr const frozen::map<Aminoacid, char, 28> aminoacidToChar = {
     /* 00 */ {Aminoacid::A, 'A'},
     /* 01 */ {Aminoacid::B, 'B'},
     /* 02 */ {Aminoacid::C, 'C'},
@@ -73,6 +74,7 @@ namespace {
     /* 24 */ {Aminoacid::Z, 'Z'},
     /* 25 */ {Aminoacid::X, CHAR_AMINOACID_UNKNOWN},
     /* 26 */ {Aminoacid::STOP, CHAR_AMINOACID_STOP},
+    /* 27 */ {Aminoacid::GAP, CHAR_AMINOACID_GAP},
   };
 
 }// namespace
