@@ -43,8 +43,8 @@ public:
 
 AlignmentParameters alignmentParameters = {
   .gapExtend = 0,
-  .gapOpen = -2,
-  .gapClose = -2,
+  .gapOpen = -3,
+  .gapClose = -3,
   .misMatch = -1,
   .match = 3,
 };
@@ -207,7 +207,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
       if (qPos < 0) {
         // precedes query sequence -- no score, origin is query gap
         // we could fill all of this at once
-        score = 0;
+        score = -gapClose;
         origin = 3;
       } else if (qPos < querySize) {
         // if the shifted position is within the query sequence
