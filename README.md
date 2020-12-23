@@ -190,6 +190,8 @@ make prod
 
 This will produce the optimized executable in `.build/Release/packages/nextalign_cli/nextalign_cli`, which you can run directly. This is what we (will) redistribute to the end users.
 
+> ⚠️ Production build (and all builds with `CMAKE_BUILD_TYPE=Release` enforce [standalone static executable](#standalone-static-build)) configuration.
+
 ---
 
 <h3 id="runtime-performance-assessment" align="center">
@@ -373,9 +375,23 @@ In this case, binaries will be produced in directories postfixed with `-Clang`, 
 
 ---
 
-<h3 id="performance" align="center">
-🚅 Performance
+<h3 id="distribution" align="center">
+🚀 Distribution
 </h3>
+
+#### 1️⃣ Standalone static build
+
+To simplify distribution to end users, we produce standalone, statically linked binaries, as well as a minimalistic docker image, containing only single executable.
+
+By default static build is enable for all builds that have `CMAKE_RELEASE_TYPE=Release` (that is, production build and benchmarks). It can be selectively enabled or disabled during build time, using environment variable `NEXTALIGN_STATIC_BUILD="(0|1)"`:
+
+```bash
+NEXTALIGN_STATIC_BUILD=1 make dev # produces statically-linked dev build
+NEXTALIGN_STATIC_BUILD=0 make prod # produces dynamically-liked prod build
+
+```
+
+See PR #7 for caveats and other considerations.
 
 #### 🚅 Link-time optimization (LTO)
 
@@ -385,12 +401,6 @@ executable.
 > 💡 On Ubuntu you can build it along with other binutils using the provided script in `scripts/deps/build_binutils.sh`. The results of the build will be in `3rdparty/binutils`.
 
 > 💡 The projects' build system is setup to automatically pickup the `ld` linker from `3rdparty/binutils/bin/` if it exists.
-
-<h3 id="distribution" align="center">
-🚀 Distribution
-</h3>
-
-TODO: under construction
 
 #### Continuous integration
 
