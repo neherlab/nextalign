@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 BASH_DEBUG="${BASH_DEBUG:=}"
-([ "${BASH_DEBUG}" == "true" ] || [ "${BASH_DEBUG}" == "1" ]) && set -o xtrace
+([ "${BASH_DEBUG}" == "true" ] || [ "${BASH_DEBUG}" == "1" ] ) && set -o xtrace
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -12,10 +12,7 @@ trap "exit" INT
 # sudo apt-get install --verbose-versions llvm-10 clang{,-tools,-tidy,-format}-10 llvm-10 libclang-common-10-dev
 
 # Directory where this script resides
-THIS_DIR=$(
-  cd $(dirname "${BASH_SOURCE[0]}")
-  pwd
-)
+THIS_DIR=$(cd $(dirname "${BASH_SOURCE[0]}"); pwd)
 
 # Where the source code is
 PROJECT_ROOT_DIR="$(realpath ${THIS_DIR}/..)"
@@ -38,9 +35,9 @@ CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:=Release}"
 # Deduce conan build type from cmake build type
 CONAN_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 case ${CMAKE_BUILD_TYPE} in
-Debug | Release | RelWithDebInfo | MinSizeRelease) CONAN_BUILD_TYPE=${CMAKE_BUILD_TYPE} ;;
-ASAN | MSAN | TSAN | UBSAN) CONAN_BUILD_TYPE=RelWithDebInfo ;;
-*) CONAN_BUILD_TYPE="Release" ;;
+  Debug|Release|RelWithDebInfo|MinSizeRelease) CONAN_BUILD_TYPE=${CMAKE_BUILD_TYPE} ;;
+  ASAN|MSAN|TSAN|UBSAN) CONAN_BUILD_TYPE=RelWithDebInfo ;;
+  *) CONAN_BUILD_TYPE="Release" ;;
 esac
 
 ADDITIONAL_PATH="${PROJECT_ROOT_DIR}/3rdparty/binutils/bin:${PROJECT_ROOT_DIR}/3rdparty/gcc/bin:${PROJECT_ROOT_DIR}/3rdparty/llvm/bin"
@@ -76,17 +73,32 @@ mkdir -p "${BUILD_DIR}"
 USE_COLOR="${USE_COLOR:=1}"
 DEV_CLI_OPTIONS="${DEV_CLI_OPTIONS:=}"
 
-# gdb (or lldb) command with arguments
-GDB_DEFAULT="gdb --quiet -ix ${THIS_DIR}/lib/.gdbinit -x ${THIS_DIR}/lib/.gdbexec --args"
-GDB=""
+# Whether to build a standalone static executable
+NEXTALIGN_STATIC_BUILD_DEFAULT=0
+if [ "${CMAKE_BUILD_TYPE}" == "Release" ]; then
+  NEXTALIGN_STATIC_BUILD_DEFAULT=1
+fi
+NEXTALIGN_STATIC_BUILD=${NEXTALIGN_STATIC_BUILD:=${NEXTALIGN_STATIC_BUILD_DEFAULT}}
+
+# Add flags necessary for static build
+CONAN_STATIC_BUILD_FLAGS=""
+if [ "${NEXTALIGN_STATIC_BUILD}" == "true" ] || [ "${NEXTALIGN_STATIC_BUILD}" == "1" ]; then
+  CONAN_STATIC_BUILD_FLAGS="\
+    -o tbb:shared=False \
+    -o gtest:shared=True \
+  "
+fi
 
 # AddressSanitizer and MemorySanitizer don't work with gdb
 case ${CMAKE_BUILD_TYPE} in
-ASAN | MSAN) GDB_DEFAULT="" ;;
-*) ;;
+  ASAN|MSAN) GDB_DEFAULT="" ;;
+  *) ;;
 esac
 
+# gdb (or lldb) command with arguments
+GDB_DEFAULT="gdb --quiet -ix ${THIS_DIR}/lib/.gdbinit -x ${THIS_DIR}/lib/.gdbexec --args"
 USE_GDB=${USE_GDB:=0}
+GDB=""
 if [ "${USE_GDB}" == "true" ] || [ "${USE_GDB}" == "1" ]; then
   GDB="${GDB_DEFAULT}"
 fi
@@ -94,38 +106,41 @@ fi
 # Print coloured message
 function print() {
   if [[ ! -z "${USE_COLOR}" ]] && [[ "${USE_COLOR}" != "false" ]]; then
-    echo -en "\n\e[48;5;${1}m - ${2} \t\e[0m\n"
+    echo -en "\n\e[48;5;${1}m - ${2} \t\e[0m\n";
   else
-    printf "\n${2}\n"
+    printf "\n${2}\n";
   fi
 }
 
-pushd "${BUILD_DIR}" >/dev/null
 
-print 56 "Install dependencies"
-conan install "${PROJECT_ROOT_DIR}" \
-  -s build_type="${CONAN_BUILD_TYPE}" \
-  ${CONAN_COMPILER_SETTINGS} \
-  --build missing
+pushd "${BUILD_DIR}" > /dev/null
 
-print 92 "Generate build files"
-cmake "${PROJECT_ROOT_DIR}" \
-  -DCMAKE_MODULE_PATH="${BUILD_DIR}" \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
-  -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
-  -DNEXTALIGN_BUILD_TESTS=0 \
-  -DNEXTALIGN_BUILD_BENCHMARKS=1 \
-  -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE:=0}
+  print 56 "Install dependencies";
+  conan install "${PROJECT_ROOT_DIR}" \
+    -s build_type="${CONAN_BUILD_TYPE}" \
+    ${CONAN_COMPILER_SETTINGS} \
+    ${CONAN_STATIC_BUILD_FLAGS} \
+    --build missing \
 
-print 12 "Build"
-cmake --build "${BUILD_DIR}" --config "${CMAKE_BUILD_TYPE}" -- -j$(($(nproc) - 1))
+  print 92 "Generate build files";
+  cmake "${PROJECT_ROOT_DIR}" \
+    -DCMAKE_MODULE_PATH="${BUILD_DIR}" \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
+    -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
+    -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE:=0} \
+    -DNEXTALIGN_STATIC_BUILD=${NEXTALIGN_STATIC_BUILD} \
+    -DNEXTALIGN_BUILD_BENCHMARKS=1 \
+    -DNEXTALIGN_BUILD_TESTS=0 \
 
-print 28 "Run Benchmark"
-pushd "${BUILD_DIR}/packages/nextalign/benchmarks" >/dev/null
-${GDB} ./nextalign_benchmarks \
-  --benchmark_out="${PROJECT_ROOT_DIR}/nextalign_benchmarks.json" --benchmark_counters_tabular=true ${BENCHMARK_OPTIONS} || cd .
-popd >/dev/null
+  print 12 "Build"
+  cmake --build "${BUILD_DIR}" --config "${CMAKE_BUILD_TYPE}" -- -j$(($(nproc) - 1))
 
-print 22 "Done"
+  print 28 "Run Benchmarks";
+  pushd "${BUILD_DIR}/packages/nextalign/benchmarks" >/dev/null
+    ${GDB} ./nextalign_benchmarks \
+      --benchmark_out="${PROJECT_ROOT_DIR}/nextalign_benchmarks.json" --benchmark_counters_tabular=true ${BENCHMARK_OPTIONS} || cd .
+  popd >/dev/null
 
-popd >/dev/null
+  print 22 "Done";
+
+popd > /dev/null

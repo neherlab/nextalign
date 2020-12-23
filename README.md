@@ -3,7 +3,7 @@ Nextalign
 </h1>
 
 > <h4 align="center">
-> Viral genome sequence alignment
+> Viral genome reference alignment
 > </h4>
 
 > ⚠️ IMPORTANT: Nextalign is a new project and is under heavy development. There might be serious bugs. Please report all errors and inconsistencies using [Github Issues](https://github.com/neherlab/nextalign/issues/new).
@@ -15,12 +15,10 @@ Nextalign
 Nextalign is the viral genome sequence alignment algorithm used in [Nextclade](https://github.com/nextstrain/nextclade),
 ported to C++ and made to a standalone command-line tool.
 
-Nextalign performs pairwise alignment of provided sequences against a given reference sequences.
-~With subsequent refinement of the alignment using gene information~
+Nextalign performs pairwise alignment of provided sequences against a given reference sequence using a banded local alignment with affine gap-cost. Band width and rough relative positions are determined through seed matching.
 
-This tools' primary focus is on SARS-CoV-2 genome, but it can be used on any virus.
-
-TODO: expand this section and make it scientifically sound
+Currently, nextalign's primary focus is on SARS-CoV-2 genome, but it can be used on any virus with a sufficiently similar reference sequence (less than a 5% divergence).
+Nextalign will strip insertions relative to the reference and output them in a separate CSV file.
 
 ---
 
@@ -30,46 +28,55 @@ TODO: expand this section and make it scientifically sound
 
 TODO: expand this section
 
-### Installation
+<h3 id="installation" align="center">
+💿 Installation
+</h3>
 
 TODO: provide prebuilt binaries for major platforms
 
-### Usage
+<h3 id="usage" align="center">
+🔋 Usage
+</h3>
 
 #### ➡️ Inputs
 
 Nextalign accepts the following inputs:
 
-| Required | Input | Flag | Description |
-|----------|-------|------|-------------|
-| yes | Sequences | `--sequences=<path>` | Path to a file containing sequences to align ("query" sequences). Every sequence in this file will be pairwise-aligned with the reference sequence. Accepted formats: fasta. Example: [`--sequences=data/example/sequences.fasta`](data/example/sequences.fasta) |
-| yes | Reference sequence | `--reference=<path>` | Path to a file containing reference sequence to align against. Accepted formats: fasta (1 sequence only), plain text. Example: [`--reference=data/example/reference.txt`](data/example/reference.txt)  |
-| yes | Gene map | `--genemap=<path>` | Path to a file containing gene map (genome annotation). Accepted formats: [GFF](https://www.ensembl.org/info/website/upload/gff.html), containing `gene` features and `gene_name` attributes. Example: [`--genemap=data/example/genemap.gff`](data/example/genemap.gff) |
-| no | Genes | `--genes=<gene1,gene2,...>` | A comma-separated list of genes to use for alignment refinement. All listed genes should be present in the gene map. Affects performance and accuracy. If flag is not provided or empty, all genes present in gene map are used. Example: `--genes=E,ORF1a` |
+| Required | Input              | Flag                        | Description                                                                                                                                                                                                                                                             |
+| -------- | ------------------ | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| yes      | Sequences          | `--sequences=<path>`        | Path to a file containing sequences to align ("query" sequences). Every sequence in this file will be pairwise-aligned with the reference sequence. Accepted formats: fasta. Example: [`--sequences=data/example/sequences.fasta`](data/example/sequences.fasta)        |
+| yes      | Reference sequence | `--reference=<path>`        | Path to a file containing reference sequence to align against. Accepted formats: fasta (1 sequence only), plain text. Example: [`--reference=data/example/reference.txt`](data/example/reference.txt)                                                                   |
+| yes      | Gene map           | `--genemap=<path>`          | Path to a file containing gene map (genome annotation). Accepted formats: [GFF](https://www.ensembl.org/info/website/upload/gff.html), containing `gene` features and `gene_name` attributes. Example: [`--genemap=data/example/genemap.gff`](data/example/genemap.gff) |
+| no       | Genes              | `--genes=<gene1,gene2,...>` | A comma-separated list of genes to use for alignment refinement. All listed genes should be present in the gene map. Affects performance and accuracy. If flag is not provided or empty, all genes present in gene map are used. Example: `--genes=E,ORF1a`             |
 
 #### ⬅️ Outputs
 
 Nextalign produces the following outputs:
 
-| Required | Input | Flag | Description | 
-|----------|-------|------|-------------| 
-| yes | Sequence output| `--output=<path>` | Aligned sequences will be written to this file. Format: fasta. |
-| no | Insertions output | `--output-insertions=<path>` | A list of insertions which have been stripped from aligned sequences will be written to this file. Format: CSV. |
+| Required | Input             | Flag                         | Description                                                                                                     |
+| -------- | ----------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| yes      | Sequence output   | `--output=<path>`            | Aligned sequences will be written to this file. Format: fasta.                                                  |
+| no       | Insertions output | `--output-insertions=<path>` | A list of insertions which have been stripped from aligned sequences will be written to this file. Format: CSV. |
 
-### Feedback
+<h3 id="with-docker" align="center">
+🐋 With docker
+</h3>
 
-Do you find Nextalign useful? Tell us about your use-case and experience with it.
-
-If you want to report an error, request a new feature, please open
-a [new Github Issue](https://github.com/neherlab/nextalign/issues/new).
-
-For a general conversation, feel free to join Nextstrain Discussion
-at [discussion.nextstrain.org](https://discussion.nextstrain.org/).
-
-
+TODO: publish docker image and provide instructions on how to use it
 
 ---
 
+<h3 id="usage" align="center">
+💬 Feedback
+</h3>
+
+Do you find Nextalign useful? Tell us about your use-case and experience with it.
+
+If you want to report an error or request a new feature, please open a [new Github Issue](https://github.com/neherlab/nextalign/issues/new).
+
+For a general conversation, feel free to join Nextstrain Discussion at [discussion.nextstrain.org](https://discussion.nextstrain.org/).
+
+---
 
 <h2 id="developers-guide" align="center">
 🧑‍💻 Developer's guide
@@ -79,41 +86,57 @@ at [discussion.nextstrain.org](https://discussion.nextstrain.org/).
 ✨ Quick start
 </h3>
 
-1. Install and configure required dependencies
+1.  Install and configure the dependencies
 
-    - C++17-compliant C++ compiler
+    - Required:
 
-      > ⚠️ Only GCC >= 9 and Clang >= 10 are officially supported (but you can try older versions too and tell us how it goes).
+      - C++17-compliant C++ compiler
 
-    - [cmake](https://cmake.org/) >= 3.10
+        > ⚠️ Only GCC >= 9 and Clang >= 10 are officially supported (but you can try older versions too and tell us how it goes).
 
-    - [conan](https://conan.io/) package manager
+      - [cmake](https://cmake.org/) >= 3.10
 
-      > 💡 For Ubuntu Linux there is an installation script included in `./tools/install-conan`
+      - [conan](https://conan.io/) package manager
 
-    - [cppcheck](http://cppcheck.sourceforge.net/)
+        > 💡 For Ubuntu Linux there is an installation script included in `./tools/install-conan`
 
-      > ⚠️ A version that supports C++17 is required
+      - [cppcheck](http://cppcheck.sourceforge.net/) for static analysis
 
-    - (optional, but recommended) [nodemon](https://www.npmjs.com/package/nodemon)
+        > ⚠️ A version that supports C++17 is required
 
-      > ⚠️ nodemon requires Node.js and npm. You can install it globally with:
-      >
-      > ```bash
-      > npm install --global nodemon
-      > ```
+    - Recommended:
 
-2. Clone and run
+      - [ccache](https://ccache.dev/) for faster rebuilds
 
-   ```bash
-   git clone --recursive https://github.com/neherlab/nextalign
-   cd nextalign
-   make dev
+        > 💡 On Ubuntu and other Debian derivatives it can be installed with
+        >
+        > ```
+        > sudo apt-get install ccache
+        > ```
 
-   ```
-   > ⚠️ Note the `--recursive` flag for `git` command - this repository contains git submodules
+      - [nodemon](https://www.npmjs.com/package/nodemon) for watch & rebuild feature for better developer experience
 
-   This will:
+        > ⚠️ nodemon requires Node.js and npm. You can install it globally with:
+        >
+        > ```bash
+        > npm install --global nodemon
+        > ```
+
+        > 💡 If you don't want to install Node.js and nodemon, or don't want the automatic watch & rebuild feature, you can use `make dev-nowatch` instead of `make dev` during development.
+
+      - [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) for static analysis. It is recommended to use an text editor or an IDE with clang-tidy support
+
+2.  Clone, run and develop
+
+    ```bash
+    git clone --recursive https://github.com/neherlab/nextalign
+    cd nextalign
+    make dev
+    ```
+
+    > ⚠️ Note the `--recursive` flag for `git` command - this repository contains git submodules
+
+    This will:
 
     - install or update conan packages
     - run cmake and generate makefiles
@@ -123,24 +146,35 @@ at [discussion.nextstrain.org](https://discussion.nextstrain.org/).
     - run CLI with parameters defined in `DEV_CLI_OPTIONS` environment variable
     - watch source files and rebuild on changes
 
-   > 💡 If you don't want to install Node.js and nodemon, or don't want the automatic rebuild feature, you can use `make dev-nowatch` instead of `make dev`.
+    > 💡 If you don't want to install Node.js and nodemon, or don't want the automatic watch & rebuild feature, you can use `make dev-nowatch` instead of `make dev` during development.
 
-The CLI binary is produced in `.build/Debug/packages/nextalign_cli/nextalign_cli`. The tests binary is
-in `.build/Release/packages/nextalign/tests/nextalign_tests`. You can run them directly too, if you'd like.
+    🎉 You are ready! Start coding! In particular, take a look at these files and directories:
 
-You can change the default arguments of the CLI invocation make by the `make dev` target by creating a `.env` file:
+    ```
+    packages/nextalign_cli/src/
+    packages/nextalign_cli/src/cli.cpp # Entry pint of the CLI executable
 
-```bash
-cp .env.example .env
-```
+    packages/nextalign/src/
+    packages/nextalign/src/nextalign.cpp # Entry point of the library is the `nextalign()` function in this file
+    ```
 
-and modifying the `DEV_CLI_OPTIONS` variable.
+    The CLI binary is produced in `.build/Debug/packages/nextalign_cli/nextalign_cli`
+    The tests binary is in `.build/Debug/packages/nextalign/tests/nextalign_tests`.
+    You can run them directly too, if you'd like.
 
-> 💡 The default input files are located in [`data/example`](https://github.com/neherlab/nextalign/tree/master/data/example)
+    You can change the default arguments of the CLI invocation make by the `make dev` target by creating a `.env` file:
 
-> 💡 By default, the output files are produced in `tmp/` directory in the root of the project.
+    ```bash
+    cp .env.example .env
+    ```
 
-> ⚠️ Do not measure performance of the executables produced with `make dev` and do not use them for real workloads. Development builds, having no optimizations and having debugging tools enabled, are meant for developer's productivity and debugging, and can be orders of magnitudes slower than the production build. Instead, for any performance assessments, use [benchmarks](#microbenchmarks), [profiling](#runtime-performance-assessment) or [production build](#production-build). In real workloads always use the [production build](#production-build).
+    and modifying the `DEV_CLI_OPTIONS` variable.
+
+    > 💡 The default input files are located in [`data/example`](https://github.com/neherlab/nextalign/tree/master/data/example)
+
+    > 💡 By default, the output files are produced in `tmp/` directory in the root of the project.
+
+    > ⚠️ Do not measure performance of executables produced with `make dev` and do not use them for real workloads. Development builds, with disabled optimizations and with enabled debugging tools and instrumentation, are meant for developer's productivity, not runtime performance, and can be orders of magnitudes slower than the optimized build. Instead, for any performance assessments, use [benchmarks](#microbenchmarks), [profiling](#runtime-performance-assessment) or [production build](#production-build). In real workloads always use the [production build](#production-build).
 
 ---
 
@@ -154,8 +188,9 @@ Having the requirements from the ["Quick start" section](#quick-start) installed
 make prod
 ```
 
-This will produce the optimized executable in `.build/Release/packages/nextalign_cli/nextalign_cli`, which you can run
-directly. This is what we (will) redistribute to the end users.
+This will produce the optimized executable in `.build/Release/packages/nextalign_cli/nextalign_cli`, which you can run directly. This is what we (will) redistribute to the end users.
+
+> ⚠️ Production build (and all builds with `CMAKE_BUILD_TYPE=Release` enforce [standalone static executable](#standalone-static-build)) configuration.
 
 ---
 
@@ -172,8 +207,8 @@ important [Runtime and Reporting Considerations](https://github.com/google/bench
 .
 
 > ⚠️ For the most accurate results, you should [disable CPU frequence scaling](https://github.com/google/benchmark#disabling-cpu-frequency-scaling) for the time of your benchmarking session. (More info: [[kernel](https://www.kernel.org/doc/html/v4.15/admin-guide/pm/cpufreq.html)]
-, [[arch](https://wiki.archlinux.org/index.php/CPU_frequency_scaling)]
-, [[debian](https://wiki.debian.org/CpuFrequencyScaling)])
+> , [[arch](https://wiki.archlinux.org/index.php/CPU_frequency_scaling)]
+> , [[debian](https://wiki.debian.org/CpuFrequencyScaling)])
 
 > 💡 As a simple solution, on most modern hardware and Linux distros, before running benchmarks you could temporarily switch to `performance` governor, with
 >
@@ -260,11 +295,15 @@ TODO: under construction
 🔬 Static analysis
 </h3>
 
-TODO: under construction
+We use the following static analysis tools and we aim to produce 0 warnings.
 
 #### clang-tidy
 
-TODO: under construction
+`clang-tidy`, a part of LLVM project, is a static analysis (linter) tool. During development, it is recommended to use a text editor or an IDE wich has `clang-tidy` integration.
+
+Check `.clang-tidy` file in the root of the project for current configuration.
+
+TODO: run `clang-tidy` as a part of the dev script
 
 #### clang-analyzer
 
@@ -281,6 +320,8 @@ contains arguments passed to `cppcheck`.
 🔥 Runtime analysis
 </h3>
 
+We use the following tools to perform runtime analysis of the builds. All of these tools should run cleanly, with no crashes, and with empty reports.
+
 #### 🛀 Sanitizers
 
 Sanitizers are the binary instrumentation tools, which help to find various runtime issues related to memory management,
@@ -289,12 +330,12 @@ threading and programming mistakes which lead to [undefined behavior](https://en
 
 The project is set up to build with sanitizers, if one of the following `CMAKE_BUILD_TYPE`s is set:
 
-| CMAKE_BUILD_TYPE  |  Effect  |
-|-------------------|----------|
-| ASAN | [Address](https://clang.llvm.org/docs/AddressSanitizer.html) + [Leak](https://clang.llvm.org/docs/LeakSanitizer.html) sanitizers |
-| MSAN | [Memory sanitizer](https://clang.llvm.org/docs/MemorySanitizer.html) |
-| TSAN | [Thread sanitizer](https://clang.llvm.org/docs/ThreadSanitizer.html) |
-| UBSAN | [Undefined behavior sanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html) |
+| CMAKE_BUILD_TYPE | Effect                                                                                                                           |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| ASAN             | [Address](https://clang.llvm.org/docs/AddressSanitizer.html) + [Leak](https://clang.llvm.org/docs/LeakSanitizer.html) sanitizers |
+| MSAN             | [Memory sanitizer](https://clang.llvm.org/docs/MemorySanitizer.html)                                                             |
+| TSAN             | [Thread sanitizer](https://clang.llvm.org/docs/ThreadSanitizer.html)                                                             |
+| UBSAN            | [Undefined behavior sanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)                                      |
 
 > 💡 For example, if the program is crashing with a segfault, you could to try to run address sanitizer on it:
 >
@@ -308,7 +349,11 @@ The project is set up to build with sanitizers, if one of the following `CMAKE_B
 
 TODO: under construction
 
-### Use non-default compiler
+---
+
+<h3 id="use-non-default-compiler" align="center">
+⚙️ Use non-default compiler
+</h3>
 
 #### Building with Clang
 
@@ -324,34 +369,38 @@ CMAKE_BUILD_TYPE=ASAN USE_CLANG=1 make dev
 
 In this case, binaries will be produced in directories postfixed with `-Clang`, e.g. `.build/Debug-Clang`.
 
-Hint:
-
 > 💡 On Ubuntu you can build LLVM project (including Clang) with a script provided in `scripts/deps/build_llvm.sh`. It depends on binutils which should be built with `scripts/deps/build_binutils.sh` prior to that. There is also a script to build GCC: `scripts/deps/build_gcc.sh`. Refer to comments inside these scripts for the list of dependencies required. As a result of these scripts, the ready-to-use compilers will be in `3rdparty/gcc` and `3rdparty/llvm`,
 
 > 💡 The projects' build system is setup to automatically pickup the `gcc` and `g++` executables from `3rdparty/gcc/bin/`, and `clang` and `clang++` executables from `3rdparty/llvm/bin/` if any of those exist.
 
 ---
 
-<h3 id="performance" align="center">
-🚅 Performance
+<h3 id="distribution" align="center">
+🚀 Distribution
 </h3>
+
+#### 1️⃣ Standalone static build
+
+To simplify distribution to end users, we produce standalone, statically linked binaries, as well as a minimalistic docker image, containing only single executable.
+
+By default static build is enable for all builds that have `CMAKE_RELEASE_TYPE=Release` (that is, production build and benchmarks). It can be selectively enabled or disabled during build time, using environment variable `NEXTALIGN_STATIC_BUILD="(0|1)"`:
+
+```bash
+NEXTALIGN_STATIC_BUILD=1 make dev # produces statically-linked dev build
+NEXTALIGN_STATIC_BUILD=0 make prod # produces dynamically-liked prod build
+
+```
+
+See PR #7 for caveats and other considerations.
 
 #### 🚅 Link-time optimization (LTO)
 
 Runtime performance is important for this project and for production builds we use a gold-plugin-enabled linker
 executable.
 
-
 > 💡 On Ubuntu you can build it along with other binutils using the provided script in `scripts/deps/build_binutils.sh`. The results of the build will be in `3rdparty/binutils`.
 
 > 💡 The projects' build system is setup to automatically pickup the `ld` linker from `3rdparty/binutils/bin/` if it exists.
-
-
-<h3 id="distribution" align="center">
-🚀 Distribution
-</h3>
-
-TODO: under construction
 
 #### Continuous integration
 
@@ -360,7 +409,6 @@ TODO: under construction
 #### Build artifacts
 
 TODO: under construction
-
 
 <h3 id="troubleshooting" align="center">
 😮 Troubleshooting
@@ -377,11 +425,11 @@ As a workaround you may try to add the new compiler to the `PATH` and delete and
 - run `./tools/install-conan`
 - rebuild the project and and watch for `<VERSION>`:
 
-    ```
-    compiler=gcc
-    ...
-    compiler.version=<VERSION>
-    ```
+  ```
+  compiler=gcc
+  ...
+  compiler.version=<VERSION>
+  ```
 
 in console output of the "Install dependencies" build step, and/or set `CMAKE_VERBOSE_MAKEFILE=1` variable and check the
 compiler path used during "Build" step.
@@ -397,7 +445,6 @@ Try to remove the build directory (`.build`) and rebuild.
 </h3>
 
 TODO: under construction
-
 
 <h3 id="license" align="center">
 ⚖️ License
