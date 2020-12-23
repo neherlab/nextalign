@@ -333,12 +333,14 @@ void run(
   /* in  */ int parallelism,
   /* in  */ const CliParams &cliParams,
   /* out */ std::unique_ptr<FastaStream> &inputFastaStream,
-  /* in  */ const std::string &ref,
+  /* in  */ const std::string &refStr,
   /* in  */ const GeneMap &geneMap,
   /* in  */ const NextalignOptions &options,
   /* out */ std::ostream &outputFastaStream,
   /* out */ std::ostream &outputInsertionsStream) {
   tbb::task_group_context context;
+
+  const auto ref = toNucleotideSequence(refStr);
 
   /** Input filter is a serial input filter function, which accepts an input stream,
    * reads and parses the contents of it, and returns parsed sequences */
@@ -359,7 +361,8 @@ void run(
   const auto transformFilters = tbb::make_filter<AlgorithmInput, AlgorithmOutput>(tbb::filter::parallel,//
     [&ref, &geneMap, &options](const AlgorithmInput &input) -> AlgorithmOutput {
       try {
-        const auto result = nextalign(input.seq, ref, geneMap, options);
+        const auto query = toNucleotideSequence(input.seq);
+        const auto result = nextalign(query, ref, geneMap, options);
         return {.index = input.index, .seqName = input.seqName, .hasError = false, .result = result, .error = nullptr};
       } catch (const std::exception &e) {
         const auto &error = std::current_exception();

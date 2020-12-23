@@ -5,8 +5,8 @@
 #include <numeric>
 #include <vector>
 
-#include "../../src/align/alignPairwise.cpp"
 #include "../include/nextalign/nextalign.h"
+#include "../src/align/alignPairwise.cpp"
 #include "utils/getData.h"
 #include "utils/setCounters.h"
 

@@ -9,15 +9,13 @@
 #include "utils/map.h"
 #include "utils/safe_cast.h"
 
+
 Insertion toExternal(const InsertionInternal& ins) {
   return Insertion{.begin = ins.begin, .end = ins.end, .seq = toString(ins.seq)};
 }
 
-AlignmentImproved nextalign(
-  const std::string& queryStr, const std::string& refStr, const GeneMap& geneMap, const NextalignOptions& options) {
-
-  const auto query = toNucleotideSequence(queryStr);
-  const auto ref = toNucleotideSequence(refStr);
+AlignmentImproved nextalign(const NucleotideSequence& query, const NucleotideSequence& ref, const GeneMap& geneMap,
+  const NextalignOptions& options) {
 
   const auto alignment = alignPairwise(query, ref, 100);
   const auto stripped = stripInsertions(alignment.ref, alignment.query);

@@ -5,9 +5,9 @@
 #include <numeric>
 #include <vector>
 
-#include "../../src/align/alignPairwise.h"
-#include "../../src/strip/stripInsertions.h"
 #include "../include/nextalign/nextalign.h"
+#include "../src/align/alignPairwise.h"
+#include "../src/strip/stripInsertions.h"
 #include "utils/getData.h"
 #include "utils/setCounters.h"
 
