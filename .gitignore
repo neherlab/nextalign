@@ -1,5 +1,6 @@
 **/\.build
 **/\.ignore
+**/\.reports
 **/\.temp
 **/\.tmp
 3rdparty/binutils

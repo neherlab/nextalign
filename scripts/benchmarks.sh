@@ -113,7 +113,7 @@ function print() {
 }
 
 
-pushd "${BUILD_DIR}" > /dev/null
+pushd "${BUILD_DIR}" >/dev/null
 
   print 56 "Install dependencies";
   conan install "${PROJECT_ROOT_DIR}" \
@@ -135,12 +135,19 @@ pushd "${BUILD_DIR}" > /dev/null
   print 12 "Build"
   cmake --build "${BUILD_DIR}" --config "${CMAKE_BUILD_TYPE}" -- -j$(($(nproc) - 1))
 
+popd >/dev/null
+
+pushd ${PROJECT_ROOT_DIR} >/dev/null
+
   print 28 "Run Benchmarks";
-  pushd "${BUILD_DIR}/packages/nextalign/benchmarks" >/dev/null
-    ${GDB} ./nextalign_benchmarks \
-      --benchmark_out="${PROJECT_ROOT_DIR}/nextalign_benchmarks.json" --benchmark_counters_tabular=true ${BENCHMARK_OPTIONS} || cd .
-  popd >/dev/null
+  CLI_DIR="${BUILD_DIR}/packages/${PROJECT_NAME}/benchmarks"
+  CLI_EXE="nextalign_benchmarks"
+  eval "${GDB}" ${CLI_DIR}/${CLI_EXE} \
+    --benchmark_out="${PROJECT_ROOT_DIR}/nextalign_benchmarks.json" \
+    --benchmark_counters_tabular=true \
+    ${BENCHMARK_OPTIONS} \
+    || cd .
 
   print 22 "Done";
 
-popd > /dev/null
+popd

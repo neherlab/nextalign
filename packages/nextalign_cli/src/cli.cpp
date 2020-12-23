@@ -10,6 +10,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <cxxopts.hpp>
+#include <filesystem>
 #include <fstream>
 
 
@@ -19,12 +20,17 @@ struct CliParams {
   std::string reference;
   std::string genemap;
   std::optional<std::string> genes;
-  std::string output;
+  std::optional<std::string> outputDir;
+  std::optional<std::string> outputBasename;
+  std::optional<std::string> outputFasta;
   std::optional<std::string> outputInsertions;
 };
 
+struct Paths {
+  std::filesystem::path outputFasta;
+  std::filesystem::path outputInsertions;
+};
 
-std::string formatInsertions(const std::vector<Insertion> &insertions);
 template<typename Result>
 Result getParamRequired(
   const cxxopts::Options &cxxOpts, const cxxopts::ParseResult &cxxOptsParsed, const std::string &name) {
@@ -100,20 +106,33 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
     )
 
     (
-      "o,output",
-      "(required) Path to output aligned sequences in FASTA format",
+      "d,output-dir",
+      "(optional) Write output files to this directory. The base filename can be set using --output-basename flag. The paths can be overridden on a per-file basis using --output-* flags. If the required directory tree does not exist, it will be created.",
+      cxxopts::value<std::string>(),
+      "OUTPUT"
+    )
+
+    (
+      "n,output-basename",
+      "(optional) Sets the base filename to use for output files. To be used together with --output-dir flag. By default uses the filename of the sequences file (provided with --sequences). The paths can be overridden on a per-file basis using --output-* flags.",
+      cxxopts::value<std::string>(),
+      "OUTPUT"
+    )
+
+    (
+      "o,output-fasta",
+      "(required) Path to output aligned sequences in FASTA format (overrides paths given with --output-dir and --output-basename). If the required directory tree does not exist, it will be created.",
       cxxopts::value<std::string>(),
       "OUTPUT"
     )
 
     (
       "I,output-insertions",
-      "(optional) Path to output stripped insertions data",
+      "(optional) Path to output stripped insertions data in CSV format (overrides paths given with --output-dir and --output-basename). If the required directory tree does not exist, it will be created.",
       cxxopts::value<std::string>(),
       "OUTPUT_INSERTIONS"
     )
-
-;
+  ;
   // clang-format on
 
   const auto cxxOptsParsed = cxxOpts.parse(argc, argv);
@@ -128,7 +147,9 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
   const auto reference = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "reference");
   const auto genemap = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "genemap");
   const auto genes = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "genes");
-  const auto output = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "output");
+  const auto outputDir = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-dir");
+  const auto outputBasename = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-basename");
+  const auto outputFasta = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-fasta");
   const auto outputInsertions = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-insertions");
 
   return {
@@ -137,7 +158,9 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
     reference,
     genemap,
     genes,
-    output,
+    outputDir,
+    outputBasename,
+    outputFasta,
     outputInsertions,
   };
 }
@@ -204,24 +227,75 @@ void validateGenes(const std::set<std::string> &genes, const GeneMap &geneMap) {
 std::string formatCliParams(const CliParams &cliParams) {
   fmt::memory_buffer buf;
   fmt::format_to(buf, "\nCLI Parameters:\n");
-  fmt::format_to(buf, "{:>12s}=\"{:<d}\"\n", "--jobs", cliParams.jobs);
-  fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--sequences", cliParams.sequences);
-  fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--reference", cliParams.reference);
-  fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--genemap", cliParams.genemap);
+  fmt::format_to(buf, "{:>20s}=\"{:<d}\"\n", "--jobs", cliParams.jobs);
+  fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--sequences", cliParams.sequences);
+  fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--reference", cliParams.reference);
+  fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--genemap", cliParams.genemap);
 
   if (cliParams.genes) {
-    fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--genes", *cliParams.genes);
+    fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--genes", *cliParams.genes);
   }
 
-  fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--output", cliParams.output);
+  if (cliParams.outputDir) {
+    fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--output-dir", *cliParams.outputDir);
+  }
+
+  if (cliParams.outputBasename) {
+    fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--output-basename", *cliParams.outputBasename);
+  }
+
+  if (cliParams.outputFasta) {
+    fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--output-fasta", *cliParams.outputFasta);
+  }
 
   if (cliParams.outputInsertions) {
-    fmt::format_to(buf, "{:>12s}=\"{:<s}\"\n", "--output-insertions", *cliParams.outputInsertions);
+    fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--output-insertions", *cliParams.outputInsertions);
   }
 
   return fmt::to_string(buf);
 }
 
+Paths getPaths(const CliParams &cliParams) {
+  std::filesystem::path sequencesPath = cliParams.sequences;
+
+  auto outDir = std::filesystem::canonical(std::filesystem::current_path());
+  if (cliParams.outputDir) {
+    outDir = *cliParams.outputDir;
+  }
+
+  if (!outDir.is_absolute()) {
+    outDir = std::filesystem::current_path() / outDir;
+  }
+
+  fmt::print("OUT PATH: \"{:<s}\"\n", outDir.string());
+
+  auto baseName = sequencesPath.stem();
+  if (cliParams.outputBasename) {
+    baseName = *cliParams.outputBasename;
+  }
+
+  auto outputFasta = outDir / baseName;
+  outputFasta += ".aligned.fasta";
+  if (cliParams.outputFasta) {
+    outputFasta = *cliParams.outputFasta;
+  }
+
+  auto outputInsertions = outDir / baseName;
+  outputInsertions += ".insertions.csv";
+  if (cliParams.outputInsertions) {
+    outputInsertions = *cliParams.outputInsertions;
+  }
+
+  return {.outputFasta = outputFasta, .outputInsertions = outputInsertions};
+}
+
+std::string formatPaths(const Paths &paths) {
+  fmt::memory_buffer buf;
+  fmt::format_to(buf, "\nOutput files:\n");
+  fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "Aligned sequences", paths.outputFasta.string());
+  fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "Stripped insertions", paths.outputInsertions.string());
+  return fmt::to_string(buf);
+}
 
 std::string formatRef(const std::string &refName, const std::string &ref) {
   return fmt::format("\nReference:\n  name: \"{:s}\"\n  length: {:d}\n", refName, ref.size());
@@ -334,10 +408,17 @@ void run(
   }
 }
 
+
 int main(int argc, char *argv[]) {
   try {
     const auto cliParams = parseCommandLine(argc, argv);
     fmt::print(stdout, formatCliParams(cliParams));
+
+    const auto paths = getPaths(cliParams);
+    fmt::print(stdout, formatPaths(paths));
+
+    std::filesystem::create_directories(paths.outputFasta.parent_path());
+    std::filesystem::create_directories(paths.outputInsertions.parent_path());
 
     NextalignOptions options;
 
@@ -359,23 +440,19 @@ int main(int argc, char *argv[]) {
       std::exit(1);
     }
 
-    std::ofstream outputFastaFile(cliParams.output);
+    std::ofstream outputFastaFile(paths.outputFasta);
     if (!outputFastaFile.good()) {
-      fmt::print(stderr, "Error: unable to write \"{:s}\"\n", cliParams.output);
+      fmt::print(stderr, "Error: unable to write \"{:s}\"\n", paths.outputFasta.string());
       std::exit(1);
     }
 
-    std::ofstream outputInsertionsFile;
-    if (cliParams.outputInsertions) {
-      outputInsertionsFile.open(*cliParams.outputInsertions);
-      if (!outputInsertionsFile.good()) {
-        fmt::print(stderr, "Error: unable to write \"{:s}\"\n", *cliParams.outputInsertions);
-        std::exit(1);
-      }
 
-      outputInsertionsFile << "seqName,insertions\n";
+    std::ofstream outputInsertionsFile(paths.outputInsertions);
+    if (!outputInsertionsFile.good()) {
+      fmt::print(stderr, "Error: unable to write \"{:s}\"\n", paths.outputInsertions.string());
+      std::exit(1);
     }
-
+    outputInsertionsFile << "seqName,insertions\n";
 
     int parallelism = -1;
     if (cliParams.jobs > 0) {
