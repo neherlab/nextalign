@@ -49,7 +49,7 @@ TODO: provide prebuilt binaries for major platforms
 
 Nextalign accepts the following inputs:
 
-| Required | Input              | Flag                        | Description                                                                                                                                                                                                                                                             |
+| Required | Meaning            | Flag                        | Description                                                                                                                                                                                                                                                             |
 | -------- | ------------------ | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | yes      | Sequences          | `--sequences=<path>`        | Path to a file containing sequences to align ("query" sequences). Every sequence in this file will be pairwise-aligned with the reference sequence. Accepted formats: fasta. Example: [`--sequences=data/example/sequences.fasta`](data/example/sequences.fasta)        |
 | yes      | Reference sequence | `--reference=<path>`        | Path to a file containing reference sequence to align against. Accepted formats: fasta (1 sequence only), plain text. Example: [`--reference=data/example/reference.txt`](data/example/reference.txt)                                                                   |
@@ -60,10 +60,12 @@ Nextalign accepts the following inputs:
 
 Nextalign produces the following outputs:
 
-| Required | Input             | Flag                         | Description                                                                                                     |
-| -------- | ----------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| yes      | Sequence output   | `--output=<path>`            | Aligned sequences will be written to this file. Format: fasta.                                                  |
-| no       | Insertions output | `--output-insertions=<path>` | A list of insertions which have been stripped from aligned sequences will be written to this file. Format: CSV. |
+| Required | Meaning              | Flag                         | Description                                                                                                                                                                     |
+| -------- | -------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| no       | Output directory     | `--output-dir=<path>`        | Nextalign will write all output files to this directory. By default, will output files to the current directory.                                                                |
+| no       | Output base filename | `--output-basename=<string>` | Base filename for output files in the output directory. By default uses the filename of the sequences file (provided with `--sequences`)                                        |
+| no       | Sequence output      | `--output-fasta=<path>`      | Aligned sequences will be written to this file. Format: fasta. (overrides paths given with --output-dir and --output-basename)                                                  |
+| no       | Insertions output    | `--output-insertions=<path>` | A list of insertions which have been stripped from aligned sequences will be written to this file. Format: CSV. (overrides paths given with --output-dir and --output-basename) |
 
 <h3 id="with-docker" align="center">
 🐋 With docker
