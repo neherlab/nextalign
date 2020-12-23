@@ -35,7 +35,7 @@ void NextalignAverage(benchmark::State& st) {
 BENCHMARK(NextalignAverage)      //
   ->Unit(benchmark::kMillisecond)//
   ->Complexity(benchmark::oNSquared)
-  ->Iterations(3);
+  ->Iterations(20);
 
 
 /**

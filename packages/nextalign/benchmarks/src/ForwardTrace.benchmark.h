@@ -54,7 +54,7 @@ BENCHMARK_DEFINE_F(ForwardTraceBench, Average)(benchmark::State& st) {
 BENCHMARK_REGISTER_F(ForwardTraceBench, Average)
   ->Unit(benchmark::kMillisecond)//
   ->Complexity(benchmark::oNSquared)
-  ->Iterations(3);
+  ->Iterations(20);
 
 
 /**

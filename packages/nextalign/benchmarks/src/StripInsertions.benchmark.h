@@ -47,7 +47,7 @@ BENCHMARK_DEFINE_F(StripInsertionsBench, Average)(benchmark::State& st) {
 BENCHMARK_REGISTER_F(StripInsertionsBench, Average)
   ->Unit(benchmark::kMillisecond)//
   ->Complexity(benchmark::oNSquared)
-  ->Iterations(3);
+  ->Iterations(20);
 
 
 BENCHMARK_DEFINE_F(StripInsertionsBench, Variation)(benchmark::State& st) {
