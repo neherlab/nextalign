@@ -36,6 +36,34 @@ TEST(alignPairwise, PadsMissingLeft) {
   EXPECT_EQ(qryAln, result.query);
 }
 
+TEST(alignPairwise, PadsMissingLeftSingleMismatch) {
+  std::stringstream input;
+
+  // clang-format off
+  const auto qry =    toNucleotideSequence(     "GTCCAGCC"  );
+  const auto ref =    toNucleotideSequence(  "AGGTACAACCAGCC"  );
+  const auto qryAln = toNucleotideSequence(  "--GT----CCAGCC"  );
+  // clang-format on
+
+  const auto result = alignPairwise(qry, ref, min_length);
+  EXPECT_EQ(toString(ref), toString(result.ref));
+  EXPECT_EQ(toString(qryAln), toString(result.query));
+}
+
+
+TEST(alignPairwise, PadsMissingLeftSingle) {
+  std::stringstream input;
+
+  // clang-format off
+  const auto qry =    toNucleotideSequence(   "CGCTCGCT"  );
+  const auto ref =    toNucleotideSequence(  "ACGCTCGCT"  );
+  const auto qryAln = toNucleotideSequence(  "-CGCTCGCT"  );
+  // clang-format on
+
+  const auto result = alignPairwise(qry, ref, min_length);
+  EXPECT_EQ(toString(ref), toString(result.ref));
+  EXPECT_EQ(toString(qryAln), toString(result.query));
+}
 
 TEST(alignPairwise, PadsMissingLeftMismatch) {
   std::stringstream input;
@@ -43,7 +71,7 @@ TEST(alignPairwise, PadsMissingLeftMismatch) {
   // clang-format off
   const auto qry =    toNucleotideSequence(      "TGTTACCTGCGC" );
   const auto ref =    toNucleotideSequence( "AAGGTTTATACCTGCGC" );
-  const auto qryAln = toNucleotideSequence( "-----TGTTACCTGCGC" );
+  const auto qryAln = toNucleotideSequence( "--TGTT---ACCTGCGC" );
   // clang-format on
 
   const auto result = alignPairwise(qry, ref, min_length);

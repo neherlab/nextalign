@@ -199,7 +199,6 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   int qGapOpen;
   int rGapOpen;
 #pragma clang diagnostic pop
-
   for (ri = 0; ri < refSize; ri++) {
     for (si = 2 * bandWidth; si >= 0; si--) {
       shift = indexToShift(si);
@@ -207,28 +206,23 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
       if (qPos < 0) {
         // precedes query sequence -- no score, origin is query gap
         // we could fill all of this at once
-        score = -gapClose;
+        score = 0;
         origin = 3;
       } else if (qPos < querySize) {
         // if the shifted position is within the query sequence
         tmpMatch = lookupMatchScore(query[qPos], ref[ri]) > 0 ? match : misMatch;
 
         // if the previous move included a gap (this for the match case, so we are coming from [si][ri]), add gap-close cost
-        if (paths(si, ri) == 2 || paths(si, ri) == 3) {
+        if (qPos > 0 && ri > 0 && (paths(si, ri) == 2 || paths(si, ri) == 3)) {
           tmpMatch += gapClose;
         }
         // determine whether the previous move was a reference or query gap
         rGapOpen = si < 2 * bandWidth ? (paths(si + 1, ri + 1) == 2 ? 0 : gapOpen) : 0;
         qGapOpen = si > 0 ? (paths(si - 1, ri) == 3 ? 0 : gapOpen) : 0;
 
-        score = 0;
-        origin = 0;
-
         tmpScore = scores(si, ri) + tmpMatch;
-        if (tmpScore > score) {
-          score = tmpScore;
-          origin = 1;
-        }
+        score = tmpScore;
+        origin = 1;
 
         tmpScore = si < 2 * bandWidth ? scores(si + 1, ri + 1) + gapExtend + rGapOpen : gapExtend;
         if (tmpScore > score) {
@@ -317,7 +311,7 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
   }
 
   // do backtrace for aligned region
-  while (rPos > 0 && qPos > 0) {
+  while (rPos >= 0 && qPos >= 0) {
     // tmpMatch = ref[rPos] === query[qPos] || query[qPos] === "N" ? match : misMatch;
     origin = paths(si, rPos + 1);
     if (origin == 1) {
@@ -342,18 +336,17 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
       break;
     }
   }
-  // add the last match
-  aln_query += query[qPos];
-  aln_ref += ref[rPos];
-
+  // // add the last match
+  // aln_query += query[qPos];
+  // aln_ref += ref[rPos];
   // add left overhang
-  if (rPos > 0) {
-    for (int ii = rPos - 1; ii >= 0; ii--) {
+  if (rPos >= 0) {
+    for (int ii = rPos; ii >= 0; ii--) {
       aln_query += Letter::GAP;
       aln_ref += ref[ii];
     }
-  } else if (qPos > 0) {
-    for (int ii = qPos - 1; ii >= 0; ii--) {
+  } else if (qPos >= 0) {
+    for (int ii = qPos; ii >= 0; ii--) {
       aln_query += query[ii];
       aln_ref += Letter::GAP;
     }
