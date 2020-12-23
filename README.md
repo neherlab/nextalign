@@ -2,11 +2,18 @@
 Nextalign
 </h1>
 
-> <h4 align="center">
-> Viral genome reference alignment
-> </h4>
+> <h3 align="center">
+> 🧬 Viral genome reference alignment
+> </h3>
+> <p align="center">
+> by Nextstrain team
+> </p>
+
+---
 
 > ⚠️ IMPORTANT: Nextalign is a new project and is under heavy development. There might be serious bugs. Please report all errors and inconsistencies using [Github Issues](https://github.com/neherlab/nextalign/issues/new).
+
+---
 
 <h2 id="about" align="center">
 👋 About
@@ -17,7 +24,7 @@ ported to C++ and made to a standalone command-line tool.
 
 Nextalign performs pairwise alignment of provided sequences against a given reference sequence using a banded local alignment with affine gap-cost. Band width and rough relative positions are determined through seed matching.
 
-Currently, nextalign's primary focus is on SARS-CoV-2 genome, but it can be used on any virus with a sufficiently similar reference sequence (less than a 5% divergence).
+Currently, nextalign's primary focus is on SARS-CoV-2 genome, but it can be used on any virus, given a sufficiently similar reference sequence (less than a 5% divergence).
 Nextalign will strip insertions relative to the reference and output them in a separate CSV file.
 
 ---
