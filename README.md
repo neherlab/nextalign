@@ -86,69 +86,95 @@ For a general conversation, feel free to join Nextstrain Discussion at [discussi
 ✨ Quick start
 </h3>
 
-1. Install and configure required dependencies
+1.  Install and configure the dependencies
 
-   - C++17-compliant C++ compiler
+    - Required:
 
-     > ⚠️ Only GCC >= 9 and Clang >= 10 are officially supported (but you can try older versions too and tell us how it goes).
+      - C++17-compliant C++ compiler
 
-   - [cmake](https://cmake.org/) >= 3.10
+        > ⚠️ Only GCC >= 9 and Clang >= 10 are officially supported (but you can try older versions too and tell us how it goes).
 
-   - [conan](https://conan.io/) package manager
+      - [cmake](https://cmake.org/) >= 3.10
 
-     > 💡 For Ubuntu Linux there is an installation script included in `./tools/install-conan`
+      - [conan](https://conan.io/) package manager
 
-   - [cppcheck](http://cppcheck.sourceforge.net/)
+        > 💡 For Ubuntu Linux there is an installation script included in `./tools/install-conan`
 
-     > ⚠️ A version that supports C++17 is required
+      - [cppcheck](http://cppcheck.sourceforge.net/) for static analysis
 
-   - (optional, but recommended) [nodemon](https://www.npmjs.com/package/nodemon)
+        > ⚠️ A version that supports C++17 is required
 
-     > ⚠️ nodemon requires Node.js and npm. You can install it globally with:
-     >
-     > ```bash
-     > npm install --global nodemon
-     > ```
+    - Recommended:
 
-2. Clone and run
+      - [ccache](https://ccache.dev/) for faster rebuilds
 
-   ```bash
-   git clone --recursive https://github.com/neherlab/nextalign
-   cd nextalign
-   make dev
+        > 💡 On Ubuntu and other Debian derivatives it can be installed with
+        >
+        > ```
+        > sudo apt-get install ccache
+        > ```
 
-   ```
+      - [nodemon](https://www.npmjs.com/package/nodemon) for watch & rebuild feature for better developer experience
 
-   > ⚠️ Note the `--recursive` flag for `git` command - this repository contains git submodules
+        > ⚠️ nodemon requires Node.js and npm. You can install it globally with:
+        >
+        > ```bash
+        > npm install --global nodemon
+        > ```
 
-   This will:
+        > 💡 If you don't want to install Node.js and nodemon, or don't want the automatic watch & rebuild feature, you can use `make dev-nowatch` instead of `make dev` during development.
 
-   - install or update conan packages
-   - run cmake and generate makefiles
-   - build the project and tests
-   - run static analysis on source files
-   - run tests
-   - run CLI with parameters defined in `DEV_CLI_OPTIONS` environment variable
-   - watch source files and rebuild on changes
+      - [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) for static analysis. It is recommended to use an text editor or an IDE with clang-tidy support
 
-   > 💡 If you don't want to install Node.js and nodemon, or don't want the automatic rebuild feature, you can use `make dev-nowatch` instead of `make dev`.
+2.  Clone, run and develop
 
-The CLI binary is produced in `.build/Debug/packages/nextalign_cli/nextalign_cli`. The tests binary is
-in `.build/Release/packages/nextalign/tests/nextalign_tests`. You can run them directly too, if you'd like.
+    ```bash
+    git clone --recursive https://github.com/neherlab/nextalign
+    cd nextalign
+    make dev
+    ```
 
-You can change the default arguments of the CLI invocation make by the `make dev` target by creating a `.env` file:
+    > ⚠️ Note the `--recursive` flag for `git` command - this repository contains git submodules
 
-```bash
-cp .env.example .env
-```
+    This will:
 
-and modifying the `DEV_CLI_OPTIONS` variable.
+    - install or update conan packages
+    - run cmake and generate makefiles
+    - build the project and tests
+    - run static analysis on source files
+    - run tests
+    - run CLI with parameters defined in `DEV_CLI_OPTIONS` environment variable
+    - watch source files and rebuild on changes
 
-> 💡 The default input files are located in [`data/example`](https://github.com/neherlab/nextalign/tree/master/data/example)
+    > 💡 If you don't want to install Node.js and nodemon, or don't want the automatic watch & rebuild feature, you can use `make dev-nowatch` instead of `make dev` during development.
 
-> 💡 By default, the output files are produced in `tmp/` directory in the root of the project.
+    🎉 You are ready! Start coding! In particular, take a look at these files and directories:
 
-> ⚠️ Do not measure performance of executables produced with `make dev` and do not use them for real workloads. Development builds, with disabled optimizations and with enabled debugging tools and instrumentation, are meant for developer's productivity, not runtime performance, and can be orders of magnitudes slower than the optimized build. Instead, for any performance assessments, use [benchmarks](#microbenchmarks), [profiling](#runtime-performance-assessment) or [production build](#production-build). In real workloads always use the [production build](#production-build).
+    ```
+    packages/nextalign_cli/src/
+    packages/nextalign_cli/src/cli.cpp # Entry pint of the CLI executable
+
+    packages/nextalign/src/
+    packages/nextalign/src/nextalign.cpp # Entry point of the library is the `nextalign()` function in this file
+    ```
+
+    The CLI binary is produced in `.build/Debug/packages/nextalign_cli/nextalign_cli`
+    The tests binary is in `.build/Debug/packages/nextalign/tests/nextalign_tests`.
+    You can run them directly too, if you'd like.
+
+    You can change the default arguments of the CLI invocation make by the `make dev` target by creating a `.env` file:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    and modifying the `DEV_CLI_OPTIONS` variable.
+
+    > 💡 The default input files are located in [`data/example`](https://github.com/neherlab/nextalign/tree/master/data/example)
+
+    > 💡 By default, the output files are produced in `tmp/` directory in the root of the project.
+
+    > ⚠️ Do not measure performance of executables produced with `make dev` and do not use them for real workloads. Development builds, with disabled optimizations and with enabled debugging tools and instrumentation, are meant for developer's productivity, not runtime performance, and can be orders of magnitudes slower than the optimized build. Instead, for any performance assessments, use [benchmarks](#microbenchmarks), [profiling](#runtime-performance-assessment) or [production build](#production-build). In real workloads always use the [production build](#production-build).
 
 ---
 
@@ -162,8 +188,7 @@ Having the requirements from the ["Quick start" section](#quick-start) installed
 make prod
 ```
 
-This will produce the optimized executable in `.build/Release/packages/nextalign_cli/nextalign_cli`, which you can run
-directly. This is what we (will) redistribute to the end users.
+This will produce the optimized executable in `.build/Release/packages/nextalign_cli/nextalign_cli`, which you can run directly. This is what we (will) redistribute to the end users.
 
 ---
 
@@ -268,11 +293,15 @@ TODO: under construction
 🔬 Static analysis
 </h3>
 
-TODO: under construction
+We use the following static analysis tools and we aim to produce 0 warnings.
 
 #### clang-tidy
 
-TODO: under construction
+`clang-tidy`, a part of LLVM project, is a static analysis (linter) tool. During development, it is recommended to use a text editor or an IDE wich has `clang-tidy` integration.
+
+Check `.clang-tidy` file in the root of the project for current configuration.
+
+TODO: run `clang-tidy` as a part of the dev script
 
 #### clang-analyzer
 
@@ -288,6 +317,8 @@ contains arguments passed to `cppcheck`.
 <h3 id="runtime-analysis" align="center">
 🔥 Runtime analysis
 </h3>
+
+We use the following tools to perform runtime analysis of the builds. All of these tools should run cleanly, with no crashes, and with empty reports.
 
 #### 🛀 Sanitizers
 
