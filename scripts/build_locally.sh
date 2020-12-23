@@ -151,23 +151,23 @@ pushd "${BUILD_DIR}" > /dev/null
   print 12 "Build";
   ${CLANG_ANALYZER} cmake --build "${BUILD_DIR}" --config "${CMAKE_BUILD_TYPE}" -- -j$(($(nproc) - 1))
 
-  print 25 "Run cppcheck";
-  . "${THIS_DIR}/cppcheck.sh"
+popd > /dev/null
 
+
+print 25 "Run cppcheck";
+. "${THIS_DIR}/cppcheck.sh"
+
+
+pushd "${PROJECT_ROOT_DIR}" > /dev/null
   print 23 "Run tests";
   pushd "${BUILD_DIR}/packages/${PROJECT_NAME}/tests" > /dev/null
-      ${GTPP} ${GDB} ./nextalign_tests --gtest_output=xml || cd .
+      eval ${GTPP} ${GDB} ./nextalign_tests --gtest_output=xml:${PROJECT_ROOT_DIR}/.reports/tests.xml || cd .
   popd > /dev/null
 
-  mkdir -p "${PROJECT_ROOT_DIR}/tmp"
   print 27 "Run CLI";
-
   CLI_DIR="${BUILD_DIR}/packages/${PROJECT_NAME}_cli"
   CLI_EXE="nextalign_cli"
-  echo "Running \"${BUILD_DIR}/packages/${PROJECT_NAME}_cli/${CLI_EXE} ${DEV_CLI_OPTIONS}\""
-  pushd "${CLI_DIR}" > /dev/null
-      ${GDB} "${CLI_EXE}" ${DEV_CLI_OPTIONS} || cd .
-  popd > /dev/null
+  eval "${GDB}" ${CLI_DIR}/${CLI_EXE} ${DEV_CLI_OPTIONS} || cd .
 
   print 22 "Done";
 
