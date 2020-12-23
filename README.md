@@ -58,7 +58,12 @@ Nextalign produces the following outputs:
 | yes      | Sequence output   | `--output=<path>`            | Aligned sequences will be written to this file. Format: fasta.                                                  |
 | no       | Insertions output | `--output-insertions=<path>` | A list of insertions which have been stripped from aligned sequences will be written to this file. Format: CSV. |
 
-### Feedback
+<h3 id="with-docker" align="center">
+🐋 With docker
+</h3>
+
+TODO: publish docker image and provide instructions on how to use it
+
 ---
 
 <h3 id="usage" align="center">
