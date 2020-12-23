@@ -34,7 +34,7 @@ void SeedMatchAverage(benchmark::State& st) {
 BENCHMARK(SeedMatchAverage)      //
   ->Unit(benchmark::kMillisecond)//
   ->Complexity(benchmark::oNSquared)
-  ->Iterations(3);
+  ->Iterations(20);
 
 
 /**

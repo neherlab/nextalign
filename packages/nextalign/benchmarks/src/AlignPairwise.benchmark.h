@@ -36,7 +36,7 @@ void AlignPairwiseAverage(benchmark::State& st) {
 BENCHMARK(AlignPairwiseAverage)  //
   ->Unit(benchmark::kMillisecond)//
   ->Complexity(benchmark::oNSquared)
-  ->Iterations(3);
+  ->Iterations(20);
 
 
 /**
