@@ -24,7 +24,6 @@ add_library(${PROJECT_NAME} STATIC
   src/align/alignPairwise.h
   src/alphabet/aminoacids.cpp
   src/alphabet/aminoacids.h
-  src/alphabet/letter.h
   src/alphabet/nucleotides.cpp
   src/alphabet/nucleotides.h
   src/io/gene.io.cpp

@@ -8,6 +8,80 @@
 #include <string>
 #include <vector>
 
+template<typename Letter>
+using Sequence = std::basic_string<Letter>;
+
+
+enum class Nucleotide : char {
+  U = 0,
+  T = 1,
+  A = 2,
+  W = 3,
+  C = 4,
+  Y = 5,
+  M = 6,
+  H = 7,
+  G = 8,
+  K = 9,
+  R = 10,
+  D = 11,
+  S = 12,
+  B = 13,
+  V = 14,
+  N = 15,
+  GAP = 16,
+  SIZE = 17,
+};
+
+using NucleotideSequence = Sequence<Nucleotide>;
+
+NucleotideSequence toNucleotideSequence(const std::string& seq);
+
+std::string toString(const NucleotideSequence& seq);
+
+
+constexpr const char CHAR_AMINOACID_UNKNOWN = 'X';
+constexpr const char CHAR_AMINOACID_GAP = '-';
+constexpr const char CHAR_AMINOACID_STOP = '*';
+
+enum class Aminoacid : char {
+  A = 0,
+  B = 1,// D | N
+  C = 2,
+  D = 3,
+  E = 4,
+  F = 5,
+  G = 6,
+  H = 7,
+  I = 8,
+  J = 9,// L | I
+  K = 10,
+  L = 11,
+  M = 12,
+  N = 13,
+  O = 14,// (rare) Pyrrolysine
+  P = 15,
+  Q = 16,
+  R = 17,
+  S = 18,
+  T = 19,
+  U = 20,// (rare) Selenocysteine
+  V = 21,
+  W = 22,
+  Y = 23,
+  Z = 24,// E | Q
+  X = 25,
+  STOP = 26,
+  GAP = 27,
+  SIZE,
+};
+
+using AminoacidSequence = Sequence<Aminoacid>;
+
+AminoacidSequence toAminoacidSequence(const std::string& seq);
+
+std::string toString(const AminoacidSequence& seq);
+
 
 struct AlgorithmInput {
   int index;
@@ -55,8 +129,8 @@ struct AlgorithmOutput {
 };
 
 
-AlignmentImproved nextalign(
-  const std::string& query, const std::string& ref, const GeneMap& geneMap, const NextalignOptions& options);
+AlignmentImproved nextalign(const NucleotideSequence& query, const NucleotideSequence& ref, const GeneMap& geneMap,
+  const NextalignOptions& options);
 
 /**
  * Parses genemap in GFF format from a file or string stream

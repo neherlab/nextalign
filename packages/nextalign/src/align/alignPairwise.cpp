@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "../alphabet/aminoacids.h"
-#include "../alphabet/letter.h"
 #include "../alphabet/nucleotides.h"
 #include "../match/matchAa.h"
 #include "../match/matchNuc.h"
