@@ -25,6 +25,7 @@ if [ -f "${PROJECT_ROOT_DIR}/.env" ]; then
 fi
 
 PROJECT_NAME="nextalign"
+BUILD_PREFIX=""
 
 # Build type (default: Release)
 CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:=Release}"
@@ -71,14 +72,29 @@ if [ "${USE_CLANG}" == "true" ] || [ "${USE_CLANG}" == "1" ]; then
 fi
 
 # Create build directory
-BUILD_DIR_DEFAULT="${PROJECT_ROOT_DIR}/.build/${CMAKE_BUILD_TYPE}${BUILD_SUFFIX}"
+BUILD_DIR_DEFAULT="${PROJECT_ROOT_DIR}/.build/${BUILD_PREFIX}${CMAKE_BUILD_TYPE}${BUILD_SUFFIX}"
 BUILD_DIR="${BUILD_DIR:=${BUILD_DIR_DEFAULT}}"
+
+mkdir -p "${BUILD_DIR}"
 
 USE_COLOR="${USE_COLOR:=1}"
 DEV_CLI_OPTIONS="${DEV_CLI_OPTIONS:=}"
 
-# gdb (or lldb) command with arguments
-GDB_DEFAULT="gdb --quiet -ix ${THIS_DIR}/lib/.gdbinit -x ${THIS_DIR}/lib/.gdbexec --args"
+# Whether to build a standalone static executable
+NEXTALIGN_STATIC_BUILD_DEFAULT=0
+if [ "${CMAKE_BUILD_TYPE}" == "Release" ]; then
+  NEXTALIGN_STATIC_BUILD_DEFAULT=1
+fi
+NEXTALIGN_STATIC_BUILD=${NEXTALIGN_STATIC_BUILD:=${NEXTALIGN_STATIC_BUILD_DEFAULT}}
+
+# Add flags necessary for static build
+CONAN_STATIC_BUILD_FLAGS=""
+if [ "${NEXTALIGN_STATIC_BUILD}" == "true" ] || [ "${NEXTALIGN_STATIC_BUILD}" == "1" ]; then
+  CONAN_STATIC_BUILD_FLAGS="\
+    -o tbb:shared=False \
+    -o gtest:shared=True \
+  "
+fi
 
 # AddressSanitizer and MemorySanitizer don't work with gdb
 case ${CMAKE_BUILD_TYPE} in
@@ -86,13 +102,13 @@ case ${CMAKE_BUILD_TYPE} in
   *) ;;
 esac
 
+# gdb (or lldb) command with arguments
+GDB_DEFAULT="gdb --quiet -ix ${THIS_DIR}/lib/.gdbinit -x ${THIS_DIR}/lib/.gdbexec --args"
 GDB="${GDB:=${GDB_DEFAULT}}"
 
 # gttp (Google Test Pretty Printer) command
 GTTP_DEFAULT="${THIS_DIR}/lib/gtpp.py"
 GTPP="${GTPP:=${GTTP_DEFAULT}}"
-
-mkdir -p "${BUILD_DIR}"
 
 # Generate a semicolon-delimited list of arguments for cppcheck
 # (to run during cmake build). The arguments are taken from the file
@@ -118,6 +134,7 @@ pushd "${BUILD_DIR}" > /dev/null
   conan install "${PROJECT_ROOT_DIR}" \
     -s build_type="${CONAN_BUILD_TYPE}" \
     ${CONAN_COMPILER_SETTINGS} \
+    ${CONAN_STATIC_BUILD_FLAGS} \
     --build missing \
 
   print 92 "Generate build files";
@@ -127,6 +144,9 @@ pushd "${BUILD_DIR}" > /dev/null
     -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
     -DCMAKE_CXX_CPPCHECK="${CMAKE_CXX_CPPCHECK}" \
     -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE:=0} \
+    -DNEXTALIGN_STATIC_BUILD=${NEXTALIGN_STATIC_BUILD} \
+    -DNEXTALIGN_BUILD_BENCHMARKS=1 \
+    -DNEXTALIGN_BUILD_TESTS=1 \
 
   print 12 "Build";
   ${CLANG_ANALYZER} cmake --build "${BUILD_DIR}" --config "${CMAKE_BUILD_TYPE}" -- -j$(($(nproc) - 1))

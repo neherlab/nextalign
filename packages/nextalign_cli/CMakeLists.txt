@@ -12,6 +12,10 @@ find_package(cxxopts 2.2.1 REQUIRED)
 find_package(fmt 7.1.0 REQUIRED)
 find_package(TBB REQUIRED)
 
+if (${NEXTALIGN_STATIC_BUILD})
+  set(STATIC_BUILD_FLAGS "-static -static-libstdc++ -static-libgcc")
+endif ()
+
 add_executable(${PROJECT_NAME}
   src/cli.cpp
   )
@@ -34,5 +38,5 @@ target_link_libraries(${PROJECT_NAME}
   fmt::fmt
   nextalign
   TBB::tbb
-  -static -static-libstdc++ -static-libgcc
+  ${STATIC_BUILD_FLAGS}
   )
