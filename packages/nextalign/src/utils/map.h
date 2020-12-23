@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 template<typename InputContainer, typename OutputContainer, typename UnaryOperation>
 OutputContainer map(const InputContainer& input, UnaryOperation op, OutputContainer) {
   OutputContainer result = {};

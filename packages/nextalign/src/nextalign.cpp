@@ -1,13 +1,11 @@
-#include <alphabet/nucleotides.h>
-#include <fmt/format.h>
-#include <nextalign/types.h>
-#include <utils/contract.h>
+#include <nextalign/nextalign.h>
 
-#include <gsl/string_span>
 #include <string>
 
 #include "align/alignPairwise.h"
+#include "alphabet/nucleotides.h"
 #include "strip/stripInsertions.h"
+#include "utils/contract.h"
 #include "utils/map.h"
 #include "utils/safe_cast.h"
 

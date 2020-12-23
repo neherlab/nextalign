@@ -149,7 +149,8 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
 }
 
 template<typename Letter>
-ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& ref, int bandWidth, int meanShift) {// TODO: Avoid creating this lambda function
+ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& ref, int bandWidth,
+  int meanShift) {                                  // TODO: Avoid creating this lambda function
   const auto indexToShift = [&bandWidth, &meanShift]//
     (int si) {                                      //
       return si - bandWidth + meanShift;

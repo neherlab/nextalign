@@ -1,6 +1,6 @@
 #include "stripInsertions.h"
 
-#include <nextalign/types.h>
+#include <nextalign/nextalign.h>
 
 #include <string>
 

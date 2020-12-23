@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nextalign/types.h>
+#include <nextalign/nextalign.h>
 
 #include <string>
 #include <vector>

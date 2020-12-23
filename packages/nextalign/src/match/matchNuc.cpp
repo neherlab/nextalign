@@ -3,7 +3,7 @@
 #include <array>
 
 #include "../alphabet/nucleotides.h"
-#include "utils/to_underlying.h"
+#include "../utils/to_underlying.h"
 
 namespace {
   // clang-format off

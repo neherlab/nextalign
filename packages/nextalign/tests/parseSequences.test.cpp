@@ -1,6 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <nextalign/parseSequences.h>
+#include <nextalign/nextalign.h>
 
 #include <sstream>
 

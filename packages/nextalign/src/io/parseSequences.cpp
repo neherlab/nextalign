@@ -1,6 +1,5 @@
 #include <fmt/format.h>
-#include <nextalign/parseSequences.h>
-#include <nextalign/types.h>
+#include <nextalign/nextalign.h>
 
 #include <boost/algorithm/string.hpp>
 #include <map>

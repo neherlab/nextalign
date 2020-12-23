@@ -19,11 +19,7 @@ find_package(fmt 7.1.0 REQUIRED)
 find_package(type_safe 0.2.1 REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC
-  include/nextalign/geneUtils.h
   include/nextalign/nextalign.h
-  include/nextalign/parseGeneMapGff.h
-  include/nextalign/parseSequences.h
-  include/nextalign/types.h
   src/align/alignPairwise.cpp
   src/align/alignPairwise.h
   src/alphabet/aminoacids.cpp
@@ -31,7 +27,8 @@ add_library(${PROJECT_NAME} STATIC
   src/alphabet/letter.h
   src/alphabet/nucleotides.cpp
   src/alphabet/nucleotides.h
-  src/utils/geneUtils.cpp
+  src/io/gene.io.cpp
+  src/io/gene.io.h
   src/io/parseGeneMapGff.cpp
   src/io/parseSequences.cpp
   src/match/matchAa.cpp
