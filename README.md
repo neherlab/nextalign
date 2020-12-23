@@ -15,12 +15,10 @@ Nextalign
 Nextalign is the viral genome sequence alignment algorithm used in [Nextclade](https://github.com/nextstrain/nextclade),
 ported to C++ and made to a standalone command-line tool.
 
-Nextalign performs pairwise alignment of provided sequences against a given reference sequences using
-a banded local alignment with affine gap-cost.
-Band width and rough relative positions are determined through seed matching.
+Nextalign performs pairwise alignment of provided sequences against a given reference sequence using a banded local alignment with affine gap-cost. Band width and rough relative positions are determined through seed matching.
 
 Currently, nextalign's primary focus is on SARS-CoV-2 genome, but it can be used on any virus with a sufficiently similar reference sequence (less than a 5% divergence).
-Nextalign will strip insertions relative to the reference and output them in a separate tabular file.
+Nextalign will strip insertions relative to the reference and output them in a separate CSV file.
 
 ---
 
@@ -30,11 +28,15 @@ Nextalign will strip insertions relative to the reference and output them in a s
 
 TODO: expand this section
 
-### Installation
+<h3 id="installation" align="center">
+💿 Installation
+</h3>
 
 TODO: provide prebuilt binaries for major platforms
 
-### Usage
+<h3 id="usage" align="center">
+🔋 Usage
+</h3>
 
 #### ➡️ Inputs
 
@@ -57,14 +59,17 @@ Nextalign produces the following outputs:
 | no       | Insertions output | `--output-insertions=<path>` | A list of insertions which have been stripped from aligned sequences will be written to this file. Format: CSV. |
 
 ### Feedback
+---
+
+<h3 id="usage" align="center">
+💬 Feedback
+</h3>
 
 Do you find Nextalign useful? Tell us about your use-case and experience with it.
 
-If you want to report an error, request a new feature, please open
-a [new Github Issue](https://github.com/neherlab/nextalign/issues/new).
+If you want to report an error or request a new feature, please open a [new Github Issue](https://github.com/neherlab/nextalign/issues/new).
 
-For a general conversation, feel free to join Nextstrain Discussion
-at [discussion.nextstrain.org](https://discussion.nextstrain.org/).
+For a general conversation, feel free to join Nextstrain Discussion at [discussion.nextstrain.org](https://discussion.nextstrain.org/).
 
 ---
 
@@ -138,7 +143,7 @@ and modifying the `DEV_CLI_OPTIONS` variable.
 
 > 💡 By default, the output files are produced in `tmp/` directory in the root of the project.
 
-> ⚠️ Do not measure performance of the executables produced with `make dev` and do not use them for real workloads. Development builds, having no optimizations and having debugging tools enabled, are meant for developer's productivity and debugging, and can be orders of magnitudes slower than the production build. Instead, for any performance assessments, use [benchmarks](#microbenchmarks), [profiling](#runtime-performance-assessment) or [production build](#production-build). In real workloads always use the [production build](#production-build).
+> ⚠️ Do not measure performance of executables produced with `make dev` and do not use them for real workloads. Development builds, with disabled optimizations and with enabled debugging tools and instrumentation, are meant for developer's productivity, not runtime performance, and can be orders of magnitudes slower than the optimized build. Instead, for any performance assessments, use [benchmarks](#microbenchmarks), [profiling](#runtime-performance-assessment) or [production build](#production-build). In real workloads always use the [production build](#production-build).
 
 ---
 
@@ -306,7 +311,11 @@ The project is set up to build with sanitizers, if one of the following `CMAKE_B
 
 TODO: under construction
 
-### Use non-default compiler
+---
+
+<h3 id="use-non-default-compiler" align="center">
+⚙️ Use non-default compiler
+</h3>
 
 #### Building with Clang
 
@@ -321,8 +330,6 @@ CMAKE_BUILD_TYPE=ASAN USE_CLANG=1 make dev
 ```
 
 In this case, binaries will be produced in directories postfixed with `-Clang`, e.g. `.build/Debug-Clang`.
-
-Hint:
 
 > 💡 On Ubuntu you can build LLVM project (including Clang) with a script provided in `scripts/deps/build_llvm.sh`. It depends on binutils which should be built with `scripts/deps/build_binutils.sh` prior to that. There is also a script to build GCC: `scripts/deps/build_gcc.sh`. Refer to comments inside these scripts for the list of dependencies required. As a result of these scripts, the ready-to-use compilers will be in `3rdparty/gcc` and `3rdparty/llvm`,
 
