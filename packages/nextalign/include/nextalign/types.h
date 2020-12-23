@@ -31,7 +31,6 @@ using GeneMap = std::map<std::string, Gene>;
 
 struct Alignment {
   std::string query;
-  std::string ref;
   int alignmentScore;
 };
 
