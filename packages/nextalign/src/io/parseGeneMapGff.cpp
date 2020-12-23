@@ -8,8 +8,8 @@
 #include <istream>
 #include <string>
 
-#include "alignPairwise.h"
-#include "csvParser.h"
+#include "parseCsv.h"
+#include "src/align/alignPairwise.h"
 
 
 constexpr const auto GFF_NUM_COLUMNS = 9;

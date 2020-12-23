@@ -8,13 +8,13 @@
 #include <string>
 #include <vector>
 
-#include "alphabet/aminoacids.h"
-#include "alphabet/letter.h"
-#include "alphabet/nucleotides.h"
-#include "matchAa.h"
-#include "matchNuc.h"
-#include "src/utils/safe_cast.h"
-#include "utils/vector2d.h"
+#include "../alphabet/aminoacids.h"
+#include "../alphabet/letter.h"
+#include "../alphabet/nucleotides.h"
+#include "../match/matchAa.h"
+#include "../match/matchNuc.h"
+#include "../utils/safe_cast.h"
+#include "../utils/vector2d.h"
 
 
 namespace details {

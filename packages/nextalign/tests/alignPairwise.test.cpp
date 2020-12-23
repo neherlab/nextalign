@@ -1,9 +1,10 @@
+#include "../src/align/alignPairwise.h"
+
 #include <gtest/gtest.h>
 
 #include <string>
 
-#include "../src/alignPairwise.h"
-#include "../src/matchNuc.h"
+#include "../src/match/matchNuc.h"
 
 const NextalignOptions options = {};
 const int min_length = 5;

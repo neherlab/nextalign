@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "alphabet/nucleotides.h"
+#include "../alphabet/nucleotides.h"
 
 struct InsertionInternal {
   int begin;

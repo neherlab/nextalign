@@ -6,10 +6,10 @@
 #include <gsl/string_span>
 #include <string>
 
-#include "alignPairwise.h"
-#include "src/utils/safe_cast.h"
-#include "stripInsertions.h"
+#include "align/alignPairwise.h"
+#include "strip/stripInsertions.h"
 #include "utils/map.h"
+#include "utils/safe_cast.h"
 
 Insertion toExternal(const InsertionInternal& ins) {
   return Insertion{.begin = ins.begin, .end = ins.end, .seq = toString(ins.seq)};

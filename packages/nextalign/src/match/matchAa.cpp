@@ -2,7 +2,7 @@
 
 #include <array>
 
-#include "alphabet/aminoacids.h"
+#include "../alphabet/aminoacids.h"
 #include "utils/to_underlying.h"
 
 namespace {
