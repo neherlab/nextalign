@@ -161,8 +161,10 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   const int refSize = safe_cast<int>(ref.size());
   const int n_rows = bandWidth * 2 + 1;
   const int n_cols = refSize + 1;
-  vector2d<int> scores(n_rows, n_cols);
+
   vector2d<int> paths(n_rows, n_cols);
+  // these could be reduced to vectors
+  vector2d<int> scores(n_rows, n_cols);
   vector2d<int> refGaps(n_rows, n_cols);
   vector2d<int> qryGaps(n_rows, n_cols);
 
@@ -195,7 +197,6 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   int ri;
   int shift;
   int tmpMatch;
-  std::array<int, 4> cmp;
   int qPos;
   int origin;
   bool originRefGap, originQryGap;
@@ -299,7 +300,6 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
   aln_ref.reserve(rowLength + 3 * bandWidth);
   aln_query.reserve(rowLength + 3 * bandWidth);
 
-  // Determine the best alignment by picking the optimal score at the end of the query
   // const lastIndexByShift = scores.map((d, i) = > Math.min(rowLength - 1, query.size() + indexToShift(i)));
   // const lastScoreByShift = scores.map((d, i) = > d[lastIndexByShift[i]]);
 
@@ -309,6 +309,7 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
   lastScoreByShift.resize(scores.num_rows());
   lastIndexByShift.resize(scores.num_rows());
 
+  // Determine the best alignment by picking the optimal score at the end of the query
   int si = 0;
   int bestScore = 0;
   for (int i = 0; i < scoresSize; i++) {
@@ -339,10 +340,8 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
     }
   }
 
-  // std::cout<<shift<<"\n";
   // do backtrace for aligned region
   while (rPos >= 0 && qPos >= 0) {
-    // tmpMatch = ref[rPos] === query[qPos] || query[qPos] === "N" ? match : misMatch;
     origin = paths(si, rPos + 1);
     // std::cout<<si<<" "<<rPos<<" "<<origin<<" "<<currentMatrix<<"\n";
     if (origin&MATCH && currentMatrix==0) {
@@ -358,8 +357,10 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
       qPos--;
       si++;
       if (origin&refGAPextend){
+        // remain in gap-extension mode and ignore best-overall score
         currentMatrix=refGAPmatrix;
       }else{
+        // close gap, return to best-overall score
         currentMatrix = 0;
       }
     } else if ((origin&qryGAPmatrix && currentMatrix==0) || currentMatrix==qryGAPmatrix) {
@@ -369,17 +370,17 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
       rPos--;
       si--;
       if (origin&qryGAPextend){
+        // remain in gap-extension mode and ignore best-overall score
         currentMatrix=qryGAPmatrix;
       }else{
+        // close gap, return to best-overall score
         currentMatrix = 0;
       }
     } else {
       break;
     }
   }
-  // // add the last match
-  // aln_query += query[qPos];
-  // aln_ref += ref[rPos];
+
   // add left overhang
   if (rPos >= 0) {
     for (int ii = rPos; ii >= 0; ii--) {
@@ -397,16 +398,6 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
   // std::reverse(aln.begin(), aln.end());
   std::reverse(aln_query.begin(), aln_query.end());
   std::reverse(aln_ref.begin(), aln_ref.end());
-
-  // TODO: these caused errors for me -- eliminated the pair vector
-  // const auto queryFinal = Sequence<Letter>(aln.size(), '-');
-  // std::accumulate(aln.cbegin(), aln.cend(), query.begin(),//
-  //   [](const auto& x, Sequence<Letter>& res) { return res + x[0]; });
-
-  // const auto refFinal = Sequence<Letter>(aln.size(), '-');
-  // std::accumulate(aln.cbegin(), aln.cend(), query.begin(),//
-  //   [](const auto& x, Sequence<Letter>& res) { return res + x[1]; });
-  // std::cout <<bestScore<<"\n";
 
   return {
     .query = aln_query,
