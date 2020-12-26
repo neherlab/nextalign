@@ -42,7 +42,6 @@ struct ForwardTrace {
 struct AlignmentParameters {
   int gapExtend;
   int gapOpen;
-  int gapClose;
   int misMatch;
   int match;
 };

@@ -44,15 +44,16 @@ public:
 AlignmentParameters alignmentParameters = {
   .gapExtend = 0,
   .gapOpen = -6,
-  .gapClose = 0,
   .misMatch = -1,
   .match = 3,
 };
 
+// store direction info for backtrace as bits in paths matrix
+// these indicate the currently optimal move
 int MATCH=1<<0;
 int refGAPmatrix=1<<1;
 int qryGAPmatrix=1<<2;
-
+// these are the override flags for gap extension
 int refGAPextend=1<<3;
 int qryGAPextend=1<<4;
 
@@ -117,13 +118,11 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
     // TODO: verify that the `query.substr()` behavior is the same as JS `string.substr()`
     const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref, start_pos, allowed_mismatches);
 
-    // TODO: is this comment out of date?
-    // only use seeds that match at least 90%
+    // only use seeds with at most allowed_mismatches
     if (tmpMatch.score >= seedLength - allowed_mismatches) {
       seedMatches.push_back({qPos, tmpMatch.shift, tmpMatch.shift - qPos, tmpMatch.score});
       start_pos = tmpMatch.shift;
     }
-    // std::cout <<qPos<<"  "<<tmpMatch.shift<< " "<<tmpMatch.score<<" "<<seedMatches[seedMatches.size()-1][2]<<"\n";
   }
   if (seedMatches.size() < 2) {
     throw ErrorAlignmentNoSeedMatches();
@@ -133,9 +132,6 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   // this shift is the typical amount the query needs shifting to match ref
   // ref:   ACTCTACTGC-TCAGAC
   // query: ----TCACTCATCT-ACACCGAT  => shift = 4, then 3, 4 again
-  //TODO: This thing doesn't work:
-  // const auto& [minShiftIt, maxShiftIt] = std::minmax(seedMatches.cbegin(), seedMatches.cend(),//
-  //   [](const auto& left, const auto& right) { return left[2] < right[2]; });
 
   int minShift = ref.size();
   int maxShift = -ref.size();
@@ -148,7 +144,6 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
     }
   }
 
-  // std::cout <<minShift<<" "<<maxShift<<"\n";
   const int meanShift = details::round(0.5 * (minShift + maxShift));
   const int bandWidthFinal = maxShift - minShift + 9;
   return {.meanShift = meanShift, .bandWidth = bandWidthFinal};
@@ -185,7 +180,6 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   //    -> diagonal step in the matrix from (ri,si-1) to (ri+1,si)
   const int gapExtend = alignmentParameters.gapExtend;
   const int gapOpen = alignmentParameters.gapOpen;
-  const int gapClose = alignmentParameters.gapClose;
   const int misMatch = alignmentParameters.misMatch;
   const int match = alignmentParameters.match;
 
@@ -231,11 +225,6 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
       } else if (qPos < querySize) {
         // if the shifted position is within the query sequence
         tmpMatch = lookupMatchScore(query[qPos], ref[ri]) > 0 ? match : misMatch;
-
-        // // if the previous move included a gap (this for the match case, so we are coming from [si][ri]), add gap-close cost
-        // if (qPos > 0 && ri > 0 && (paths(si, ri) == 2 || paths(si, ri) == 3)) {
-        //   tmpMatch += gapClose;
-        // }
 
         score = scores(si, ri) + tmpMatch;
         origin = MATCH;
