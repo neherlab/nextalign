@@ -161,8 +161,8 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   vector2d<int> paths(n_rows, n_cols);
   // these could be reduced to vectors
   vector2d<int> scores(n_rows, n_cols);
-  vector2d<int> refGaps(n_rows, n_cols);
-  vector2d<int> qryGaps(n_rows, n_cols);
+  std::vector<int> refGaps(n_rows);
+  std::vector<int> qryGaps(n_rows);
 
   // fill scores with alignment scores
   // The inner index scores[][ri] is the index of the reference sequence
@@ -191,7 +191,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
 #pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
   int si;
   int qPos;
-  int tmpMatch;
+  int tmpMatch, tmpPath;
   int origin;
   int score, tmpScore;
   int qGapOpen, qGapExtend;
@@ -201,20 +201,21 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
     paths(si,0) = qryGAPmatrix;
   }
   paths(bandWidth,0) = MATCH;
-  qryGaps(si,0) = gapOpen;
+  qryGaps[si] = gapOpen;
   for (si = bandWidth-1; si >=0; si--) {
     paths(si,0) = refGAPmatrix;
-    qryGaps(si,0) = gapOpen;
+    qryGaps[si] = gapOpen;
   }
   for (int ri = 0; ri < refSize; ri++) {
     qPos = ri - (bandWidth + meanShift);
     for (si = 2 * bandWidth; si >= 0; si--) {
+      tmpPath=0;
       if (qPos < 0) {
         // precedes query sequence -- no score, origin is query gap
         // we could fill all of this at once
         score = 0;
-        paths(si, ri+1) += qryGAPextend;
-        refGaps(si,ri+1) = gapOpen;
+        tmpPath += qryGAPextend;
+        refGaps[si] = gapOpen;
         origin = qryGAPmatrix;
       } else if (qPos < querySize) {
         // if the shifted position is within the query sequence
@@ -226,41 +227,41 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
 
         // check the scores of a reference gap
         if (si < 2 * bandWidth){
-          rGapExtend = refGaps(si + 1, ri + 1) + gapExtend;
+          rGapExtend = refGaps[si + 1] + gapExtend;
           rGapOpen = scores(si + 1, ri + 1) + gapOpen;
           if (rGapExtend>rGapOpen){
             tmpScore = rGapExtend;
-            paths(si, ri+1) += refGAPextend;
+            tmpPath += refGAPextend;
           }else{
             tmpScore = rGapOpen;
           }
-          refGaps(si, ri+1) = tmpScore;
+          refGaps[si] = tmpScore;
           if (score < tmpScore){
             score = tmpScore;
             origin = refGAPmatrix;
           }
         } else {
-          refGaps(si, ri+1) = NO_ALIGN;
+          refGaps[si] = NO_ALIGN;
         }
 
         // check the scores of a reference gap
         if (si > 0){
-          qGapExtend = qryGaps(si - 1, ri) + gapExtend;
+          qGapExtend = qryGaps[si - 1] + gapExtend;
           qGapOpen = scores(si - 1, ri) + gapOpen;
           tmpScore = qGapExtend>qGapOpen ? qGapExtend : qGapOpen;
           if (qGapExtend>qGapOpen){
             tmpScore = qGapExtend;
-            paths(si, ri+1) += qryGAPextend;
+            tmpPath += qryGAPextend;
           }else{
             tmpScore = qGapOpen;
           }
-          qryGaps(si, ri+1) = tmpScore;
+          qryGaps[si] = tmpScore;
           if (score < tmpScore){
             score = tmpScore;
             origin = qryGAPmatrix;
           }
         } else {
-          qryGaps(si, ri+1) = NO_ALIGN;
+          qryGaps[si] = NO_ALIGN;
         }
       } else {
         // past query sequence -- mark as sequence end
@@ -268,7 +269,8 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
         origin = END_OF_SEQUENCE;
       }
       // std::cout <<origin<<":"<<(paths(si, ri + 1)&refGAPextend)<<":"<<(paths(si, ri + 1)&qryGAPextend)<<":"<<score<<"\t";
-      paths(si, ri + 1) += origin;
+      tmpPath += origin;
+      paths(si, ri + 1) = tmpPath;
       scores(si, ri + 1) = score;
       qPos++;
     }
