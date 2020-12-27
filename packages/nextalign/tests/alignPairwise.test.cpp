@@ -53,6 +53,35 @@ TEST(alignPairwise, PadsMissingLeftSingleMismatch) {
   EXPECT_EQ(toString(qryAln), toString(result.query));
 }
 
+TEST(alignPairwise, PadsMissingRightSingleMismatch) {
+  std::stringstream input;
+
+  // clang-format off
+  const auto qry =    toNucleotideSequence(  "CCAATCAT"  );
+  const auto ref =    toNucleotideSequence(  "CCAACCAAACAAA"  );
+  const auto qryAln = toNucleotideSequence(  "CCAATCAT-----"  );
+  // clang-format on
+
+  const auto result = alignPairwise(qry, ref, min_length);
+  EXPECT_EQ(16, result.alignmentScore);
+  EXPECT_EQ(toString(ref), toString(result.ref));
+  EXPECT_EQ(toString(qryAln), toString(result.query));
+}
+
+TEST(alignPairwise, PadsMissingRightSingleMismatchRevere) {
+  std::stringstream input;
+
+  // clang-format off
+  const auto ref =    toNucleotideSequence(  "CCGATCAT"  );
+  const auto qry =    toNucleotideSequence(  "CCGACCAAACAAA"  );
+  const auto refAln = toNucleotideSequence(  "CCGATCAT-----"  );
+  // clang-format on
+
+  const auto result = alignPairwise(qry, ref, min_length);
+  EXPECT_EQ(16, result.alignmentScore);
+  EXPECT_EQ(toString(qry), toString(result.query));
+  EXPECT_EQ(toString(refAln), toString(result.ref));
+}
 
 TEST(alignPairwise, PadsMissingLeftSingle) {
   std::stringstream input;
