@@ -161,8 +161,8 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   vector2d<int> paths(n_rows, n_cols);
   // these could be reduced to vectors
   vector2d<int> scores(n_rows, n_cols);
-  std::vector<int> refGaps(n_rows);
   std::vector<int> qryGaps(n_rows);
+  int refGaps;
 
   // fill scores with alignment scores
   // The inner index scores[][ri] is the index of the reference sequence
@@ -215,7 +215,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
         // we could fill all of this at once
         score = 0;
         tmpPath += qryGAPextend;
-        refGaps[si] = gapOpen;
+        refGaps = gapOpen;
         origin = qryGAPmatrix;
       } else if (qPos < querySize) {
         // if the shifted position is within the query sequence
@@ -227,7 +227,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
 
         // check the scores of a reference gap
         if (si < 2 * bandWidth){
-          rGapExtend = refGaps[si + 1] + gapExtend;
+          rGapExtend = refGaps + gapExtend;
           rGapOpen = scores(si + 1, ri + 1) + gapOpen;
           if (rGapExtend>rGapOpen){
             tmpScore = rGapExtend;
@@ -235,13 +235,13 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
           }else{
             tmpScore = rGapOpen;
           }
-          refGaps[si] = tmpScore;
+          refGaps = tmpScore;
           if (score < tmpScore){
             score = tmpScore;
             origin = refGAPmatrix;
           }
         } else {
-          refGaps[si] = NO_ALIGN;
+          refGaps = NO_ALIGN;
         }
 
         // check the scores of a reference gap
