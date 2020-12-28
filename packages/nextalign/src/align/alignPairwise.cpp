@@ -96,7 +96,7 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   constexpr const int seedLength = 21;
   constexpr const int allowed_mismatches = 3;
 
-  const int margin = ref.size() > 10000 ? 100 : details::round(ref.size() / 100.0);
+  const int margin = ref.size() > 10000 ? 30 : details::round(ref.size() / 100.0);
   const int bandWidth = details::round((ref.size()+query.size())*0.5) - 3;
   int start_pos = 0;
   if (bandWidth < 2 * seedLength) {
@@ -106,14 +106,14 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   // TODO; give a name to this type.
   //  Maybe use something other than array? A struct with named fields to make
   //  the code in the end of the function less confusing?
-  using TodoNameTheType = std::array<int, 4>;
-  std::vector<TodoNameTheType> seedMatches;
+  using Clamp = std::array<int, 4>;
+  std::vector <Clamp> seedMatches;
   for (int ni = 0; ni < nSeeds; ++ni) {
 
     // TODO: give this variable a name
     // generate kmers equally spaced on the query
-    const auto todoGiveAName = static_cast<double>(query.size() - seedLength - 2 * margin);
-    const int qPos = details::round(margin + ((todoGiveAName) / (nSeeds - 1)) * ni);
+    const auto seedCover = static_cast<double>(query.size() - seedLength - 2 * margin);
+    const int qPos = details::round(margin + ((seedCover) / (nSeeds - 1)) * ni);
 
     // TODO: verify that the `query.substr()` behavior is the same as JS `string.substr()`
     const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref, start_pos, allowed_mismatches);
