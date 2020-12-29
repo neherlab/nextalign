@@ -165,7 +165,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   // these could be reduced to vectors
   vector2d<int> scores(n_rows, n_cols);
   std::vector<int> qryGaps(n_rows);
-  int refGaps;
+
 
   // fill scores with alignment scores
   // The inner index scores[][ri] is the index of the reference sequence
@@ -199,6 +199,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   int score, tmpScore;
   int qGapOpen, qGapExtend;
   int rGapOpen, rGapExtend;
+  int refGaps;
 #pragma clang diagnostic pop
   for (si = 2 * bandWidth; si > bandWidth; si--) {
     paths(si,0) = qryGAPmatrix;
