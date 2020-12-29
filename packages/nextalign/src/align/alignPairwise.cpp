@@ -92,15 +92,18 @@ SeedMatch seedMatch(
 
 template<typename Letter>
 SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter>& ref) {
+  const int querySize = safe_cast<int>(query.size());
+  const int refSize = safe_cast<int>(ref.size());
+
   constexpr const int nSeeds = 9;
   constexpr const int seedLength = 21;
   constexpr const int allowed_mismatches = 3;
 
-  const int margin = ref.size() > 10000 ? 30 : details::round(ref.size() / 100.0);
-  const int bandWidth = details::round((ref.size()+query.size())*0.5) - 3;
+  const int margin = refSize > 10000 ? 30 : details::round(refSize / 100.0);
+  const int bandWidth = details::round((refSize+query.size())*0.5) - 3;
   int start_pos = 0;
   if (bandWidth < 2 * seedLength) {
-    return {.meanShift = details::round(((int)ref.size()-(int)query.size())*0.5), .bandWidth = bandWidth};
+    return {.meanShift = details::round(((int)refSize-(int)query.size())*0.5), .bandWidth = bandWidth};
   }
 
   // TODO; give a name to this type.
@@ -112,7 +115,7 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
 
     // TODO: give this variable a name
     // generate kmers equally spaced on the query
-    const auto seedCover = static_cast<double>(query.size() - seedLength - 2 * margin);
+    const auto seedCover = static_cast<double>(querySize - seedLength - 2 * margin);
     const int qPos = details::round(margin + ((seedCover) / (nSeeds - 1)) * ni);
 
     // TODO: verify that the `query.substr()` behavior is the same as JS `string.substr()`
@@ -133,8 +136,8 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   // ref:   ACTCTACTGC-TCAGAC
   // query: ----TCACTCATCT-ACACCGAT  => shift = 4, then 3, 4 again
 
-  int minShift = ref.size();
-  int maxShift = -ref.size();
+  int minShift = refSize;
+  int maxShift = -refSize;
   for (auto& seedMatch : seedMatches) {
     if (seedMatch[2] < minShift) {
       minShift = seedMatch[2];
@@ -303,7 +306,7 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
   aln_ref.reserve(rowLength + 3 * bandWidth);
   aln_query.reserve(rowLength + 3 * bandWidth);
 
-  // const lastIndexByShift = scores.map((d, i) = > Math.min(rowLength - 1, query.size() + indexToShift(i)));
+  // const lastIndexByShift = scores.map((d, i) = > Math.min(rowLength - 1, querySize + indexToShift(i)));
   // const lastScoreByShift = scores.map((d, i) = > d[lastIndexByShift[i]]);
 
 
@@ -316,7 +319,7 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
   int si = 0;
   int bestScore = 0;
   for (int i = 0; i < scoresSize; i++) {
-    lastIndexByShift[i] = rowLength - 1 < querySize + indexToShift(i) ? rowLength - 1 : query.size() + indexToShift(i);
+    lastIndexByShift[i] = rowLength - 1 < querySize + indexToShift(i) ? rowLength - 1 : querySize + indexToShift(i);
     lastScoreByShift[i] = scores(i, lastIndexByShift[i]);
     if (lastScoreByShift[i] > bestScore) {
       bestScore = lastScoreByShift[i];
