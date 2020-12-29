@@ -103,7 +103,7 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   const int bandWidth = details::round((refSize+query.size())*0.5) - 3;
   int start_pos = 0;
   if (bandWidth < 2 * seedLength) {
-    return {.meanShift = details::round(((int)refSize-(int)query.size())*0.5), .bandWidth = bandWidth};
+    return {.meanShift = details::round((refSize-query.size())*0.5), .bandWidth = bandWidth};
   }
 
   // TODO; give a name to this type.
@@ -115,7 +115,7 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
 
     // TODO: give this variable a name
     // generate kmers equally spaced on the query
-    const auto seedCover = static_cast<double>(querySize - seedLength - 2 * margin);
+    const auto seedCover = safe_cast<double>(querySize - seedLength - 2 * margin);
     const int qPos = details::round(margin + ((seedCover) / (nSeeds - 1)) * ni);
 
     // TODO: verify that the `query.substr()` behavior is the same as JS `string.substr()`
