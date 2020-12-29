@@ -100,10 +100,10 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   constexpr const int allowed_mismatches = 3;
 
   const int margin = refSize > 10000 ? 30 : details::round(refSize / 100.0);
-  const int bandWidth = details::round((refSize + query.size()) * 0.5) - 3;
+  const int bandWidth = details::round((refSize + querySize) * 0.5) - 3;
   int start_pos = 0;
   if (bandWidth < 2 * seedLength) {
-    return {.meanShift = details::round((refSize - query.size()) * 0.5), .bandWidth = bandWidth};
+    return {.meanShift = details::round((refSize - querySize) * 0.5), .bandWidth = bandWidth};
   }
 
   // TODO; give a name to this type.
