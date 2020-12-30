@@ -191,28 +191,23 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cppcoreguidelines-init-variables"
 #pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
-  int si;
-  int qPos;
-  int tmpMatch, tmpPath;
-  int origin;
-  int score, tmpScore;
-  int qGapOpen, qGapExtend;
-  int rGapOpen, rGapExtend;
-  int refGaps;
 #pragma clang diagnostic pop
-  for (si = 2 * bandWidth; si > bandWidth; si--) {
+  for (int si = 2 * bandWidth; si > bandWidth; si--) {
     paths(si, 0) = qryGAPmatrix;
   }
   paths(bandWidth, 0) = MATCH;
-  qryGaps[si] = gapOpen;
-  for (si = bandWidth - 1; si >= 0; si--) {
+  qryGaps[bandWidth] = gapOpen;
+  for (int si = bandWidth - 1; si >= 0; si--) {
     paths(si, 0) = refGAPmatrix;
     qryGaps[si] = gapOpen;
   }
   for (int ri = 0; ri < refSize; ri++) {
-    qPos = ri - (bandWidth + meanShift);
-    for (si = 2 * bandWidth; si >= 0; si--) {
-      tmpPath = 0;
+    int qPos = ri - (bandWidth + meanShift);
+    int refGaps = gapOpen;
+    for (int si = 2 * bandWidth; si >= 0; si--) {
+      int tmpPath = 0, score = 0, origin = 0;
+      int qGapExtend = 0, rGapExtend = 0, rGapOpen = 0, qGapOpen = 0;
+      int tmpMatch = 0, tmpScore = 0;
       if (qPos < 0) {
         // precedes query sequence -- no score, origin is query gap
         // we could fill all of this at once
