@@ -1,20 +1,21 @@
 
+#include "../src/translate/removeGaps.h"
+
 #include <gtest/gtest.h>
+#include <nextalign/nextalign.h>
 
-#include "../src/removeGaps.h"
-
-constexpr const auto* const INPUT = "--MY-SPACEBAR---IS--BROKEN-SEND---HELP-";
-constexpr const auto* const OUTPUT = "MYSPACEBARISBROKENSENDHELP";
+const auto INPUT = toAminoacidSequence("--MY-SPACEBAR---IS--BROKEN-SEND---HELP-");
+constexpr const auto OUTPUT = "MYSPACEBARISBROKENSENDHELP";
 
 
 TEST(removeGaps, RemovesGaps) {
-  const std::string input(INPUT);
-  EXPECT_EQ(removeGaps(input), OUTPUT);
-  EXPECT_EQ(input, INPUT);
+//  const std::string input(INPUT);
+  EXPECT_EQ(toString(removeGaps(INPUT)), OUTPUT);
+  EXPECT_EQ(toString(INPUT), toString(INPUT));
 }
 
 TEST(removeGapsInPlace, RemovesGapsInPlace) {
-  std::string input(INPUT);
+  AminoacidSequence input(INPUT);
   removeGapsInPlace(input);
-  EXPECT_EQ(input, OUTPUT);
+  EXPECT_EQ(toString(input), OUTPUT);
 }

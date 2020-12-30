@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
+#include "../src/translate/translate.h"
 
-#include "../src/translate.h"
+#include <gtest/gtest.h>
 
 TEST(translate, TranslatesSimple) {
   constexpr const auto* const nucs =
@@ -15,7 +15,7 @@ TEST(translate, TranslatesSimple) {
     "GAA"// E
     ;
 
-  EXPECT_EQ(translate(nucs), "TRANSLATE");
+  EXPECT_EQ(toString(translate(toNucleotideSequence(nucs))), "TRANSLATE");
 }
 
 TEST(translate, TranslatesAligned3GapToGap) {
@@ -31,7 +31,7 @@ TEST(translate, TranslatesAligned3GapToGap) {
     "GAA"// E
     ;
 
-  EXPECT_EQ(translate(nucs), "TR-NSLATE");
+  EXPECT_EQ(toString(translate(toNucleotideSequence(nucs))), "TR-NSLATE");
 }
 
 TEST(translate, TranslatesMisaligned3GapToX) {
@@ -47,5 +47,5 @@ TEST(translate, TranslatesMisaligned3GapToX) {
     "GAA"// E
     ;
 
-  EXPECT_EQ(translate(nucs), "TRXXSLATE");
+  EXPECT_EQ(toString(translate(toNucleotideSequence(nucs))), "TRXXSLATE");
 }

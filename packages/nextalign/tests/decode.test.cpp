@@ -1,15 +1,19 @@
+#include "../src/translate/decode.h"
+
 #include <gtest/gtest.h>
 
-#include "../src/decode.h"
+#include "../src/alphabet/aminoacids.h"
+#include "../src/alphabet/nucleotides.h"
 
 TEST(decode, DecodesGap) {
-  EXPECT_EQ(decode("---"), AMINOACID_GAP);
+
+  EXPECT_EQ(toChar(decode(toNucleotideSequence("---"))), '-');
 }
 
 TEST(decode, DecodesValidAminoacid) {
-  EXPECT_EQ(decode("ATG"), 'M');
+  EXPECT_EQ(toChar(decode(toNucleotideSequence("ATG"))), 'M');
 }
 
 TEST(decode, DecodesUnknownToX) {
-  EXPECT_EQ(decode("HI!"), AMINOACID_UNKNOWN);
+  EXPECT_EQ(toChar(decode(toNucleotideSequence("HI!"))), 'X');
 }

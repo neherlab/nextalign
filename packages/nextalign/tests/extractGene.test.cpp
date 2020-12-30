@@ -1,12 +1,13 @@
+#include "../src/translate/extractGene.h"
+
 #include <gtest/gtest.h>
-#include <nextalign/types.h>
+#include <nextalign/nextalign.h>
 
 #include <string>
 #include <string_view>
 #include <vector>
 
-#include "../src/extractGene.h"
-#include "../src/mapCoordinates.h"
+#include "../src/translate/mapCoordinates.h"
 
 
 TEST(extractGeneRef, ExtractsRefGene) {
@@ -29,9 +30,9 @@ TEST(extractGeneRef, ExtractsRefGene) {
     .length = 12,
   };
 
-  const auto gene_ref = std::string(extractGeneRef(ref, gene));
+  const auto gene_ref = NucleotideSequence(extractGeneRef(toNucleotideSequence(ref), gene));
 
-  EXPECT_EQ(gene_ref, expected_gene_ref);
+  EXPECT_EQ(toString(gene_ref), expected_gene_ref);
 }
 
 
@@ -55,8 +56,8 @@ TEST(extractGeneQuery, ExtractsQueryGene) {
     .length = 12,
   };
 
-  const auto coordMap = mapCoordinates(ref);
-  const std::string gene_query = extractGeneQuery(query_aligned, gene, coordMap);
+  const auto coordMap = mapCoordinates(toNucleotideSequence(ref));
+  const auto gene_query = NucleotideSequence(extractGeneQuery(toNucleotideSequence(query_aligned), gene, coordMap));
 
-  EXPECT_EQ(gene_query, expected_gene_query);
+  EXPECT_EQ(toString(gene_query), expected_gene_query);
 }
