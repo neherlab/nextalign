@@ -50,13 +50,13 @@ AlignmentParameters alignmentParameters = {
 
 // store direction info for backtrace as bits in paths matrix
 // these indicate the currently optimal move
-const int MATCH=1<<0;
-const int refGAPmatrix=1<<1;
-const int qryGAPmatrix=1<<2;
+constexpr const int MATCH = 1 << 0;
+constexpr const int refGAPmatrix = 1 << 1;
+constexpr const int qryGAPmatrix = 1 << 2;
 // these are the override flags for gap extension
-const int refGAPextend=1<<3;
-const int qryGAPextend=1<<4;
-const int END_OF_SEQUENCE = -1;
+constexpr const int refGAPextend = 1 << 3;
+constexpr const int qryGAPextend = 1 << 4;
+constexpr const int END_OF_SEQUENCE = -1;
 
 // determine the position where a particular kmer (string of length k) matches the reference sequence
 template<typename Letter>
@@ -92,30 +92,31 @@ SeedMatch seedMatch(
 
 template<typename Letter>
 SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter>& ref) {
+  const int querySize = safe_cast<int>(query.size());
+  const int refSize = safe_cast<int>(ref.size());
+
   constexpr const int nSeeds = 9;
   constexpr const int seedLength = 21;
   constexpr const int allowed_mismatches = 3;
 
-  const int margin = ref.size() > 10000 ? 30 : details::round(ref.size() / 100.0);
-  const int bandWidth = details::round((ref.size()+query.size())*0.5) - 3;
+  const int margin = refSize > 10000 ? 30 : details::round(refSize / 100.0);
+  const int bandWidth = details::round((refSize + querySize) * 0.5) - 3;
   int start_pos = 0;
   if (bandWidth < 2 * seedLength) {
-    return {.meanShift = details::round(((int)ref.size()-(int)query.size())*0.5), .bandWidth = bandWidth};
+    return {.meanShift = details::round((refSize - querySize) * 0.5), .bandWidth = bandWidth};
   }
 
-  // TODO; give a name to this type.
-  //  Maybe use something other than array? A struct with named fields to make
+  // TODO: Maybe use something other than array? A struct with named fields to make
   //  the code in the end of the function less confusing?
   using Clamp = std::array<int, 4>;
-  std::vector <Clamp> seedMatches;
+  std::vector<Clamp> seedMatches;
   for (int ni = 0; ni < nSeeds; ++ni) {
 
-    // TODO: give this variable a name
     // generate kmers equally spaced on the query
-    const auto seedCover = static_cast<double>(query.size() - seedLength - 2 * margin);
+    const auto seedCover = safe_cast<double>(querySize - seedLength - 2 * margin);
     const int qPos = details::round(margin + ((seedCover) / (nSeeds - 1)) * ni);
 
-    // TODO: verify that the `query.substr()` behavior is the same as JS `string.substr()`
+    // FIXME: query.substr() creates a new string. Use string view instead.
     const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref, start_pos, allowed_mismatches);
 
     // only use seeds with at most allowed_mismatches
@@ -133,8 +134,8 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   // ref:   ACTCTACTGC-TCAGAC
   // query: ----TCACTCATCT-ACACCGAT  => shift = 4, then 3, 4 again
 
-  int minShift = ref.size();
-  int maxShift = -ref.size();
+  int minShift = refSize;
+  int maxShift = -refSize;
   for (auto& seedMatch : seedMatches) {
     if (seedMatch[2] < minShift) {
       minShift = seedMatch[2];
@@ -150,8 +151,7 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
 }
 
 template<typename Letter>
-ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& ref, int bandWidth,
-  int meanShift) {
+ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& ref, int bandWidth, int meanShift) {
   // allocate a matrix to record the matches
   const int querySize = safe_cast<int>(query.size());
   const int refSize = safe_cast<int>(ref.size());
@@ -159,10 +159,10 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   const int n_cols = refSize + 1;
 
   vector2d<int> paths(n_rows, n_cols);
-  // these could be reduced to vectors
+  // TODO: these could be reduced to vectors
   vector2d<int> scores(n_rows, n_cols);
   std::vector<int> qryGaps(n_rows);
-  int refGaps;
+
 
   // fill scores with alignment scores
   // The inner index scores[][ri] is the index of the reference sequence
@@ -180,36 +180,24 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   const int gapOpen = alignmentParameters.gapOpen;
   const int misMatch = alignmentParameters.misMatch;
   const int match = alignmentParameters.match;
-  const int NO_ALIGN = -(match-misMatch)*refSize;
+  const int NO_ALIGN = -(match - misMatch) * refSize;
 
-  // TODO: Give these variables some meaningful names
-  // TODO: Try to narrow the scope of these variables. Do all of these variables
-  //  need to be forward-declared an uninitialized?
-
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "cppcoreguidelines-init-variables"
-#pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
-  int si;
-  int qPos;
-  int tmpMatch, tmpPath;
-  int origin;
-  int score, tmpScore;
-  int qGapOpen, qGapExtend;
-  int rGapOpen, rGapExtend;
-#pragma clang diagnostic pop
-  for (si = 2 * bandWidth; si > bandWidth; si--) {
-    paths(si,0) = qryGAPmatrix;
+  for (int si = 2 * bandWidth; si > bandWidth; si--) {
+    paths(si, 0) = qryGAPmatrix;
   }
-  paths(bandWidth,0) = MATCH;
-  qryGaps[si] = gapOpen;
-  for (si = bandWidth-1; si >=0; si--) {
-    paths(si,0) = refGAPmatrix;
+  paths(bandWidth, 0) = MATCH;
+  qryGaps[bandWidth] = gapOpen;
+  for (int si = bandWidth - 1; si >= 0; si--) {
+    paths(si, 0) = refGAPmatrix;
     qryGaps[si] = gapOpen;
   }
   for (int ri = 0; ri < refSize; ri++) {
-    qPos = ri - (bandWidth + meanShift);
-    for (si = 2 * bandWidth; si >= 0; si--) {
-      tmpPath=0;
+    int qPos = ri - (bandWidth + meanShift);
+    int refGaps = gapOpen;
+    for (int si = 2 * bandWidth; si >= 0; si--) {
+      int tmpPath = 0, score = 0, origin = 0;
+      int qGapExtend = 0, rGapExtend = 0, rGapOpen = 0, qGapOpen = 0;
+      int tmpMatch = 0, tmpScore = 0;
       if (qPos < 0) {
         // precedes query sequence -- no score, origin is query gap
         // we could fill all of this at once
@@ -226,17 +214,17 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
         origin = MATCH;
 
         // check the scores of a reference gap
-        if (si < 2 * bandWidth){
+        if (si < 2 * bandWidth) {
           rGapExtend = refGaps + gapExtend;
           rGapOpen = scores(si + 1, ri + 1) + gapOpen;
-          if (rGapExtend>rGapOpen){
+          if (rGapExtend > rGapOpen) {
             tmpScore = rGapExtend;
             tmpPath += refGAPextend;
-          }else{
+          } else {
             tmpScore = rGapOpen;
           }
           refGaps = tmpScore;
-          if (score < tmpScore){
+          if (score < tmpScore) {
             score = tmpScore;
             origin = refGAPmatrix;
           }
@@ -245,18 +233,18 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
         }
 
         // check the scores of a reference gap
-        if (si > 0){
+        if (si > 0) {
           qGapExtend = qryGaps[si - 1] + gapExtend;
           qGapOpen = scores(si - 1, ri) + gapOpen;
-          tmpScore = qGapExtend>qGapOpen ? qGapExtend : qGapOpen;
-          if (qGapExtend>qGapOpen){
+          tmpScore = qGapExtend > qGapOpen ? qGapExtend : qGapOpen;
+          if (qGapExtend > qGapOpen) {
             tmpScore = qGapExtend;
             tmpPath += qryGAPextend;
-          }else{
+          } else {
             tmpScore = qGapOpen;
           }
           qryGaps[si] = tmpScore;
-          if (score < tmpScore){
+          if (score < tmpScore) {
             score = tmpScore;
             origin = qryGAPmatrix;
           }
@@ -303,7 +291,7 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
   aln_ref.reserve(rowLength + 3 * bandWidth);
   aln_query.reserve(rowLength + 3 * bandWidth);
 
-  // const lastIndexByShift = scores.map((d, i) = > Math.min(rowLength - 1, query.size() + indexToShift(i)));
+  // const lastIndexByShift = scores.map((d, i) = > Math.min(rowLength - 1, querySize + indexToShift(i)));
   // const lastScoreByShift = scores.map((d, i) = > d[lastIndexByShift[i]]);
 
 
@@ -316,7 +304,7 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
   int si = 0;
   int bestScore = 0;
   for (int i = 0; i < scoresSize; i++) {
-    lastIndexByShift[i] = rowLength - 1 < querySize + indexToShift(i) ? rowLength - 1 : query.size() + indexToShift(i);
+    lastIndexByShift[i] = rowLength - 1 < querySize + indexToShift(i) ? rowLength - 1 : querySize + indexToShift(i);
     lastScoreByShift[i] = scores(i, lastIndexByShift[i]);
     if (lastScoreByShift[i] > bestScore) {
       bestScore = lastScoreByShift[i];
@@ -347,35 +335,35 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
   while (rPos >= 0 && qPos >= 0) {
     origin = paths(si, rPos + 1);
     // std::cout<<si<<" "<<rPos<<" "<<origin<<" "<<currentMatrix<<"\n";
-    if (origin&MATCH && currentMatrix==0) {
+    if (origin & MATCH && currentMatrix == 0) {
       // match -- decrement both strands and add match to alignment
       aln_query += query[qPos];
       aln_ref += ref[rPos];
       qPos--;
       rPos--;
-    } else if ((origin&refGAPmatrix && currentMatrix==0) || currentMatrix==refGAPmatrix) {
+    } else if ((origin & refGAPmatrix && currentMatrix == 0) || currentMatrix == refGAPmatrix) {
       // insertion in ref -- decrement query, increase shift
       aln_query += query[qPos];
       aln_ref += Letter::GAP;
       qPos--;
       si++;
-      if (origin&refGAPextend){
+      if (origin & refGAPextend) {
         // remain in gap-extension mode and ignore best-overall score
-        currentMatrix=refGAPmatrix;
-      }else{
+        currentMatrix = refGAPmatrix;
+      } else {
         // close gap, return to best-overall score
         currentMatrix = 0;
       }
-    } else if ((origin&qryGAPmatrix && currentMatrix==0) || currentMatrix==qryGAPmatrix) {
+    } else if ((origin & qryGAPmatrix && currentMatrix == 0) || currentMatrix == qryGAPmatrix) {
       // deletion in query -- decrement reference, reduce shift
       aln_query += Letter::GAP;
       aln_ref += ref[rPos];
       rPos--;
       si--;
-      if (origin&qryGAPextend){
+      if (origin & qryGAPextend) {
         // remain in gap-extension mode and ignore best-overall score
-        currentMatrix=qryGAPmatrix;
-      }else{
+        currentMatrix = qryGAPmatrix;
+      } else {
         // close gap, return to best-overall score
         currentMatrix = 0;
       }
@@ -397,8 +385,6 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
     }
   }
 
-  // reverse and make sequence
-  // std::reverse(aln.begin(), aln.end());
   std::reverse(aln_query.begin(), aln_query.end());
   std::reverse(aln_ref.begin(), aln_ref.end());
 

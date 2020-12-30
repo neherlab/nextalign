@@ -1,6 +1,6 @@
-#include <nextalign/nextalign.h>
-
 #include "../io/gene.io.h"
+
+#include <nextalign/nextalign.h>
 
 
 bool operator==(const Gene& left, const Gene& right) {
