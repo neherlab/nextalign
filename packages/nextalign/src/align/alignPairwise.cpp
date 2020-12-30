@@ -50,13 +50,13 @@ AlignmentParameters alignmentParameters = {
 
 // store direction info for backtrace as bits in paths matrix
 // these indicate the currently optimal move
-const int MATCH = 1 << 0;
-const int refGAPmatrix = 1 << 1;
-const int qryGAPmatrix = 1 << 2;
+constexpr const int MATCH = 1 << 0;
+constexpr const int refGAPmatrix = 1 << 1;
+constexpr const int qryGAPmatrix = 1 << 2;
 // these are the override flags for gap extension
-const int refGAPextend = 1 << 3;
-const int qryGAPextend = 1 << 4;
-const int END_OF_SEQUENCE = -1;
+constexpr const int refGAPextend = 1 << 3;
+constexpr const int qryGAPextend = 1 << 4;
+constexpr const int END_OF_SEQUENCE = -1;
 
 // determine the position where a particular kmer (string of length k) matches the reference sequence
 template<typename Letter>
@@ -106,19 +106,17 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
     return {.meanShift = details::round((refSize - querySize) * 0.5), .bandWidth = bandWidth};
   }
 
-  // TODO; give a name to this type.
-  //  Maybe use something other than array? A struct with named fields to make
+  // TODO: Maybe use something other than array? A struct with named fields to make
   //  the code in the end of the function less confusing?
   using Clamp = std::array<int, 4>;
   std::vector<Clamp> seedMatches;
   for (int ni = 0; ni < nSeeds; ++ni) {
 
-    // TODO: give this variable a name
     // generate kmers equally spaced on the query
     const auto seedCover = safe_cast<double>(querySize - seedLength - 2 * margin);
     const int qPos = details::round(margin + ((seedCover) / (nSeeds - 1)) * ni);
 
-    // TODO: verify that the `query.substr()` behavior is the same as JS `string.substr()`
+    // FIXME: query.substr() creates a new string. Use string view instead.
     const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref, start_pos, allowed_mismatches);
 
     // only use seeds with at most allowed_mismatches
@@ -161,7 +159,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   const int n_cols = refSize + 1;
 
   vector2d<int> paths(n_rows, n_cols);
-  // these could be reduced to vectors
+  // TODO: these could be reduced to vectors
   vector2d<int> scores(n_rows, n_cols);
   std::vector<int> qryGaps(n_rows);
 
@@ -184,35 +182,22 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   const int match = alignmentParameters.match;
   const int NO_ALIGN = -(match - misMatch) * refSize;
 
-  // TODO: Give these variables some meaningful names
-  // TODO: Try to narrow the scope of these variables. Do all of these variables
-  //  need to be forward-declared an uninitialized?
-
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "cppcoreguidelines-init-variables"
-#pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
-  int si;
-  int qPos;
-  int tmpMatch, tmpPath;
-  int origin;
-  int score, tmpScore;
-  int qGapOpen, qGapExtend;
-  int rGapOpen, rGapExtend;
-  int refGaps;
-#pragma clang diagnostic pop
-  for (si = 2 * bandWidth; si > bandWidth; si--) {
+  for (int si = 2 * bandWidth; si > bandWidth; si--) {
     paths(si, 0) = qryGAPmatrix;
   }
   paths(bandWidth, 0) = MATCH;
-  qryGaps[si] = gapOpen;
-  for (si = bandWidth - 1; si >= 0; si--) {
+  qryGaps[bandWidth] = gapOpen;
+  for (int si = bandWidth - 1; si >= 0; si--) {
     paths(si, 0) = refGAPmatrix;
     qryGaps[si] = gapOpen;
   }
   for (int ri = 0; ri < refSize; ri++) {
-    qPos = ri - (bandWidth + meanShift);
-    for (si = 2 * bandWidth; si >= 0; si--) {
-      tmpPath = 0;
+    int qPos = ri - (bandWidth + meanShift);
+    int refGaps = gapOpen;
+    for (int si = 2 * bandWidth; si >= 0; si--) {
+      int tmpPath = 0, score = 0, origin = 0;
+      int qGapExtend = 0, rGapExtend = 0, rGapOpen = 0, qGapOpen = 0;
+      int tmpMatch = 0, tmpScore = 0;
       if (qPos < 0) {
         // precedes query sequence -- no score, origin is query gap
         // we could fill all of this at once
@@ -405,8 +390,6 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
     }
   }
 
-  // reverse and make sequence
-  // std::reverse(aln.begin(), aln.end());
   std::reverse(aln_query.begin(), aln_query.end());
   std::reverse(aln_ref.begin(), aln_ref.end());
 

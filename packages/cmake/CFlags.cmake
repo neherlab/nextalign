@@ -98,6 +98,7 @@ set(COOL_C_FLAGS_DEBUG_FAST_GCC " \
 
 set(COOL_C_FLAGS_GCC " \
 ${COOL_C_FLAGS} \
+-fdiagnostics-color \
 ")
 
 set(COOL_C_FLAGS_GCC5 " \
@@ -301,6 +302,7 @@ set(COOL_CXX_FLAGS_DEBUG_FAST_GCC "\
 ")
 
 set(COOL_CXX_FLAGS_GCC "\
+-fdiagnostics-color \
 -Wsized-deallocation \
 ")
 

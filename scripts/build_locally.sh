@@ -45,7 +45,7 @@ export PATH="${ADDITIONAL_PATH}${PATH:+:$PATH}"
 USE_CLANG_ANALYZER="${USE_CLANG_ANALYZER:=0}"
 CLANG_ANALYZER=""
 if [ "${USE_CLANG_ANALYZER}" == "true" ] || [ "${USE_CLANG_ANALYZER}" == "1" ]; then
-  CLANG_ANALYZER="scan-build -v -o ${PROJECT_ROOT_DIR}/.reports/clang-analyzer"
+  CLANG_ANALYZER="scan-build -v --keep-going -o ${PROJECT_ROOT_DIR}/.reports/clang-analyzer"
   USE_CLANG=1
   mkdir -p "${PROJECT_ROOT_DIR}/.reports/clang-analyzer"
 fi
