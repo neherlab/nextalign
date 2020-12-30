@@ -26,6 +26,7 @@ struct CliParams {
 struct Paths {
   std::filesystem::path outputFasta;
   std::filesystem::path outputInsertions;
+  std::map<std::string, std::filesystem::path> outputGenes;
 };
 
 template<typename Result>
@@ -252,7 +253,7 @@ std::string formatCliParams(const CliParams &cliParams) {
   return fmt::to_string(buf);
 }
 
-Paths getPaths(const CliParams &cliParams) {
+Paths getPaths(const CliParams &cliParams, const std::set<std::string> &genes) {
   std::filesystem::path sequencesPath = cliParams.sequences;
 
   auto outDir = std::filesystem::canonical(std::filesystem::current_path());
@@ -283,14 +284,28 @@ Paths getPaths(const CliParams &cliParams) {
     outputInsertions = *cliParams.outputInsertions;
   }
 
-  return {.outputFasta = outputFasta, .outputInsertions = outputInsertions};
+  std::map<std::string, std::filesystem::path> outputGenes;
+  for (const auto gene : genes) {
+    auto outputGene = outDir / baseName;
+    outputGene += fmt::format(".gene.{:s}.fasta", gene);
+    outputGenes.emplace(gene, outputGene);
+  }
+
+  return {.outputFasta = outputFasta, .outputInsertions = outputInsertions, .outputGenes = outputGenes};
 }
 
 std::string formatPaths(const Paths &paths) {
   fmt::memory_buffer buf;
   fmt::format_to(buf, "\nOutput files:\n");
-  fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "Aligned sequences", paths.outputFasta.string());
-  fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "Stripped insertions", paths.outputInsertions.string());
+  fmt::format_to(buf, "{:>30s}: \"{:<s}\"\n", "Aligned sequences", paths.outputFasta.string());
+  fmt::format_to(buf, "{:>30s}: \"{:<s}\"\n", "Stripped insertions", paths.outputInsertions.string());
+
+  for (const auto &[geneName, outputGenePath] : paths.outputGenes) {
+    fmt::memory_buffer bufGene;
+    fmt::format_to(bufGene, "{:s} {:>10s}", "Translated genes", geneName);
+    fmt::format_to(buf, "{:>30s}: \"{:<s}\"\n", fmt::to_string(bufGene), outputGenePath.string());
+  }
+
   return fmt::to_string(buf);
 }
 
@@ -332,12 +347,13 @@ std::string formatInsertions(const std::vector<Insertion> &insertions) {
 void run(
   /* in  */ int parallelism,
   /* in  */ const CliParams &cliParams,
-  /* out */ std::unique_ptr<FastaStream> &inputFastaStream,
+  /* inout */ std::unique_ptr<FastaStream> &inputFastaStream,
   /* in  */ const std::string &refStr,
   /* in  */ const GeneMap &geneMap,
   /* in  */ const NextalignOptions &options,
   /* out */ std::ostream &outputFastaStream,
-  /* out */ std::ostream &outputInsertionsStream) {
+  /* out */ std::ostream &outputInsertionsStream,
+  /* out */ std::map<std::string, std::ofstream> &outputGeneStreams) {
   tbb::task_group_context context;
 
   const auto ref = toNucleotideSequence(refStr);
@@ -374,7 +390,7 @@ void run(
   /** Output filter is a serial ordered filter function which accepts the results from transform filters,
    * one at a time, displays and writes them to output streams */
   const auto outputFilter = tbb::make_filter<AlgorithmOutput, void>(tbb::filter::serial_in_order,//
-    [&cliParams, &outputFastaStream, &outputInsertionsStream](const AlgorithmOutput &output) {
+    [&outputFastaStream, &outputInsertionsStream, &outputGeneStreams](const AlgorithmOutput &output) {
       const auto index = output.index;
       const auto &seqName = output.seqName;
 
@@ -393,12 +409,17 @@ void run(
       const auto &query = output.result.query;
       const auto &alignmentScore = output.result.alignmentScore;
       const auto &insertions = output.result.insertions;
+      const auto &queryPeptides = output.result.queryPeptides;
       fmt::print(stdout, "| {:5d} | {:<40s} | {:>16d} | {:12d} | \n",//
         index, seqName, alignmentScore, insertions.size());
 
       outputFastaStream << fmt::format(">{:s}\n{:s}\n", seqName, query);
 
       outputInsertionsStream << fmt::format("\"{:s}\",\"{:s}\"\n", seqName, formatInsertions(insertions));
+
+      for (const auto &peptide : queryPeptides) {
+        outputGeneStreams[peptide.name] << fmt::format(">{:s}\n{:s}\n", seqName, peptide.seq);
+      }
     });
 
   try {
@@ -414,11 +435,6 @@ int main(int argc, char *argv[]) {
     const auto cliParams = parseCommandLine(argc, argv);
     fmt::print(stdout, formatCliParams(cliParams));
 
-    const auto paths = getPaths(cliParams);
-    fmt::print(stdout, formatPaths(paths));
-
-    std::filesystem::create_directories(paths.outputFasta.parent_path());
-    std::filesystem::create_directories(paths.outputInsertions.parent_path());
 
     NextalignOptions options;
 
@@ -440,6 +456,13 @@ int main(int argc, char *argv[]) {
       std::exit(1);
     }
 
+    const auto paths = getPaths(cliParams, options.genes);
+    fmt::print(stdout, formatPaths(paths));
+
+    std::filesystem::create_directories(paths.outputFasta.parent_path());
+    std::filesystem::create_directories(paths.outputInsertions.parent_path());
+
+
     std::ofstream outputFastaFile(paths.outputFasta);
     if (!outputFastaFile.good()) {
       fmt::print(stderr, "Error: unable to write \"{:s}\"\n", paths.outputFasta.string());
@@ -453,6 +476,19 @@ int main(int argc, char *argv[]) {
       std::exit(1);
     }
     outputInsertionsFile << "seqName,insertions\n";
+
+    std::map<std::string, std::ofstream> outputGeneFiles;
+    for (const auto &[geneName, outputGenePath] : paths.outputGenes) {
+      const auto result = outputGeneFiles.emplace(
+        std::piecewise_construct, std::forward_as_tuple(geneName), std::forward_as_tuple(outputGenePath));
+
+      const auto &outputGeneFile = result.first->second;
+
+      if (!outputGeneFile.good()) {
+        fmt::print(stderr, "Error: unable to write \"{:s}\"\n", outputGenePath.string());
+        std::exit(1);
+      }
+    }
 
     int parallelism = -1;
     if (cliParams.jobs > 0) {
@@ -471,7 +507,8 @@ int main(int argc, char *argv[]) {
 
 
     try {
-      run(parallelism, cliParams, fastaStream, ref, geneMap, options, outputFastaFile, outputInsertionsFile);
+      run(parallelism, cliParams, fastaStream, ref, geneMap, options, outputFastaFile, outputInsertionsFile,
+        outputGeneFiles);
     } catch (const std::exception &e) {
       fmt::print(stdout, "Error: {:>16s} |\n", e.what());
     }
