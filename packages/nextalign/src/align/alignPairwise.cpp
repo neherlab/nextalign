@@ -50,13 +50,13 @@ AlignmentParameters alignmentParameters = {
 
 // store direction info for backtrace as bits in paths matrix
 // these indicate the currently optimal move
-const int MATCH = 1 << 0;
-const int refGAPmatrix = 1 << 1;
-const int qryGAPmatrix = 1 << 2;
+constexpr const int MATCH = 1 << 0;
+constexpr const int refGAPmatrix = 1 << 1;
+constexpr const int qryGAPmatrix = 1 << 2;
 // these are the override flags for gap extension
-const int refGAPextend = 1 << 3;
-const int qryGAPextend = 1 << 4;
-const int END_OF_SEQUENCE = -1;
+constexpr const int refGAPextend = 1 << 3;
+constexpr const int qryGAPextend = 1 << 4;
+constexpr const int END_OF_SEQUENCE = -1;
 
 // determine the position where a particular kmer (string of length k) matches the reference sequence
 template<typename Letter>
@@ -159,7 +159,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   const int n_cols = refSize + 1;
 
   vector2d<int> paths(n_rows, n_cols);
-  // these could be reduced to vectors
+  // TODO: these could be reduced to vectors
   vector2d<int> scores(n_rows, n_cols);
   std::vector<int> qryGaps(n_rows);
 
@@ -385,8 +385,6 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
     }
   }
 
-  // reverse and make sequence
-  // std::reverse(aln.begin(), aln.end());
   std::reverse(aln_query.begin(), aln_query.end());
   std::reverse(aln_ref.begin(), aln_ref.end());
 
