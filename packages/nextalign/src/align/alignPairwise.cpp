@@ -188,10 +188,6 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   // TODO: Try to narrow the scope of these variables. Do all of these variables
   //  need to be forward-declared an uninitialized?
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "cppcoreguidelines-init-variables"
-#pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
-#pragma clang diagnostic pop
   for (int si = 2 * bandWidth; si > bandWidth; si--) {
     paths(si, 0) = qryGAPmatrix;
   }
