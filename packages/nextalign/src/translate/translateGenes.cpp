@@ -59,7 +59,7 @@ std::vector<PeptideInternal> translateGenes(//
     const auto& gene = found->second;
 
     // TODO: can be done once during initialization
-    const auto& refGene = extractGeneRef(ref, gene);
+    const auto& refGene = extractGeneQuery(ref, gene, coordMap);
     const auto refPeptide = translate(refGene);
 
     const auto& queryGene = extractGeneQuery(query, gene, coordMap);

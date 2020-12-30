@@ -25,7 +25,7 @@ NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSeque
 
   std::vector<Peptide> queryPeptides;
   if (!options.genes.empty()) {
-    const auto queryPeptidesInternal = translateGenes(alignment.query, ref, geneMap, options);
+    const auto queryPeptidesInternal = translateGenes(alignment.query, alignment.ref, geneMap, options);
     queryPeptides = map(queryPeptidesInternal, std::function<Peptide(PeptideInternal)>(toPeptideExternal));
   }
 

@@ -29,7 +29,6 @@ NucleotideSequence extractGeneQuery(
   const auto start = coordMap[gene.start];
   const auto end = coordMap[gene.end];// TODO: `gene.end` -1 or not?
   const auto length = end - start;
-
   // Start and end should be within bounds
   invariant_less(start, query.size());
   invariant_less(end, query.size());
