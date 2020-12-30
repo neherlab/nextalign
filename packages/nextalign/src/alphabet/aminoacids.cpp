@@ -79,7 +79,7 @@ namespace {
 
 }// namespace
 
-Aminoacid toAminoacid(char aa) {
+Aminoacid charToAa(char aa) {
   const auto it = charToAminoacid.find(aa);
   if (it == charToAminoacid.end()) {
     throw ErrorAminoacidInvalid(aa);
@@ -87,16 +87,16 @@ Aminoacid toAminoacid(char aa) {
   return it->second;
 }
 
-char toChar(Aminoacid aa) {
+char aaToChar(Aminoacid aa) {
   precondition(contains(aminoacidToChar, aa));
   const auto it = aminoacidToChar.find(aa);
   return it->second;
 }
 
 AminoacidSequence toAminoacidSequence(const std::string& seq) {
-  return map(seq, toAminoacid, AminoacidSequence{});
+  return map(seq, std::function<Aminoacid(char)>(charToAa));
 }
 
 std::string toString(const AminoacidSequence& seq) {
-  return map(seq, toChar, std::string{});
+  return map(seq, std::function<char(Aminoacid)>(aaToChar));
 }

@@ -31,8 +31,8 @@ NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSeque
   NextalignResult result;
   result.query = toString(stripped.queryStripped);
   result.alignmentScore = alignment.alignmentScore;
-  result.queryPeptides = map(queryPeptides, toPeptideExternal, std::vector<Peptide>{});
-  result.insertions = map(stripped.insertions, toInsertionExternal, std::vector<Insertion>{});
+  result.queryPeptides = map(queryPeptides, std::function<Peptide(PeptideInternal)>(toPeptideExternal));
+  result.insertions = map(stripped.insertions, std::function<Insertion(InsertionInternal)>(toInsertionExternal));
 
   return result;
 }

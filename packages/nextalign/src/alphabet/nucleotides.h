@@ -12,7 +12,7 @@ using NucleotideSequenceSpan = SequenceSpan<Nucleotide>;
 
 Nucleotide toNucleotide(char nuc);
 
-char toChar(Nucleotide nuc);
+char nucToChar(Nucleotide nuc);
 
 inline std::ostream& operator<<(std::ostream& os, const Nucleotide& nucleotide) {
   os << std::string{to_underlying(nucleotide)};

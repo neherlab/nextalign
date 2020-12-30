@@ -10,9 +10,9 @@
 
 using AminoacidSequenceSpan = SequenceSpan<Aminoacid>;
 
-Aminoacid toAminoacid(char aa);
+Aminoacid charToAa(char aa);
 
-char toChar(Aminoacid aa);
+char aaToChar(Aminoacid aa);
 
 inline std::ostream& operator<<(std::ostream& os, const Aminoacid& aminoacid) {
   os << std::string{to_underlying(aminoacid)};

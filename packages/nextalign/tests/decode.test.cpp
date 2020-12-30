@@ -7,13 +7,13 @@
 
 TEST(decode, DecodesGap) {
 
-  EXPECT_EQ(toChar(decode(toNucleotideSequence("---"))), '-');
+  EXPECT_EQ(aaToChar(decode(toNucleotideSequence("---"))), '-');
 }
 
 TEST(decode, DecodesValidAminoacid) {
-  EXPECT_EQ(toChar(decode(toNucleotideSequence("ATG"))), 'M');
+  EXPECT_EQ(aaToChar(decode(toNucleotideSequence("ATG"))), 'M');
 }
 
 TEST(decode, DecodesUnknownToX) {
-  EXPECT_EQ(toChar(decode(toNucleotideSequence("HI!"))), 'X');
+  EXPECT_EQ(aaToChar(decode(toNucleotideSequence("HI!"))), 'X');
 }
