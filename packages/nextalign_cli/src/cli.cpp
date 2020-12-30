@@ -15,7 +15,7 @@ struct CliParams {
   int jobs;
   std::string sequences;
   std::string reference;
-  std::string genemap;
+  std::optional<std::string> genemap;
   std::optional<std::string> genes;
   std::optional<std::string> outputDir;
   std::optional<std::string> outputBasename;
@@ -90,17 +90,17 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
     )
 
     (
-      "m,genemap",
-       "(required) Path to a JSON file containing custom gene map",
+      "g,genes",
+       "(optional) List of genes to translate. Requires `--genemap` to be specified. If not supplied or empty, translation won't run.",
        cxxopts::value<std::string>(),
-       "GENEMAP"
+       "GENES"
     )
 
     (
-      "g,genes",
-       "(optional) List of genes to account for during alignment. If not supplied or empty, all the genes from the gene map are used",
+      "m,genemap",
+       "(optional) Path to a JSON file containing custom gene map. Requires `--genes.` If not supplied, translation won't run.",
        cxxopts::value<std::string>(),
-       "GENES"
+       "GENEMAP"
     )
 
     (
@@ -143,12 +143,16 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
   const auto jobs = getParamRequiredDefaulted<int>(cxxOpts, cxxOptsParsed, "jobs");
   const auto sequences = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "sequences");
   const auto reference = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "reference");
-  const auto genemap = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "genemap");
+  const auto genemap = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "genemap");
   const auto genes = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "genes");
   const auto outputDir = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-dir");
   const auto outputBasename = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-basename");
   const auto outputFasta = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-fasta");
   const auto outputInsertions = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-insertions");
+
+  if (bool(genes) != bool(genemap)) {
+    throw std::runtime_error("Parameters `--genes` and `--genemap` should be either both specified or both omitted.");
+  }
 
   return {
     jobs,
@@ -200,14 +204,7 @@ std::set<std::string> parseGenes(const CliParams &cliParams, const GeneMap &gene
 
   if (cliParams.genes && !(cliParams.genes->empty())) {
     boost::algorithm::split(genes, *(cliParams.genes), boost::is_any_of(","));
-    return genes;
   }
-
-  // If `genes` is empty, return all gene names from the gene map
-  std::transform(                                  //
-    geneMap.begin(), geneMap.end(),                //
-    std::inserter(genes, genes.begin()),           //
-    [](const auto &entry) { return entry.first; });//
 
   return genes;
 }
@@ -228,10 +225,10 @@ std::string formatCliParams(const CliParams &cliParams) {
   fmt::format_to(buf, "{:>20s}=\"{:<d}\"\n", "--jobs", cliParams.jobs);
   fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--sequences", cliParams.sequences);
   fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--reference", cliParams.reference);
-  fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--genemap", cliParams.genemap);
 
-  if (cliParams.genes) {
+  if (cliParams.genes && cliParams.genemap) {
     fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--genes", *cliParams.genes);
+    fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--genemap", *cliParams.genemap);
   }
 
   if (cliParams.outputDir) {
@@ -443,11 +440,13 @@ int main(int argc, char *argv[]) {
     const auto &ref = refInput.seq;
     fmt::print(stdout, formatRef(refName, ref));
 
-    const auto geneMap = parseGeneMapGffFile(cliParams.genemap);
-    options.genes = parseGenes(cliParams, geneMap);
-    validateGenes(options.genes, geneMap);
-
-    fmt::print(stdout, formatGeneMap(geneMap, options.genes));
+    GeneMap geneMap;
+    if (cliParams.genes && cliParams.genemap) {
+      geneMap = parseGeneMapGffFile(*cliParams.genemap);
+      options.genes = parseGenes(cliParams, geneMap);
+      validateGenes(options.genes, geneMap);
+      fmt::print(stdout, formatGeneMap(geneMap, options.genes));
+    }
 
     std::ifstream fastaFile(cliParams.sequences);
     auto fastaStream = makeFastaStream(fastaFile);
