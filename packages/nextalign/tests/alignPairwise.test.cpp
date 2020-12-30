@@ -28,7 +28,6 @@ TEST(alignPairwise, PadsMissingLeft) {
   const auto qry =    toNucleotideSequence(  "CTCGCT"     );
   const auto ref =    toNucleotideSequence(  "ACGCTCGCT"  );
   const auto qryAln = toNucleotideSequence(  "---CTCGCT"  );
-  // FIXME: actual qryAln                    "-C--TCGCT"
   // clang-format on
 
   const auto result = alignPairwise(qry, ref, min_length);

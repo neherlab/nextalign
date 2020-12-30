@@ -106,19 +106,17 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
     return {.meanShift = details::round((refSize - querySize) * 0.5), .bandWidth = bandWidth};
   }
 
-  // TODO; give a name to this type.
-  //  Maybe use something other than array? A struct with named fields to make
+  // TODO: Maybe use something other than array? A struct with named fields to make
   //  the code in the end of the function less confusing?
   using Clamp = std::array<int, 4>;
   std::vector<Clamp> seedMatches;
   for (int ni = 0; ni < nSeeds; ++ni) {
 
-    // TODO: give this variable a name
     // generate kmers equally spaced on the query
     const auto seedCover = safe_cast<double>(querySize - seedLength - 2 * margin);
     const int qPos = details::round(margin + ((seedCover) / (nSeeds - 1)) * ni);
 
-    // TODO: verify that the `query.substr()` behavior is the same as JS `string.substr()`
+    // FIXME: query.substr() creates a new string. Use string view instead.
     const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref, start_pos, allowed_mismatches);
 
     // only use seeds with at most allowed_mismatches
@@ -183,10 +181,6 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   const int misMatch = alignmentParameters.misMatch;
   const int match = alignmentParameters.match;
   const int NO_ALIGN = -(match - misMatch) * refSize;
-
-  // TODO: Give these variables some meaningful names
-  // TODO: Try to narrow the scope of these variables. Do all of these variables
-  //  need to be forward-declared an uninitialized?
 
   for (int si = 2 * bandWidth; si > bandWidth; si--) {
     paths(si, 0) = qryGAPmatrix;
