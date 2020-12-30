@@ -383,7 +383,9 @@ void run(
         try {
           std::rethrow_exception(error);
         } catch (const std::exception &e) {
-          fmt::print(stdout, "{:s}:{:s}\n", seqName, e.what());
+          fmt::print(stderr,
+            "Error: in sequence \"{:s}\": {:s}. Note that this sequence will be excluded from results.\n", seqName,
+            e.what());
           return;
         }
       }
@@ -402,7 +404,7 @@ void run(
   try {
     tbb::parallel_pipeline(parallelism, inputFilter & transformFilters & outputFilter, context);
   } catch (const std::exception &e) {
-    fmt::print(stdout, "{:s}\n", e.what());
+    fmt::print(stderr, "Error: when running the pipeline: {:s}\n", e.what());
   }
 }
 
@@ -471,7 +473,7 @@ int main(int argc, char *argv[]) {
     try {
       run(parallelism, cliParams, fastaStream, ref, geneMap, options, outputFastaFile, outputInsertionsFile);
     } catch (const std::exception &e) {
-      fmt::print(stdout, "{:>16s} |\n", e.what());
+      fmt::print(stdout, "Error: {:>16s} |\n", e.what());
     }
 
     fmt::print(stdout, "{:s}\n", std::string(TABLE_WIDTH, '-'));
