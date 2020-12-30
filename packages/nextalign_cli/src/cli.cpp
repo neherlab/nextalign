@@ -326,6 +326,11 @@ std::string formatInsertions(const std::vector<Insertion> &insertions) {
   return boost::algorithm::join(insertionStrings, ";");
 }
 
+template<typename Letter>
+inline constexpr auto is_letter(Letter left) {
+  return [left](Letter right) { return left == right; };
+}
+
 /**
  * Runs nextalign algorithm in a parallel pipeline
  */
@@ -361,7 +366,9 @@ void run(
   const auto transformFilters = tbb::make_filter<AlgorithmInput, AlgorithmOutput>(tbb::filter::parallel,//
     [&ref, &geneMap, &options](const AlgorithmInput &input) -> AlgorithmOutput {
       try {
-        const auto query = toNucleotideSequence(input.seq);
+        auto query = toNucleotideSequence(input.seq);
+        boost::trim_if(query, is_letter(Nucleotide::N));
+
         const auto result = nextalign(query, ref, geneMap, options);
         return {.index = input.index, .seqName = input.seqName, .hasError = false, .result = result, .error = nullptr};
       } catch (const std::exception &e) {
