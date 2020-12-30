@@ -15,5 +15,5 @@ TEST(decode, DecodesValidAminoacid) {
 }
 
 TEST(decode, DecodesUnknownToX) {
-  EXPECT_EQ(aaToChar(decode(toNucleotideSequence("HI!"))), 'X');
+  EXPECT_EQ(aaToChar(decode(toNucleotideSequence("TNN"))), 'X');
 }
