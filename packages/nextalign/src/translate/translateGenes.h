@@ -6,9 +6,14 @@
 
 #include "../nextalign_private.h"
 
-std::vector<PeptideInternal> translateGenes(//
-  const NucleotideSequence& query,          //
-  const NucleotideSequence& ref,            //
-  const GeneMap& geneMap,                   //
-  const NextalignOptions& options           //
+struct PeptidesInternal {
+  std::vector<PeptideInternal> queryPeptides;
+  std::vector<PeptideInternal> refPeptides;
+};
+
+PeptidesInternal translateGenes(  //
+  const NucleotideSequence& query,//
+  const NucleotideSequence& ref,  //
+  const GeneMap& geneMap,         //
+  const NextalignOptions& options //
 );

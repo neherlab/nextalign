@@ -27,11 +27,11 @@ public:
 };
 
 
-std::vector<PeptideInternal> translateGenes(//
-  const NucleotideSequence& query,          //
-  const NucleotideSequence& ref,            //
-  const GeneMap& geneMap,                   //
-  const NextalignOptions& options           //
+PeptidesInternal translateGenes(  //
+  const NucleotideSequence& query,//
+  const NucleotideSequence& ref,  //
+  const GeneMap& geneMap,         //
+  const NextalignOptions& options //
 ) {
 
   NucleotideSequence newQueryMemory(ref.size(), Nucleotide::GAP);
@@ -49,6 +49,9 @@ std::vector<PeptideInternal> translateGenes(//
   std::vector<PeptideInternal> queryPeptides;
   queryPeptides.reserve(options.genes.size());
 
+  std::vector<PeptideInternal> refPeptides;
+  refPeptides.reserve(options.genes.size());
+
   // For each gene in the requested subset
   for (const auto& geneName : options.genes) {
     const auto& found = geneMap.find(geneName);
@@ -62,12 +65,15 @@ std::vector<PeptideInternal> translateGenes(//
     const auto& refGene = extractGeneQuery(ref, gene, coordMap);
     const auto refPeptide = translate(refGene);
 
+
     const auto& queryGene = extractGeneQuery(query, gene, coordMap);
     const auto queryPeptide = translate(queryGene);
 
     const auto geneAlignment = alignPairwise(queryPeptide, refPeptide, 10);
+
     queryPeptides.emplace_back(PeptideInternal{.name = geneName, .seq = std::move(geneAlignment.query)});
+    refPeptides.emplace_back(PeptideInternal{.name = geneName, .seq = std::move(geneAlignment.ref)});
   }
 
-  return queryPeptides;
+  return PeptidesInternal{.queryPeptides = queryPeptides, .refPeptides = refPeptides};
 }

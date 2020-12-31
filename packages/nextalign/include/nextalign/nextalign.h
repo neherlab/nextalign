@@ -131,6 +131,7 @@ struct Insertion {
 struct NextalignResult {
   std::string query;
   int alignmentScore;
+  std::vector<Peptide> refPeptides;
   std::vector<Peptide> queryPeptides;
   std::vector<Insertion> insertions;
 };

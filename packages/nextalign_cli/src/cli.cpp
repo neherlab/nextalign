@@ -383,11 +383,15 @@ void run(
       }
     });
 
+  // HACK: prevent ref genes from being written multiple times
+  // TODO: hoist ref sequence transforms - process and write results only once, outside of main loop
+  bool refGenesHaveBeenWritten = false;
 
   /** Output filter is a serial ordered filter function which accepts the results from transform filters,
    * one at a time, displays and writes them to output streams */
   const auto outputFilter = tbb::make_filter<AlgorithmOutput, void>(tbb::filter::serial_in_order,//
-    [&outputFastaStream, &outputInsertionsStream, &outputGeneStreams](const AlgorithmOutput &output) {
+    [&outputFastaStream, &outputInsertionsStream, &outputGeneStreams, &refGenesHaveBeenWritten](
+      const AlgorithmOutput &output) {
       const auto index = output.index;
       const auto &seqName = output.seqName;
 
@@ -407,12 +411,21 @@ void run(
       const auto &alignmentScore = output.result.alignmentScore;
       const auto &insertions = output.result.insertions;
       const auto &queryPeptides = output.result.queryPeptides;
+      const auto &refPeptides = output.result.refPeptides;
       fmt::print(stdout, "| {:5d} | {:<40s} | {:>16d} | {:12d} | \n",//
         index, seqName, alignmentScore, insertions.size());
 
       outputFastaStream << fmt::format(">{:s}\n{:s}\n", seqName, query);
 
       outputInsertionsStream << fmt::format("\"{:s}\",\"{:s}\"\n", seqName, formatInsertions(insertions));
+
+      // TODO: hoist ref sequence transforms - process and write results only once, outside of main loop
+      if (!refGenesHaveBeenWritten) {
+        for (const auto &peptide : refPeptides) {
+          outputGeneStreams[peptide.name] << fmt::format(">{:s}\n{:s}\n", "Reference", peptide.seq);
+        }
+        refGenesHaveBeenWritten = true;
+      }
 
       for (const auto &peptide : queryPeptides) {
         outputGeneStreams[peptide.name] << fmt::format(">{:s}\n{:s}\n", seqName, peptide.seq);
