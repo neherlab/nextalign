@@ -151,7 +151,8 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
 }
 
 template<typename Letter>
-ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& ref, int bandWidth, int meanShift) {
+ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& ref,
+  const std::vector<int>& gapOpenClose, int bandWidth, int meanShift) {
   // allocate a matrix to record the matches
   const int querySize = safe_cast<int>(query.size());
   const int refSize = safe_cast<int>(ref.size());
@@ -402,9 +403,10 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
 
 struct AlignPairwiseTag {};
 
+
 template<typename Letter>
-AlignmentResult<Letter> alignPairwise(
-  const Sequence<Letter>& query, const Sequence<Letter>& ref, int minimalLength, AlignPairwiseTag) {
+AlignmentResult<Letter> alignPairwise(const Sequence<Letter>& query, const Sequence<Letter>& ref,
+  const std::vector<int>& gapOpenClose, int minimalLength, AlignPairwiseTag) {
   const int querySize = query.size();
   if (querySize < minimalLength) {
     throw ErrorAlignmentSequenceTooShort();
@@ -417,7 +419,7 @@ AlignmentResult<Letter> alignPairwise(
   if (bandWidth > 400) {
     throw ErrorAlignmentBadSeedMatches();
   }
-  const ForwardTrace& forwardTrace = scoreMatrix(query, ref, bandWidth, meanShift);
+  const ForwardTrace& forwardTrace = scoreMatrix(query, ref, gapOpenClose, bandWidth, meanShift);
   const auto& scores = forwardTrace.scores;
   const auto& paths = forwardTrace.paths;
 
@@ -425,12 +427,12 @@ AlignmentResult<Letter> alignPairwise(
 }
 
 
-NucleotideAlignmentResult alignPairwise(
-  const NucleotideSequence& query, const NucleotideSequence& ref, int minimalLength) {
-  return alignPairwise(query, ref, minimalLength, AlignPairwiseTag{});
+NucleotideAlignmentResult alignPairwise(const NucleotideSequence& query, const NucleotideSequence& ref,
+  const std::vector<int>& gapOpenClose, int minimalLength) {
+  return alignPairwise(query, ref, gapOpenClose, minimalLength, AlignPairwiseTag{});
 }
 
-AminoacidAlignmentResult alignPairwise(
-  const AminoacidSequence& query, const AminoacidSequence& ref, int minimalLength) {
-  return alignPairwise(query, ref, minimalLength, AlignPairwiseTag{});
+AminoacidAlignmentResult alignPairwise(const AminoacidSequence& query, const AminoacidSequence& ref,
+  const std::vector<int>& gapOpenClose, int minimalLength) {
+  return alignPairwise(query, ref, gapOpenClose, minimalLength, AlignPairwiseTag{});
 }
