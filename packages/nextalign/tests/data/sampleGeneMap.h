@@ -119,7 +119,7 @@ const std::vector<Gene> sampleGeneArray = {//
   }};
 
 
-GeneMap makeGeneMap(const std::vector<Gene>& genes) {
+inline GeneMap makeGeneMap(const std::vector<Gene>& genes) {
   GeneMap geneMap;
   std::transform(genes.begin(), genes.end(), std::inserter(geneMap, geneMap.end()),
     [](const Gene& gene) { return std::make_pair(gene.geneName, gene); });
