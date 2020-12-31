@@ -31,7 +31,7 @@ PeptidesInternal translateGenes(        //
   const NucleotideSequence& query,      //
   const NucleotideSequence& ref,        //
   const GeneMap& geneMap,               //
-  const std::vector<int> gapOpenCloseAA,//
+  const std::vector<int>& gapOpenCloseAA,//
   const NextalignOptions& options       //
 ) {
 
