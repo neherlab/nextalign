@@ -17,8 +17,8 @@
 class AlignPairwiseAverageBench : public benchmark::Fixture {
 protected:
   const NextalignOptions options = {
-    .gapOpenInFrame = -6,
-    .gapOpenOutOfFrame = -5,
+    .gapOpenInFrame = -5,
+    .gapOpenOutOfFrame = -6,
     .genes = {},
   };
   const std::vector<int> gapOpenClose = getGapOpenCloseScoresCodonAware(ref, geneMap, options);
