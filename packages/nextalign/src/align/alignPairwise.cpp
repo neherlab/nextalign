@@ -217,7 +217,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
         // check the scores of a reference gap
         if (si < 2 * bandWidth) {
           rGapExtend = refGaps + gapExtend;
-          rGapOpen = scores(si + 1, ri + 1) + gapOpenClose[ri+1];
+          rGapOpen = scores(si + 1, ri + 1) + gapOpenClose[ri + 1];
           if (rGapExtend > rGapOpen) {
             tmpScore = rGapExtend;
             tmpPath += refGAPextend;
@@ -236,7 +236,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
         // check the scores of a reference gap
         if (si > 0) {
           qGapExtend = qryGaps[si - 1] + gapExtend;
-          qGapOpen = scores(si - 1, ri) + gapOpenClose[ri];;
+          qGapOpen = scores(si - 1, ri) + gapOpenClose[ri];
           tmpScore = qGapExtend > qGapOpen ? qGapExtend : qGapOpen;
           if (qGapExtend > qGapOpen) {
             tmpScore = qGapExtend;

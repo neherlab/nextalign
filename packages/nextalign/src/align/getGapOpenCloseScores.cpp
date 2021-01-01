@@ -18,7 +18,7 @@ std::vector<int> getGapOpenCloseScoresFlat(//
   /* in */ const NucleotideSequence& ref,  //
   /* in */ const NextalignOptions& options //
 ) {
-  std::vector<int> gapOpenClose(ref.size()+1);
+  std::vector<int> gapOpenClose(ref.size()+2);
   std::fill(gapOpenClose.begin(), gapOpenClose.end(), options.gapOpenOutOfFrame);
   return gapOpenClose;
 }
