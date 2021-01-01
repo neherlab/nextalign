@@ -11,8 +11,8 @@
 const int min_length = 5;
 
 const NextalignOptions options = {
-  .gapOpenInFrame = -6,
-  .gapOpenOutOfFrame = -5,
+  .gapOpenInFrame = -5,
+  .gapOpenOutOfFrame = -6,
   .genes = {},
 };
 

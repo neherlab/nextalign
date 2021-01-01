@@ -10,8 +10,8 @@ const int min_length = 5;
 
 TEST(alignPairwise, AlignsSimpleOneGene) {
   const NextalignOptions options = {
-    .gapOpenInFrame = 1,
-    .gapOpenOutOfFrame = 2,
+    .gapOpenInFrame = -5,
+    .gapOpenOutOfFrame = -6,
     .genes = {"Gene 1"},
   };
 
@@ -28,16 +28,16 @@ TEST(alignPairwise, AlignsSimpleOneGene) {
 
 
   // clang-format off
-  // gapOpenCosts                             22221221221221221   221222
-  const auto qry =    toNucleotideSequence(  "GCATGAAGAATATCATT" "GCTTTG"  );
-  const auto ref =    toNucleotideSequence(  "GCATGAAGAATATCATT" "GCTTTG"  );
-  const auto refAln = toNucleotideSequence(  "GCATGAAGAATATCATT---GCTTTG"  );
-  const auto qryAln = toNucleotideSequence(  "-CATG---AATATCATTAATGCTTTG"  );
+  const auto ref =    toNucleotideSequence(  "GCATGAGGAATCTCAGTGCTTTG"  );
+  const auto refAln = toNucleotideSequence(  "GCATGAGGAATCTCAGT---GCTTTG"  );
+  const auto qryAln = toNucleotideSequence(  "-CATG---AATCTCAGTAATGCTTTG"  );
+  const auto qry =    toNucleotideSequence(   "CATGAATCTCAGTAATGCTTTG"  );
   // clang-format on
 
   const std::vector<int> gapOpenCosts = getGapOpenCloseScoresCodonAware(ref, geneMap, options);
 
   const auto result = alignPairwise(qry, ref, gapOpenCosts, min_length);
-  EXPECT_EQ(toString(ref), toString(result.ref));
+  EXPECT_EQ(19*3-5-5, result.alignmentScore);
+  EXPECT_EQ(toString(refAln), toString(result.ref));
   EXPECT_EQ(toString(qryAln), toString(result.query));
 }
