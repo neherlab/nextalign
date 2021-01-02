@@ -106,6 +106,19 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
     return {.meanShift = details::round((refSize - querySize) * 0.5), .bandWidth = bandWidth};
   }
 
+  std::vector<int> mapToGoodPositions;
+  mapToGoodPositions.reserve(query.size());
+  int distanceToLastBadPos = 0;
+  for (int i=0; i<query.size(); i++){
+    if (query[i]==Nucleotide::N || query[i]==Aminoacid::X){
+      distanceToLastBadPos = -1;
+    }else if (distanceToLastBadPos>seedLength){
+      mapToGoodPositions.push_back(i);
+    }
+    distanceToLastBadPos++;
+  }
+  const int nGoodPositions = mapToGoodPositions.size();
+
   // TODO: Maybe use something other than array? A struct with named fields to make
   //  the code in the end of the function less confusing?
   using Clamp = std::array<int, 4>;
@@ -113,8 +126,8 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   for (int ni = 0; ni < nSeeds; ++ni) {
 
     // generate kmers equally spaced on the query
-    const auto seedCover = safe_cast<double>(querySize - seedLength - 2 * margin);
-    const int qPos = details::round(margin + ((seedCover) / (nSeeds - 1)) * ni);
+    const auto seedCover = safe_cast<double>(nGoodPositions - 2 * margin);
+    const int qPos = mapToGoodPositions[details::round(margin + ((seedCover) / (nSeeds - 1)) * ni)];
 
     // FIXME: query.substr() creates a new string. Use string view instead.
     const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref, start_pos, allowed_mismatches);
