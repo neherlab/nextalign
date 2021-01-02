@@ -113,7 +113,7 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
     if (query[i]==Nucleotide::N || query[i]==Aminoacid::X){
       distanceToLastBadPos = -1;
     }else if (distanceToLastBadPos>seedLength){
-      mapToGoodPositions.push_back(i);
+      mapToGoodPositions.push_back(i - seedLength);
     }
     distanceToLastBadPos++;
   }
