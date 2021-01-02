@@ -257,7 +257,6 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
         score = END_OF_SEQUENCE;
         origin = END_OF_SEQUENCE;
       }
-      // std::cout <<origin<<":"<<(paths(si, ri + 1)&refGAPextend)<<":"<<(paths(si, ri + 1)&qryGAPextend)<<":"<<score<<"\t";
       tmpPath += origin;
       paths(si, ri + 1) = tmpPath;
       scores(si, ri + 1) = score;
