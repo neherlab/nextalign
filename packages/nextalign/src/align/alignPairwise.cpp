@@ -90,6 +90,39 @@ SeedMatch seedMatch(
   return {.shift = maxShift, .score = maxScore};
 }
 
+
+template<typename Letter>
+inline bool isBadLetter(Letter letter);
+
+template<>
+[[maybe_unused]] inline bool isBadLetter(Nucleotide letter) {
+  return letter == Nucleotide::N;
+}
+
+template<>
+[[maybe_unused]] inline bool isBadLetter(Aminoacid letter) {
+  return letter == Aminoacid::X;
+}
+
+template<typename Letter>
+std::vector<int> getMapToGoodPositions(const Sequence<Letter>& query, int seedLength) {
+  const int querySize = safe_cast<int>(query.size());
+
+  std::vector<int> mapToGoodPositions;
+  mapToGoodPositions.reserve(querySize);
+  int distanceToLastBadPos = 0;
+  for (int i = 0; i < querySize; i++) {
+    if (isBadLetter(query[i])) {
+      distanceToLastBadPos = -1;
+    } else if (distanceToLastBadPos > seedLength) {
+      mapToGoodPositions.push_back(i - seedLength);
+    }
+    distanceToLastBadPos++;
+  }
+
+  return mapToGoodPositions;
+}
+
 template<typename Letter>
 SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter>& ref) {
   const int querySize = safe_cast<int>(query.size());
@@ -106,17 +139,7 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
     return {.meanShift = details::round((refSize - querySize) * 0.5), .bandWidth = bandWidth};
   }
 
-  std::vector<int> mapToGoodPositions;
-  mapToGoodPositions.reserve(query.size());
-  int distanceToLastBadPos = 0;
-  for (int i=0; i<query.size(); i++){
-    if (query[i]==Nucleotide::N || query[i]==Aminoacid::X){
-      distanceToLastBadPos = -1;
-    }else if (distanceToLastBadPos>seedLength){
-      mapToGoodPositions.push_back(i - seedLength);
-    }
-    distanceToLastBadPos++;
-  }
+  const auto mapToGoodPositions = getMapToGoodPositions(query, seedLength);
   const int nGoodPositions = mapToGoodPositions.size();
 
   // TODO: Maybe use something other than array? A struct with named fields to make
