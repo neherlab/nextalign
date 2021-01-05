@@ -1,4 +1,6 @@
+#include <fmt/format.h>
 #include <nextalign/nextalign.h>
+#include <utils/concat_move.h>
 
 #include <string>
 
@@ -19,6 +21,7 @@ Insertion toInsertionExternal(const InsertionInternal& ins) {
   return Insertion{.begin = ins.begin, .end = ins.end, .seq = toString(ins.seq)};
 }
 
+
 NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSequence& ref, const GeneMap& geneMap,
   const NextalignOptions& options) {
 
@@ -30,10 +33,18 @@ NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSeque
 
   std::vector<Peptide> queryPeptides;
   std::vector<Peptide> refPeptides;
+  std::vector<std::string> warnings;
   if (!options.genes.empty()) {
-    const auto peptidesInternal = translateGenes(alignment.query, alignment.ref, geneMap, gapOpenCloseAA, options);
-    queryPeptides = map(peptidesInternal.queryPeptides, std::function<Peptide(PeptideInternal)>(toPeptideExternal));
-    refPeptides = map(peptidesInternal.refPeptides, std::function<Peptide(PeptideInternal)>(toPeptideExternal));
+    try {
+      auto peptidesInternal = translateGenes(alignment.query, alignment.ref, geneMap, gapOpenCloseAA, options);
+      queryPeptides = map(peptidesInternal.queryPeptides, std::function<Peptide(PeptideInternal)>(toPeptideExternal));
+      refPeptides = map(peptidesInternal.refPeptides, std::function<Peptide(PeptideInternal)>(toPeptideExternal));
+      concat_move(peptidesInternal.warnings, warnings);
+    } catch (const std::exception& e) {
+      // Errors in translation should not cause sequence alignment failure.
+      // Gather and report as warnings instead.
+      warnings.push_back(e.what());
+    }
   }
 
   const auto stripped = stripInsertions(alignment.ref, alignment.query);
@@ -44,6 +55,7 @@ NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSeque
   result.refPeptides = refPeptides;
   result.queryPeptides = queryPeptides;
   result.insertions = map(stripped.insertions, std::function<Insertion(InsertionInternal)>(toInsertionExternal));
+  result.warnings = std::move(warnings);
 
   return result;
 }

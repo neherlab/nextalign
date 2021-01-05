@@ -136,6 +136,7 @@ struct NextalignResult {
   std::vector<Peptide> refPeptides;
   std::vector<Peptide> queryPeptides;
   std::vector<Insertion> insertions;
+  std::vector<std::string> warnings;
 };
 
 struct AlgorithmOutput {
