@@ -412,8 +412,13 @@ void run(
       const auto &insertions = output.result.insertions;
       const auto &queryPeptides = output.result.queryPeptides;
       const auto &refPeptides = output.result.refPeptides;
+      const auto &warnings = output.result.warnings;
       fmt::print(stdout, "| {:5d} | {:<40s} | {:>16d} | {:12d} | \n",//
         index, seqName, alignmentScore, insertions.size());
+
+      for (const auto &warning : warnings) {
+        fmt::print(stderr, "Warning: in sequence \"{:s}\": {:s}\n", seqName, warning);
+      }
 
       outputFastaStream << fmt::format(">{:s}\n{:s}\n", seqName, query);
 

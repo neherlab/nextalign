@@ -52,28 +52,40 @@ PeptidesInternal translateGenes(  //
   std::vector<PeptideInternal> refPeptides;
   refPeptides.reserve(options.genes.size());
 
+  std::vector<std::string> warnings;
+
   // For each gene in the requested subset
   for (const auto& geneName : options.genes) {
-    const auto& found = geneMap.find(geneName);
-    if (found == geneMap.end()) {
-      throw ErrorGeneMapGeneNotFound(geneName);
+    try {
+
+      const auto& found = geneMap.find(geneName);
+      if (found == geneMap.end()) {
+        throw ErrorGeneMapGeneNotFound(geneName);
+      }
+
+      const auto& gene = found->second;
+
+      // TODO: can be done once during initialization
+      const auto& refGene = extractGeneQuery(ref, gene, coordMap);
+      const auto refPeptide = translate(refGene);
+
+
+      const auto& queryGene = extractGeneQuery(query, gene, coordMap);
+      const auto queryPeptide = translate(queryGene);
+
+      const auto geneAlignment = alignPairwise(queryPeptide, refPeptide, 10);
+
+      queryPeptides.emplace_back(PeptideInternal{.name = geneName, .seq = std::move(geneAlignment.query)});
+      refPeptides.emplace_back(PeptideInternal{.name = geneName, .seq = std::move(geneAlignment.ref)});
+    } catch (const std::exception& e) {
+      // Error in one gene should not cause the failure of the entire translation step.
+      // Gather and report as warnings instead.
+      warnings.push_back(
+        fmt::format("When processing gene \"{:s}\": {:>16s}. Note that this gene will not be included in the results "
+                    "of the sequence",
+          geneName, e.what()));
     }
-
-    const auto& gene = found->second;
-
-    // TODO: can be done once during initialization
-    const auto& refGene = extractGeneQuery(ref, gene, coordMap);
-    const auto refPeptide = translate(refGene);
-
-
-    const auto& queryGene = extractGeneQuery(query, gene, coordMap);
-    const auto queryPeptide = translate(queryGene);
-
-    const auto geneAlignment = alignPairwise(queryPeptide, refPeptide, 10);
-
-    queryPeptides.emplace_back(PeptideInternal{.name = geneName, .seq = std::move(geneAlignment.query)});
-    refPeptides.emplace_back(PeptideInternal{.name = geneName, .seq = std::move(geneAlignment.ref)});
   }
 
-  return PeptidesInternal{.queryPeptides = queryPeptides, .refPeptides = refPeptides};
+  return PeptidesInternal{.queryPeptides = queryPeptides, .refPeptides = refPeptides, .warnings = warnings};
 }
