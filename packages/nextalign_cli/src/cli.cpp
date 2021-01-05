@@ -15,7 +15,7 @@ struct CliParams {
   int jobs;
   std::string sequences;
   std::string reference;
-  std::string genemap;
+  std::optional<std::string> genemap;
   std::optional<std::string> genes;
   std::optional<std::string> outputDir;
   std::optional<std::string> outputBasename;
@@ -26,6 +26,7 @@ struct CliParams {
 struct Paths {
   std::filesystem::path outputFasta;
   std::filesystem::path outputInsertions;
+  std::map<std::string, std::filesystem::path> outputGenes;
 };
 
 template<typename Result>
@@ -89,17 +90,17 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
     )
 
     (
-      "m,genemap",
-       "(required) Path to a JSON file containing custom gene map",
+      "g,genes",
+       "(optional) List of genes to translate. Requires `--genemap` to be specified. If not supplied or empty, translation won't run.",
        cxxopts::value<std::string>(),
-       "GENEMAP"
+       "GENES"
     )
 
     (
-      "g,genes",
-       "(optional) List of genes to account for during alignment. If not supplied or empty, all the genes from the gene map are used",
+      "m,genemap",
+       "(optional) Path to a JSON file containing custom gene map. Requires `--genes.` If not supplied, translation won't run.",
        cxxopts::value<std::string>(),
-       "GENES"
+       "GENEMAP"
     )
 
     (
@@ -142,12 +143,16 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
   const auto jobs = getParamRequiredDefaulted<int>(cxxOpts, cxxOptsParsed, "jobs");
   const auto sequences = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "sequences");
   const auto reference = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "reference");
-  const auto genemap = getParamRequired<std::string>(cxxOpts, cxxOptsParsed, "genemap");
+  const auto genemap = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "genemap");
   const auto genes = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "genes");
   const auto outputDir = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-dir");
   const auto outputBasename = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-basename");
   const auto outputFasta = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-fasta");
   const auto outputInsertions = getParamOptional<std::string>(cxxOpts, cxxOptsParsed, "output-insertions");
+
+  if (bool(genes) != bool(genemap)) {
+    throw std::runtime_error("Parameters `--genes` and `--genemap` should be either both specified or both omitted.");
+  }
 
   return {
     jobs,
@@ -199,14 +204,7 @@ std::set<std::string> parseGenes(const CliParams &cliParams, const GeneMap &gene
 
   if (cliParams.genes && !(cliParams.genes->empty())) {
     boost::algorithm::split(genes, *(cliParams.genes), boost::is_any_of(","));
-    return genes;
   }
-
-  // If `genes` is empty, return all gene names from the gene map
-  std::transform(                                  //
-    geneMap.begin(), geneMap.end(),                //
-    std::inserter(genes, genes.begin()),           //
-    [](const auto &entry) { return entry.first; });//
 
   return genes;
 }
@@ -227,10 +225,10 @@ std::string formatCliParams(const CliParams &cliParams) {
   fmt::format_to(buf, "{:>20s}=\"{:<d}\"\n", "--jobs", cliParams.jobs);
   fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--sequences", cliParams.sequences);
   fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--reference", cliParams.reference);
-  fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--genemap", cliParams.genemap);
 
-  if (cliParams.genes) {
+  if (cliParams.genes && cliParams.genemap) {
     fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--genes", *cliParams.genes);
+    fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "--genemap", *cliParams.genemap);
   }
 
   if (cliParams.outputDir) {
@@ -252,7 +250,7 @@ std::string formatCliParams(const CliParams &cliParams) {
   return fmt::to_string(buf);
 }
 
-Paths getPaths(const CliParams &cliParams) {
+Paths getPaths(const CliParams &cliParams, const std::set<std::string> &genes) {
   std::filesystem::path sequencesPath = cliParams.sequences;
 
   auto outDir = std::filesystem::canonical(std::filesystem::current_path());
@@ -283,14 +281,28 @@ Paths getPaths(const CliParams &cliParams) {
     outputInsertions = *cliParams.outputInsertions;
   }
 
-  return {.outputFasta = outputFasta, .outputInsertions = outputInsertions};
+  std::map<std::string, std::filesystem::path> outputGenes;
+  for (const auto gene : genes) {
+    auto outputGene = outDir / baseName;
+    outputGene += fmt::format(".gene.{:s}.fasta", gene);
+    outputGenes.emplace(gene, outputGene);
+  }
+
+  return {.outputFasta = outputFasta, .outputInsertions = outputInsertions, .outputGenes = outputGenes};
 }
 
 std::string formatPaths(const Paths &paths) {
   fmt::memory_buffer buf;
   fmt::format_to(buf, "\nOutput files:\n");
-  fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "Aligned sequences", paths.outputFasta.string());
-  fmt::format_to(buf, "{:>20s}=\"{:<s}\"\n", "Stripped insertions", paths.outputInsertions.string());
+  fmt::format_to(buf, "{:>30s}: \"{:<s}\"\n", "Aligned sequences", paths.outputFasta.string());
+  fmt::format_to(buf, "{:>30s}: \"{:<s}\"\n", "Stripped insertions", paths.outputInsertions.string());
+
+  for (const auto &[geneName, outputGenePath] : paths.outputGenes) {
+    fmt::memory_buffer bufGene;
+    fmt::format_to(bufGene, "{:s} {:>10s}", "Translated genes", geneName);
+    fmt::format_to(buf, "{:>30s}: \"{:<s}\"\n", fmt::to_string(bufGene), outputGenePath.string());
+  }
+
   return fmt::to_string(buf);
 }
 
@@ -332,12 +344,13 @@ std::string formatInsertions(const std::vector<Insertion> &insertions) {
 void run(
   /* in  */ int parallelism,
   /* in  */ const CliParams &cliParams,
-  /* out */ std::unique_ptr<FastaStream> &inputFastaStream,
+  /* inout */ std::unique_ptr<FastaStream> &inputFastaStream,
   /* in  */ const std::string &refStr,
   /* in  */ const GeneMap &geneMap,
   /* in  */ const NextalignOptions &options,
   /* out */ std::ostream &outputFastaStream,
-  /* out */ std::ostream &outputInsertionsStream) {
+  /* out */ std::ostream &outputInsertionsStream,
+  /* out */ std::map<std::string, std::ofstream> &outputGeneStreams) {
   tbb::task_group_context context;
 
   const auto ref = toNucleotideSequence(refStr);
@@ -370,11 +383,15 @@ void run(
       }
     });
 
+  // HACK: prevent ref genes from being written multiple times
+  // TODO: hoist ref sequence transforms - process and write results only once, outside of main loop
+  bool refGenesHaveBeenWritten = false;
 
   /** Output filter is a serial ordered filter function which accepts the results from transform filters,
    * one at a time, displays and writes them to output streams */
   const auto outputFilter = tbb::make_filter<AlgorithmOutput, void>(tbb::filter::serial_in_order,//
-    [&cliParams, &outputFastaStream, &outputInsertionsStream](const AlgorithmOutput &output) {
+    [&outputFastaStream, &outputInsertionsStream, &outputGeneStreams, &refGenesHaveBeenWritten](
+      const AlgorithmOutput &output) {
       const auto index = output.index;
       const auto &seqName = output.seqName;
 
@@ -383,7 +400,9 @@ void run(
         try {
           std::rethrow_exception(error);
         } catch (const std::exception &e) {
-          fmt::print(stdout, "{:s}:{:s}\n", seqName, e.what());
+          fmt::print(stderr,
+            "Error: in sequence \"{:s}\": {:s}. Note that this sequence will be excluded from results.\n", seqName,
+            e.what());
           return;
         }
       }
@@ -391,18 +410,37 @@ void run(
       const auto &query = output.result.query;
       const auto &alignmentScore = output.result.alignmentScore;
       const auto &insertions = output.result.insertions;
+      const auto &queryPeptides = output.result.queryPeptides;
+      const auto &refPeptides = output.result.refPeptides;
+      const auto &warnings = output.result.warnings;
       fmt::print(stdout, "| {:5d} | {:<40s} | {:>16d} | {:12d} | \n",//
         index, seqName, alignmentScore, insertions.size());
+
+      for (const auto &warning : warnings) {
+        fmt::print(stderr, "Warning: in sequence \"{:s}\": {:s}\n", seqName, warning);
+      }
 
       outputFastaStream << fmt::format(">{:s}\n{:s}\n", seqName, query);
 
       outputInsertionsStream << fmt::format("\"{:s}\",\"{:s}\"\n", seqName, formatInsertions(insertions));
+
+      // TODO: hoist ref sequence transforms - process and write results only once, outside of main loop
+      if (!refGenesHaveBeenWritten) {
+        for (const auto &peptide : refPeptides) {
+          outputGeneStreams[peptide.name] << fmt::format(">{:s}\n{:s}\n", "Reference", peptide.seq);
+        }
+        refGenesHaveBeenWritten = true;
+      }
+
+      for (const auto &peptide : queryPeptides) {
+        outputGeneStreams[peptide.name] << fmt::format(">{:s}\n{:s}\n", seqName, peptide.seq);
+      }
     });
 
   try {
     tbb::parallel_pipeline(parallelism, inputFilter & transformFilters & outputFilter, context);
   } catch (const std::exception &e) {
-    fmt::print(stdout, "{:s}\n", e.what());
+    fmt::print(stderr, "Error: when running the pipeline: {:s}\n", e.what());
   }
 }
 
@@ -412,11 +450,6 @@ int main(int argc, char *argv[]) {
     const auto cliParams = parseCommandLine(argc, argv);
     fmt::print(stdout, formatCliParams(cliParams));
 
-    const auto paths = getPaths(cliParams);
-    fmt::print(stdout, formatPaths(paths));
-
-    std::filesystem::create_directories(paths.outputFasta.parent_path());
-    std::filesystem::create_directories(paths.outputInsertions.parent_path());
 
     NextalignOptions options;
 
@@ -425,11 +458,13 @@ int main(int argc, char *argv[]) {
     const auto &ref = refInput.seq;
     fmt::print(stdout, formatRef(refName, ref));
 
-    const auto geneMap = parseGeneMapGffFile(cliParams.genemap);
-    options.genes = parseGenes(cliParams, geneMap);
-    validateGenes(options.genes, geneMap);
-
-    fmt::print(stdout, formatGeneMap(geneMap, options.genes));
+    GeneMap geneMap;
+    if (cliParams.genes && cliParams.genemap) {
+      geneMap = parseGeneMapGffFile(*cliParams.genemap);
+      options.genes = parseGenes(cliParams, geneMap);
+      validateGenes(options.genes, geneMap);
+      fmt::print(stdout, formatGeneMap(geneMap, options.genes));
+    }
 
     std::ifstream fastaFile(cliParams.sequences);
     auto fastaStream = makeFastaStream(fastaFile);
@@ -437,6 +472,13 @@ int main(int argc, char *argv[]) {
       fmt::print(stderr, "Error: unable to read \"{:s}\"\n", cliParams.sequences);
       std::exit(1);
     }
+
+    const auto paths = getPaths(cliParams, options.genes);
+    fmt::print(stdout, formatPaths(paths));
+
+    std::filesystem::create_directories(paths.outputFasta.parent_path());
+    std::filesystem::create_directories(paths.outputInsertions.parent_path());
+
 
     std::ofstream outputFastaFile(paths.outputFasta);
     if (!outputFastaFile.good()) {
@@ -451,6 +493,19 @@ int main(int argc, char *argv[]) {
       std::exit(1);
     }
     outputInsertionsFile << "seqName,insertions\n";
+
+    std::map<std::string, std::ofstream> outputGeneFiles;
+    for (const auto &[geneName, outputGenePath] : paths.outputGenes) {
+      const auto result = outputGeneFiles.emplace(
+        std::piecewise_construct, std::forward_as_tuple(geneName), std::forward_as_tuple(outputGenePath));
+
+      const auto &outputGeneFile = result.first->second;
+
+      if (!outputGeneFile.good()) {
+        fmt::print(stderr, "Error: unable to write \"{:s}\"\n", outputGenePath.string());
+        std::exit(1);
+      }
+    }
 
     int parallelism = -1;
     if (cliParams.jobs > 0) {
@@ -469,9 +524,10 @@ int main(int argc, char *argv[]) {
 
 
     try {
-      run(parallelism, cliParams, fastaStream, ref, geneMap, options, outputFastaFile, outputInsertionsFile);
+      run(parallelism, cliParams, fastaStream, ref, geneMap, options, outputFastaFile, outputInsertionsFile,
+        outputGeneFiles);
     } catch (const std::exception &e) {
-      fmt::print(stdout, "{:>16s} |\n", e.what());
+      fmt::print(stdout, "Error: {:>16s} |\n", e.what());
     }
 
     fmt::print(stdout, "{:s}\n", std::string(TABLE_WIDTH, '-'));

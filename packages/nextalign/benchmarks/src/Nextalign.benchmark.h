@@ -30,13 +30,12 @@ protected:
 BENCHMARK_DEFINE_F(NextalignAverageBench, Average)(benchmark::State& st) {
   const auto n = NUM_SEQUENCES_AVG;
   const NextalignOptions options = {};
-  Alignment aln;
   st.SetComplexityN(totalNucs);
 
   for (const auto _ : st) {
     for (int i = 0; i < n; ++i) {
       const auto& seq = nucSequences[i];
-      benchmark::DoNotOptimize(aln = nextalign(seq, ref, geneMap, options));
+      benchmark::DoNotOptimize(nextalign(seq, ref, geneMap, options));
     }
   }
 

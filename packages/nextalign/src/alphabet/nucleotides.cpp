@@ -66,7 +66,7 @@ Nucleotide toNucleotide(char nuc) {
   return it->second;
 }
 
-char toChar(Nucleotide nuc) {
+char nucToChar(Nucleotide nuc) {
   precondition(contains(nucleotideToChar, nuc));
   const auto it = nucleotideToChar.find(nuc);
   return it->second;
@@ -74,9 +74,10 @@ char toChar(Nucleotide nuc) {
 
 
 NucleotideSequence toNucleotideSequence(const std::string& seq) {
-  return map(seq, toNucleotide, NucleotideSequence{});
+  return map(seq, std::function<Nucleotide(char)>(toNucleotide));
 }
 
 std::string toString(const NucleotideSequence& seq) {
-  return map(seq, toChar, std::string{});
+  return map(seq, std::function<char(Nucleotide)>(nucToChar));
 }
+

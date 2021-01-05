@@ -35,8 +35,21 @@ add_library(${PROJECT_NAME} STATIC
   src/match/matchNuc.cpp
   src/match/matchNuc.h
   src/nextalign.cpp
+  src/nextalign_private.h
   src/strip/stripInsertions.cpp
   src/strip/stripInsertions.h
+  src/translate/decode.cpp
+  src/translate/decode.h
+  src/translate/extractGene.cpp
+  src/translate/extractGene.h
+  src/translate/mapCoordinates.cpp
+  src/translate/mapCoordinates.h
+  src/translate/removeGaps.h
+  src/translate/translate.cpp
+  src/translate/translate.h
+  src/translate/translateGenes.cpp
+  src/translate/translateGenes.h
+  src/utils/concat_move.h
   src/utils/config.h
   src/utils/contains.h
   src/utils/contract.h

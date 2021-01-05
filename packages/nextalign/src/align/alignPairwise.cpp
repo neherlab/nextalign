@@ -304,7 +304,12 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
   int si = 0;
   int bestScore = 0;
   for (int i = 0; i < scoresSize; i++) {
-    lastIndexByShift[i] = rowLength - 1 < querySize + indexToShift(i) ? rowLength - 1 : querySize + indexToShift(i);
+    const auto is = indexToShift(i);
+    lastIndexByShift[i] = rowLength - 1 < querySize + is ? rowLength - 1 : querySize + is;
+
+    invariant_greater(lastIndexByShift[i], 0);
+    invariant_less(lastIndexByShift[i], scores.num_cols());
+
     lastScoreByShift[i] = scores(i, lastIndexByShift[i]);
     if (lastScoreByShift[i] > bestScore) {
       bestScore = lastScoreByShift[i];

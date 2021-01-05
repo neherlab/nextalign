@@ -6,11 +6,14 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 template<typename Letter>
 using Sequence = std::basic_string<Letter>;
 
+template<typename Letter>
+using SequenceView = std::basic_string_view<Letter>;
 
 enum class Nucleotide : char {
   U = 0,
@@ -34,6 +37,8 @@ enum class Nucleotide : char {
 };
 
 using NucleotideSequence = Sequence<Nucleotide>;
+
+using NucleotideSequenceView = SequenceView<Nucleotide>;
 
 NucleotideSequence toNucleotideSequence(const std::string& seq);
 
@@ -78,6 +83,8 @@ enum class Aminoacid : char {
 
 using AminoacidSequence = Sequence<Aminoacid>;
 
+using AminoacidSequenceView = SequenceView<Aminoacid>;
+
 AminoacidSequence toAminoacidSequence(const std::string& seq);
 
 std::string toString(const AminoacidSequence& seq);
@@ -110,26 +117,36 @@ struct Alignment {
   int alignmentScore;
 };
 
+struct Peptide {
+  std::string name;
+  std::string seq;
+};
+
 struct Insertion {
   int begin;
   int end;
   std::string seq;
 };
 
-struct AlignmentImproved : public Alignment {
+struct NextalignResult {
+  std::string query;
+  int alignmentScore;
+  std::vector<Peptide> refPeptides;
+  std::vector<Peptide> queryPeptides;
   std::vector<Insertion> insertions;
+  std::vector<std::string> warnings;
 };
 
 struct AlgorithmOutput {
   int index;
   std::string seqName;
   bool hasError;
-  AlignmentImproved result;
+  NextalignResult result;
   std::exception_ptr error;
 };
 
 
-AlignmentImproved nextalign(const NucleotideSequence& query, const NucleotideSequence& ref, const GeneMap& geneMap,
+NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSequence& ref, const GeneMap& geneMap,
   const NextalignOptions& options);
 
 /**
