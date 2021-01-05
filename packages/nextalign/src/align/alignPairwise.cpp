@@ -151,7 +151,8 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
 }
 
 template<typename Letter>
-ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& ref, int bandWidth, int meanShift) {
+ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& ref,
+  const std::vector<int>& gapOpenClose, int bandWidth, int meanShift) {
   // allocate a matrix to record the matches
   const int querySize = safe_cast<int>(query.size());
   const int refSize = safe_cast<int>(ref.size());
@@ -193,7 +194,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
   }
   for (int ri = 0; ri < refSize; ri++) {
     int qPos = ri - (bandWidth + meanShift);
-    int refGaps = gapOpen;
+    int refGaps = gapOpenClose[ri];
     for (int si = 2 * bandWidth; si >= 0; si--) {
       int tmpPath = 0, score = 0, origin = 0;
       int qGapExtend = 0, rGapExtend = 0, rGapOpen = 0, qGapOpen = 0;
@@ -203,7 +204,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
         // we could fill all of this at once
         score = 0;
         tmpPath += qryGAPextend;
-        refGaps = gapOpen;
+        refGaps = gapOpenClose[ri];
         origin = qryGAPmatrix;
       } else if (qPos < querySize) {
         // if the shifted position is within the query sequence
@@ -216,7 +217,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
         // check the scores of a reference gap
         if (si < 2 * bandWidth) {
           rGapExtend = refGaps + gapExtend;
-          rGapOpen = scores(si + 1, ri + 1) + gapOpen;
+          rGapOpen = scores(si + 1, ri + 1) + gapOpenClose[ri + 1];
           if (rGapExtend > rGapOpen) {
             tmpScore = rGapExtend;
             tmpPath += refGAPextend;
@@ -235,7 +236,7 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
         // check the scores of a reference gap
         if (si > 0) {
           qGapExtend = qryGaps[si - 1] + gapExtend;
-          qGapOpen = scores(si - 1, ri) + gapOpen;
+          qGapOpen = scores(si - 1, ri) + gapOpenClose[ri];
           tmpScore = qGapExtend > qGapOpen ? qGapExtend : qGapOpen;
           if (qGapExtend > qGapOpen) {
             tmpScore = qGapExtend;
@@ -256,7 +257,6 @@ ForwardTrace scoreMatrix(const Sequence<Letter>& query, const Sequence<Letter>& 
         score = END_OF_SEQUENCE;
         origin = END_OF_SEQUENCE;
       }
-      // std::cout <<origin<<":"<<(paths(si, ri + 1)&refGAPextend)<<":"<<(paths(si, ri + 1)&qryGAPextend)<<":"<<score<<"\t";
       tmpPath += origin;
       paths(si, ri + 1) = tmpPath;
       scores(si, ri + 1) = score;
@@ -402,9 +402,10 @@ AlignmentResult<Letter> backTrace(const Sequence<Letter>& query, const Sequence<
 
 struct AlignPairwiseTag {};
 
+
 template<typename Letter>
-AlignmentResult<Letter> alignPairwise(
-  const Sequence<Letter>& query, const Sequence<Letter>& ref, int minimalLength, AlignPairwiseTag) {
+AlignmentResult<Letter> alignPairwise(const Sequence<Letter>& query, const Sequence<Letter>& ref,
+  const std::vector<int>& gapOpenClose, int minimalLength, AlignPairwiseTag) {
   const int querySize = query.size();
   if (querySize < minimalLength) {
     throw ErrorAlignmentSequenceTooShort();
@@ -417,7 +418,7 @@ AlignmentResult<Letter> alignPairwise(
   if (bandWidth > 400) {
     throw ErrorAlignmentBadSeedMatches();
   }
-  const ForwardTrace& forwardTrace = scoreMatrix(query, ref, bandWidth, meanShift);
+  const ForwardTrace& forwardTrace = scoreMatrix(query, ref, gapOpenClose, bandWidth, meanShift);
   const auto& scores = forwardTrace.scores;
   const auto& paths = forwardTrace.paths;
 
@@ -425,12 +426,12 @@ AlignmentResult<Letter> alignPairwise(
 }
 
 
-NucleotideAlignmentResult alignPairwise(
-  const NucleotideSequence& query, const NucleotideSequence& ref, int minimalLength) {
-  return alignPairwise(query, ref, minimalLength, AlignPairwiseTag{});
+NucleotideAlignmentResult alignPairwise(const NucleotideSequence& query, const NucleotideSequence& ref,
+  const std::vector<int>& gapOpenClose, int minimalLength) {
+  return alignPairwise(query, ref, gapOpenClose, minimalLength, AlignPairwiseTag{});
 }
 
-AminoacidAlignmentResult alignPairwise(
-  const AminoacidSequence& query, const AminoacidSequence& ref, int minimalLength) {
-  return alignPairwise(query, ref, minimalLength, AlignPairwiseTag{});
+AminoacidAlignmentResult alignPairwise(const AminoacidSequence& query, const AminoacidSequence& ref,
+  const std::vector<int>& gapOpenClose, int minimalLength) {
+  return alignPairwise(query, ref, gapOpenClose, minimalLength, AlignPairwiseTag{});
 }

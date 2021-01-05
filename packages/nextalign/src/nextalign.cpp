@@ -5,6 +5,7 @@
 #include <string>
 
 #include "align/alignPairwise.h"
+#include "align/getGapOpenCloseScores.h"
 #include "alphabet/nucleotides.h"
 #include "strip/stripInsertions.h"
 #include "translate/translateGenes.h"
@@ -24,14 +25,18 @@ Insertion toInsertionExternal(const InsertionInternal& ins) {
 NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSequence& ref, const GeneMap& geneMap,
   const NextalignOptions& options) {
 
-  const auto alignment = alignPairwise(query, ref, 100);
+  // TODO: hoist this out of the loop
+  const auto gapOpenCloseNuc = getGapOpenCloseScoresCodonAware(ref, geneMap, options);
+  const auto gapOpenCloseAA = getGapOpenCloseScoresFlat(ref, options);
+
+  const auto alignment = alignPairwise(query, ref, gapOpenCloseNuc, 100);
 
   std::vector<Peptide> queryPeptides;
   std::vector<Peptide> refPeptides;
   std::vector<std::string> warnings;
   if (!options.genes.empty()) {
     try {
-      auto peptidesInternal = translateGenes(alignment.query, alignment.ref, geneMap, options);
+      auto peptidesInternal = translateGenes(alignment.query, alignment.ref, geneMap, gapOpenCloseAA, options);
       queryPeptides = map(peptidesInternal.queryPeptides, std::function<Peptide(PeptideInternal)>(toPeptideExternal));
       refPeptides = map(peptidesInternal.refPeptides, std::function<Peptide(PeptideInternal)>(toPeptideExternal));
       concat_move(peptidesInternal.warnings, warnings);

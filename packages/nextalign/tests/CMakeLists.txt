@@ -10,6 +10,7 @@ find_package(fmt 7.1.0 REQUIRED)
 
 add_executable(${PROJECT_NAME}
   alignPairwise.test.cpp
+  alignPairwiseWithCodons.test.cpp
   data/sampleGeneMap.h
   decode.test.cpp
   extractGene.test.cpp

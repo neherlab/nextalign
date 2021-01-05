@@ -27,11 +27,12 @@ public:
 };
 
 
-PeptidesInternal translateGenes(  //
-  const NucleotideSequence& query,//
-  const NucleotideSequence& ref,  //
-  const GeneMap& geneMap,         //
-  const NextalignOptions& options //
+PeptidesInternal translateGenes(         //
+  const NucleotideSequence& query,       //
+  const NucleotideSequence& ref,         //
+  const GeneMap& geneMap,                //
+  const std::vector<int>& gapOpenCloseAA,//
+  const NextalignOptions& options        //
 ) {
 
   NucleotideSequence newQueryMemory(ref.size(), Nucleotide::GAP);
@@ -69,11 +70,10 @@ PeptidesInternal translateGenes(  //
       const auto& refGene = extractGeneQuery(ref, gene, coordMap);
       const auto refPeptide = translate(refGene);
 
-
       const auto& queryGene = extractGeneQuery(query, gene, coordMap);
       const auto queryPeptide = translate(queryGene);
 
-      const auto geneAlignment = alignPairwise(queryPeptide, refPeptide, 10);
+      const auto geneAlignment = alignPairwise(queryPeptide, refPeptide, gapOpenCloseAA, 10);
 
       queryPeptides.emplace_back(PeptideInternal{.name = geneName, .seq = std::move(geneAlignment.query)});
       refPeptides.emplace_back(PeptideInternal{.name = geneName, .seq = std::move(geneAlignment.ref)});

@@ -7,6 +7,7 @@
 
 #include "../include/nextalign/nextalign.h"
 #include "../src/align/alignPairwise.h"
+#include "../src/align/getGapOpenCloseScores.h"
 #include "../src/alphabet/nucleotides.h"
 #include "../src/match/matchNuc.h"
 #include "utils/getData.h"
@@ -15,8 +16,14 @@
 
 class AlignPairwiseAverageBench : public benchmark::Fixture {
 protected:
+  const NextalignOptions options = {
+    .gapOpenInFrame = -5,
+    .gapOpenOutOfFrame = -6,
+    .genes = {},
+  };
+  const std::vector<int> gapOpenClose = getGapOpenCloseScoresCodonAware(ref, geneMap, options);
+  const NucleotideSequence ref = toNucleotideSequence(reference);
   std::vector<NucleotideSequence> nucSequences;
-  NucleotideSequence ref = toNucleotideSequence(reference);
 
   AlignPairwiseAverageBench() {
     const auto n = NUM_SEQUENCES_AVG;
@@ -31,14 +38,13 @@ protected:
 
 BENCHMARK_DEFINE_F(AlignPairwiseAverageBench, Average)(benchmark::State& st) {
   const auto n = NUM_SEQUENCES_AVG;
-  const NextalignOptions options = {};
   NucleotideAlignmentResult aln;
   st.SetComplexityN(totalNucs);
 
   for (const auto _ : st) {
     for (int i = 0; i < n; ++i) {
       const auto& input = nucSequences[i];
-      benchmark::DoNotOptimize(aln = alignPairwise(input, ref, 100));
+      benchmark::DoNotOptimize(aln = alignPairwise(input, ref, gapOpenClose, 100));
     }
   }
 
@@ -65,7 +71,7 @@ BENCHMARK_REGISTER_F(AlignPairwiseAverageBench, Average)//
 //  st.SetComplexityN(input.seq.size());
 //
 //  for (const auto _ : st) {
-//    benchmark::DoNotOptimize(aln = alignPairwise(input.seq, reference, 100));
+//    benchmark::DoNotOptimize(aln = alignPairwise(input.seq, reference, gapOpenClose, 100));
 //  }
 //
 //  setCounters(st, 1);

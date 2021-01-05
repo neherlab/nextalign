@@ -57,8 +57,8 @@ template<typename Letter>
 AlignmentResult<Letter> backTrace(const std::string& query, const std::string& ref, const vector2d<int>& scores,
   const vector2d<int>& paths, int meanShift);
 
-NucleotideAlignmentResult alignPairwise(//
-  const NucleotideSequence& query, const NucleotideSequence& ref, int minimalLength);
+NucleotideAlignmentResult alignPairwise(const NucleotideSequence& query, const NucleotideSequence& ref,
+  const std::vector<int>& gapOpenClose, int minimalLength);
 
-AminoacidAlignmentResult alignPairwise(//
-  const AminoacidSequence& query, const AminoacidSequence& ref, int minimalLength);
+AminoacidAlignmentResult alignPairwise(const AminoacidSequence& query, const AminoacidSequence& ref,
+  const std::vector<int>& gapOpenClose, int minimalLength);

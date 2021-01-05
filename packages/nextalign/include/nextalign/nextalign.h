@@ -97,6 +97,8 @@ struct AlgorithmInput {
 };
 
 struct NextalignOptions {
+  int gapOpenInFrame = -5;
+  int gapOpenOutOfFrame = -6;
   std::set<std::string> genes;
 };
 

@@ -22,6 +22,8 @@ add_library(${PROJECT_NAME} STATIC
   include/nextalign/nextalign.h
   src/align/alignPairwise.cpp
   src/align/alignPairwise.h
+  src/align/getGapOpenCloseScores.cpp
+  src/align/getGapOpenCloseScores.h
   src/alphabet/aminoacids.cpp
   src/alphabet/aminoacids.h
   src/alphabet/nucleotides.cpp

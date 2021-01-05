@@ -12,9 +12,10 @@ struct PeptidesInternal {
   std::vector<std::string> warnings;
 };
 
-PeptidesInternal translateGenes(  //
-  const NucleotideSequence& query,//
-  const NucleotideSequence& ref,  //
-  const GeneMap& geneMap,         //
-  const NextalignOptions& options //
+PeptidesInternal translateGenes(         //
+  const NucleotideSequence& query,       //
+  const NucleotideSequence& ref,         //
+  const GeneMap& geneMap,                //
+  const std::vector<int>& gapOpenCloseAA,//
+  const NextalignOptions& options        //
 );
