@@ -128,7 +128,7 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   const int querySize = safe_cast<int>(query.size());
   const int refSize = safe_cast<int>(ref.size());
 
-  constexpr const int nSeeds = 9;
+  constexpr const int nSeeds = 25;
   constexpr const int seedLength = 21;
   constexpr const int allowed_mismatches = 3;
 
@@ -146,11 +146,12 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   //  the code in the end of the function less confusing?
   using Clamp = std::array<int, 4>;
   std::vector<Clamp> seedMatches;
+  // generate kmers equally spaced on the query
+  const auto seedCover = safe_cast<double>(nGoodPositions - 2 * margin);
+  const int kmerSpacing = details::round(((seedCover) / (nSeeds - 1)));
   for (int ni = 0; ni < nSeeds; ++ni) {
 
-    // generate kmers equally spaced on the query
-    const auto seedCover = safe_cast<double>(nGoodPositions - 2 * margin);
-    const int qPos = mapToGoodPositions[details::round(margin + ((seedCover) / (nSeeds - 1)) * ni)];
+    const int qPos = mapToGoodPositions[margin + (kmerSpacing * ni)];
 
     // FIXME: query.substr() creates a new string. Use string view instead.
     const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref, start_pos, allowed_mismatches);
