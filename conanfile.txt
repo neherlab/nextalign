@@ -1,6 +1,8 @@
 [requires]
 benchmark/1.5.2
 boost_base/1.68.0@bincrafters/stable
+boost_algorithm/1.68.0@bincrafters/stable
+boost_detail/1.68.0@bincrafters/stable
 cxxopts/2.2.1
 fast-cpp-csv-parser/20191004
 fmt/7.1.0

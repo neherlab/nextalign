@@ -91,7 +91,20 @@ For a general conversation, feel free to join Nextstrain Discussion at [discussi
 </h2>
 
 <h3 id="quick-start" align="center">
-✨ Quick start
+✨ Quick start: with docker
+</h3>
+
+```
+UID=$(id -u) GID=$(id -g) docker-compose up --build
+```
+
+> ⚠️ The variables `UID` and `GID` need to be set to the current user ID and group ID, otherwise build files will be written as root
+
+> 💡 Check our [`Dockerfile`](/Dockerfile) and [`docker-compose.yml`](/docker-compose.yml)
+
+
+<h3 id="quick-start" align="center">
+✨ Quick start: locally
 </h3>
 
 1.  Install and configure the dependencies

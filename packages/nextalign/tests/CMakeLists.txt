@@ -5,7 +5,9 @@ project(nextalign_tests)
 
 find_package(GTest 1.10.0 REQUIRED)
 find_package(Microsoft.GSL 3.1.0 REQUIRED)
+find_package(boost_algorithm 1.68.0 REQUIRED)
 find_package(boost_base 1.68.0 REQUIRED)
+find_package(boost_detail 1.68.0 REQUIRED)
 find_package(fmt 7.1.0 REQUIRED)
 
 add_executable(${PROJECT_NAME}
@@ -38,7 +40,9 @@ target_link_libraries(${PROJECT_NAME}
   nextalign
   GTest::GTest
   Microsoft.GSL::GSL
+  boost_algorithm::boost_algorithm
   boost_base::boost_base
+  boost_detail::boost_detail
   fmt::fmt
   )
 
