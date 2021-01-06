@@ -22,7 +22,6 @@ namespace details {
   }
 }// namespace details
 
-
 class ErrorAlignmentNoSeedMatches : public std::runtime_error {
 public:
   explicit ErrorAlignmentNoSeedMatches() : std::runtime_error("Unable to align: no seed matches") {}
@@ -148,10 +147,10 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   std::vector<Clamp> seedMatches;
   // generate kmers equally spaced on the query
   const auto seedCover = safe_cast<double>(nGoodPositions - 2 * margin);
-  const int kmerSpacing = details::round(((seedCover) / (nSeeds - 1)));
+  const double kmerSpacing = (seedCover) / (nSeeds - 1);
   for (int ni = 0; ni < nSeeds; ++ni) {
 
-    const int qPos = mapToGoodPositions[margin + (kmerSpacing * ni)];
+    const int qPos = mapToGoodPositions[details::round(margin + (kmerSpacing * ni))];
 
     // FIXME: query.substr() creates a new string. Use string view instead.
     const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref, start_pos, allowed_mismatches);
