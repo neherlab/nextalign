@@ -13,12 +13,12 @@
 #include "utils/map.h"
 #include "utils/safe_cast.h"
 
-Peptide toPeptideExternal(const PeptideInternal& peptide) {
-  return Peptide{.name = peptide.name, .seq = toString(peptide.seq)};
+Insertion toInsertionExternal(const InsertionInternal<Nucleotide>& ins) {
+  return Insertion{.begin = ins.begin, .end = ins.end, .seq = toString(ins.seq)};
 }
 
-Insertion toInsertionExternal(const InsertionInternal& ins) {
-  return Insertion{.begin = ins.begin, .end = ins.end, .seq = toString(ins.seq)};
+Peptide toPeptideExternal(const PeptideInternal& peptide) {
+  return Peptide{.name = peptide.name, .seq = toString(peptide.seq)};
 }
 
 
@@ -55,7 +55,8 @@ NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSeque
   result.alignmentScore = alignment.alignmentScore;
   result.refPeptides = refPeptides;
   result.queryPeptides = queryPeptides;
-  result.insertions = map(stripped.insertions, std::function<Insertion(InsertionInternal)>(toInsertionExternal));
+  result.insertions =
+    map(stripped.insertions, std::function<Insertion(InsertionInternal<Nucleotide>)>(toInsertionExternal));
   result.warnings = std::move(warnings);
 
   return result;

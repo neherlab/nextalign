@@ -9,6 +9,7 @@
 
 #include "../alphabet/aminoacids.h"
 #include "../alphabet/nucleotides.h"
+#include "../strip/stripInsertions.h"
 #include "./extractGene.h"
 #include "./mapCoordinates.h"
 #include "./translate.h"
@@ -74,9 +75,21 @@ PeptidesInternal translateGenes(         //
       const auto queryPeptide = translate(queryGene);
 
       const auto geneAlignment = alignPairwise(queryPeptide, refPeptide, gapOpenCloseAA, 10);
+      const auto stripped = stripInsertions(geneAlignment.ref, geneAlignment.query);
 
-      queryPeptides.emplace_back(PeptideInternal{.name = geneName, .seq = std::move(geneAlignment.query)});
-      refPeptides.emplace_back(PeptideInternal{.name = geneName, .seq = std::move(geneAlignment.ref)});
+
+      queryPeptides.emplace_back(PeptideInternal{
+        .name = geneName,                           //
+        .seq = std::move(stripped.queryStripped),   //
+        .insertions = std::move(stripped.insertions)//
+      });
+
+      refPeptides.emplace_back(PeptideInternal{
+        .name = geneName,                   //
+        .seq = std::move(geneAlignment.ref),//
+        .insertions = {}                    //
+      });
+
     } catch (const std::exception& e) {
       // Error in one gene should not cause the failure of the entire translation step.
       // Gather and report as warnings instead.
@@ -87,5 +100,9 @@ PeptidesInternal translateGenes(         //
     }
   }
 
-  return PeptidesInternal{.queryPeptides = queryPeptides, .refPeptides = refPeptides, .warnings = warnings};
+  return PeptidesInternal{
+    .queryPeptides = queryPeptides,//
+    .refPeptides = refPeptides,    //
+    .warnings = warnings           //
+  };
 }

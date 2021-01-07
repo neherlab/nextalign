@@ -40,7 +40,6 @@ add_library(${PROJECT_NAME} STATIC
   src/match/matchNuc.h
   src/nextalign.cpp
   src/nextalign_private.h
-  src/strip/stripInsertions.cpp
   src/strip/stripInsertions.h
   src/translate/decode.cpp
   src/translate/decode.h
