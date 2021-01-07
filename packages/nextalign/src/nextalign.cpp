@@ -31,12 +31,14 @@ NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSeque
 
   const auto alignment = alignPairwise(query, ref, gapOpenCloseNuc, 100);
 
+  const auto stripped = stripInsertions(alignment.ref, alignment.query);
+
   std::vector<Peptide> queryPeptides;
   std::vector<Peptide> refPeptides;
   std::vector<std::string> warnings;
   if (!options.genes.empty()) {
     try {
-      auto peptidesInternal = translateGenes(alignment.query, alignment.ref, geneMap, gapOpenCloseAA, options);
+      auto peptidesInternal = translateGenes(stripped.queryStripped, alignment.ref, geneMap, gapOpenCloseAA, options);
       queryPeptides = map(peptidesInternal.queryPeptides, std::function<Peptide(PeptideInternal)>(toPeptideExternal));
       refPeptides = map(peptidesInternal.refPeptides, std::function<Peptide(PeptideInternal)>(toPeptideExternal));
       concat_move(peptidesInternal.warnings, warnings);
@@ -47,7 +49,6 @@ NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSeque
     }
   }
 
-  const auto stripped = stripInsertions(alignment.ref, alignment.query);
 
   NextalignResult result;
   result.query = toString(stripped.queryStripped);
