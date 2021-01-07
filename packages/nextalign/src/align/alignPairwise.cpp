@@ -22,7 +22,6 @@ namespace details {
   }
 }// namespace details
 
-
 class ErrorAlignmentNoSeedMatches : public std::runtime_error {
 public:
   explicit ErrorAlignmentNoSeedMatches() : std::runtime_error("Unable to align: no seed matches") {}
@@ -90,12 +89,45 @@ SeedMatch seedMatch(
   return {.shift = maxShift, .score = maxScore};
 }
 
+
+template<typename Letter>
+inline bool isBadLetter(Letter letter);
+
+template<>
+[[maybe_unused]] inline bool isBadLetter(Nucleotide letter) {
+  return letter == Nucleotide::N;
+}
+
+template<>
+[[maybe_unused]] inline bool isBadLetter(Aminoacid letter) {
+  return letter == Aminoacid::X;
+}
+
+template<typename Letter>
+std::vector<int> getMapToGoodPositions(const Sequence<Letter>& query, int seedLength) {
+  const int querySize = safe_cast<int>(query.size());
+
+  std::vector<int> mapToGoodPositions;
+  mapToGoodPositions.reserve(querySize);
+  int distanceToLastBadPos = 0;
+  for (int i = 0; i < querySize; i++) {
+    if (isBadLetter(query[i])) {
+      distanceToLastBadPos = -1;
+    } else if (distanceToLastBadPos > seedLength) {
+      mapToGoodPositions.push_back(i - seedLength);
+    }
+    distanceToLastBadPos++;
+  }
+
+  return mapToGoodPositions;
+}
+
 template<typename Letter>
 SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter>& ref) {
   const int querySize = safe_cast<int>(query.size());
   const int refSize = safe_cast<int>(ref.size());
 
-  constexpr const int nSeeds = 9;
+  constexpr const int nSeeds = 25;
   constexpr const int seedLength = 21;
   constexpr const int allowed_mismatches = 3;
 
@@ -106,15 +138,19 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
     return {.meanShift = details::round((refSize - querySize) * 0.5), .bandWidth = bandWidth};
   }
 
+  const auto mapToGoodPositions = getMapToGoodPositions(query, seedLength);
+  const int nGoodPositions = mapToGoodPositions.size();
+
   // TODO: Maybe use something other than array? A struct with named fields to make
   //  the code in the end of the function less confusing?
   using Clamp = std::array<int, 4>;
   std::vector<Clamp> seedMatches;
+  // generate kmers equally spaced on the query
+  const auto seedCover = safe_cast<double>(nGoodPositions - 2 * margin);
+  const double kmerSpacing = (seedCover) / (nSeeds - 1);
   for (int ni = 0; ni < nSeeds; ++ni) {
 
-    // generate kmers equally spaced on the query
-    const auto seedCover = safe_cast<double>(querySize - seedLength - 2 * margin);
-    const int qPos = details::round(margin + ((seedCover) / (nSeeds - 1)) * ni);
+    const int qPos = mapToGoodPositions[details::round(margin + (kmerSpacing * ni))];
 
     // FIXME: query.substr() creates a new string. Use string view instead.
     const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref, start_pos, allowed_mismatches);
