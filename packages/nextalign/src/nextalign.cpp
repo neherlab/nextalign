@@ -38,7 +38,7 @@ NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSeque
   std::vector<std::string> warnings;
   if (!options.genes.empty()) {
     try {
-      auto peptidesInternal = translateGenes(stripped.queryStripped, alignment.ref, geneMap, gapOpenCloseAA, options);
+      auto peptidesInternal = translateGenes(alignment.query, alignment.ref, geneMap, gapOpenCloseAA, options);
       queryPeptides = map(peptidesInternal.queryPeptides, std::function<Peptide(PeptideInternal)>(toPeptideExternal));
       refPeptides = map(peptidesInternal.refPeptides, std::function<Peptide(PeptideInternal)>(toPeptideExternal));
       concat_move(peptidesInternal.warnings, warnings);
