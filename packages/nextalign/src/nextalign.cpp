@@ -31,8 +31,6 @@ NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSeque
 
   const auto alignment = alignPairwise(query, ref, gapOpenCloseNuc, 100);
 
-  const auto stripped = stripInsertions(alignment.ref, alignment.query);
-
   std::vector<Peptide> queryPeptides;
   std::vector<Peptide> refPeptides;
   std::vector<std::string> warnings;
@@ -49,6 +47,7 @@ NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSeque
     }
   }
 
+  const auto stripped = stripInsertions(alignment.ref, alignment.query);
 
   NextalignResult result;
   result.query = toString(stripped.queryStripped);
