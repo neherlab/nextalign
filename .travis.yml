@@ -33,7 +33,7 @@ before_cache:
   - docker save -o docker_images/images.tar $(docker images -a -q)
 
 install:
-  - yarn install --frozen-lockfile
+  - echo ''
 
 before_script:
   - cp .env.example .env
