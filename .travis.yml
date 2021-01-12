@@ -20,9 +20,10 @@ cache:
     - docker_images
 
 env:
-  - DOCKER_COMPOSE_VERSION=1.27.0
-  - GDB=" "
-  - GTPP=" "
+  global:
+    - DOCKER_COMPOSE_VERSION=1.27.0
+    - GDB=" "
+    - GTPP=" "
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
