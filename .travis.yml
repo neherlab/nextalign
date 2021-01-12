@@ -53,7 +53,7 @@ before_deploy:
 deploy:
    - provider: releases
      repo: neherlab/nextalign
-     skip_cleanup: true
+     cleanup: false
      overwrite: true
      file:
        - .build/Release/packages/nextalign_cli/nextalign_cli
