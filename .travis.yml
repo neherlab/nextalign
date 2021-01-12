@@ -30,19 +30,17 @@ before_install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
-  - docker load -i docker_images/images.tar || true
-
-before_cache:
-  - docker save -o docker_images/images.tar $(docker images -a -q)
 
 install:
-  - echo ''
+  - docker load -i docker_images/images.tar || true
 
 before_script:
+  - make docker-prod-build
+  - docker save -o docker_images/images.tar $(docker images -a -q)
   - cp .env.example .env
 
 script:
-  - make docker-prod
+  - make docker-prod-run
   - mkdir -p .out
   - mv .build/Release/packages/nextalign_cli/nextalign_cli .out/nextalign_Linux_x86_64
 

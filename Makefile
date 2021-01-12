@@ -1,6 +1,8 @@
 export UID=$(shell id -u)
 export GID=$(shell id -g)
 
+.PHONY: docker-prod
+
 dev:
 	@$(MAKE) --no-print-directory dev-impl
 
@@ -50,6 +52,13 @@ docker-dev:
 	mkdir -p .build/Debug .cache/docker/home/user/.conan/data
 	UID=${UID} GID=${GID} docker-compose -f docker-compose.yml up --build
 
-docker-prod:
+
+docker-prod: docker-prod-build docker-prod-run
+
+docker-prod-build:
+	UID=${UID} GID=${GID} docker-compose -f docker-compose.prod.yml build
+
+docker-prod-run:
 	mkdir -p .build/Release .cache/docker/home/user/.conan/data
 	UID=${UID} GID=${GID} docker-compose -f docker-compose.prod.yml up --build
+
