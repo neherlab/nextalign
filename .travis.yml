@@ -41,7 +41,7 @@ before_script:
   - cp .env.example .env
 
 script:
-  - make docker-dev
+  - make docker-prod
   - mkdir -p .out
   - mv .build/Release/packages/nextalign_cli/nextalign_cli .out/nextalign_Linux_x86_64
 
