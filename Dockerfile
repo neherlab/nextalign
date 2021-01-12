@@ -1,11 +1,15 @@
 FROM ubuntu:focal
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG USER=user
-ARG GROUP=user
-ARG UID=1000
-ARG GID=1000
+ARG USER
+ARG GROUP
+ARG UID
+ARG GID
 
+ENV USER=${USER}
+ENV GROUP=${GROUP}
+ENV UID=${UID}
+ENV GID=${GID}
 ENV TERM="xterm-256color"
 ENV HOME="/home/user"
 ENV NVM_DIR="${HOME}/.nvm"
@@ -66,7 +70,7 @@ ${USER} \
 && sed -i /etc/sudoers -re 's/^root.*/root ALL=(ALL:ALL) NOPASSWD: ALL/g' \
 && sed -i /etc/sudoers -re 's/^#includedir.*/## **Removed the include directive** ##"/g' \
 && echo "foo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
-&& touch ${HOME}.hushlogin
+&& touch ${HOME}/.hushlogin
 
 RUN set -x \
 && git clone --recursive https://github.com/creationix/nvm.git ${NVM_DIR}
