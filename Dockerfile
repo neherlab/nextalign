@@ -6,10 +6,10 @@ ARG GROUP
 ARG UID
 ARG GID
 
-ENV USER=${USER}
-ENV GROUP=${GROUP}
-ENV UID=${UID}
-ENV GID=${GID}
+ENV USER=$USER
+ENV GROUP=$GROUP
+ENV UID=$UID
+ENV GID=$GID
 ENV TERM="xterm-256color"
 ENV HOME="/home/user"
 ENV NVM_DIR="${HOME}/.nvm"
@@ -55,10 +55,6 @@ RUN set -x \
   cpplint
 
 RUN set -x \
-&& mkdir -p /home/user
-
-RUN set -x \
-&& mkdir -p ${HOME}/data \
 && addgroup --system --gid ${GID} ${GROUP} \
 && useradd --system --create-home --home-dir ${HOME} \
 --shell /bin/bash \

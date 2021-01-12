@@ -1,3 +1,6 @@
+export UID=$(shell id -u)
+export GID=$(shell id -g)
+
 dev:
 	@$(MAKE) --no-print-directory dev-impl
 
@@ -45,12 +48,8 @@ clang-tidy:
 
 docker-dev:
 	mkdir -p .build/Debug .cache/docker/home/user/.conan/data
-	export UID=$(shell id -u)
-	export GID=$(shell id -g)
 	UID=${UID} GID=${GID} docker-compose -f docker-compose.yml up --build
 
 docker-prod:
 	mkdir -p .build/Release .cache/docker/home/user/.conan/data
-	export UID=$(shell id -u)
-	export GID=$(shell id -g)
 	UID=${UID} GID=${GID} docker-compose -f docker-compose.prod.yml up --build
