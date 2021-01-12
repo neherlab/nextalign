@@ -1,13 +1,13 @@
 version: '3.7'
 
 services:
-  nextalign_dev:
-    container_name: nextalign_dev
-    image: nextalign_dev
+  nextalign_prod:
+    container_name: nextalign_prod
+    image: nextalign_prod
     build:
       context: ./
       dockerfile: Dockerfile
-    command: 'make dev'
+    command: 'make prod'
     volumes:
       - ./:/src
       - ./.cache/docker/home/user/.conan/data:/home/user/.conan/data

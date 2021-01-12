@@ -90,5 +90,3 @@ RUN set -x \
 && conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
 
 WORKDIR /src
-
-CMD ["make", "dev"]
