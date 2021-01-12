@@ -44,13 +44,13 @@ clang-tidy:
 	@scripts/clang-tidy.sh
 
 docker-dev:
-	mkdir -p .cache/docker/home/user/.conan/data
+	mkdir -p .build/Debug .cache/docker/home/user/.conan/data
 	export UID=$(shell id -u)
 	export GID=$(shell id -g)
 	docker-compose -f docker-compose.yml up --build
 
 docker-prod:
-	mkdir -p .cache/docker/home/user/.conan/data
+	mkdir -p .build/Release .cache/docker/home/user/.conan/data
 	export UID=$(shell id -u)
 	export GID=$(shell id -g)
 	docker-compose -f docker-compose.prod.yml up --build
