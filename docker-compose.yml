@@ -12,7 +12,7 @@ services:
         - GROUP=user
         - UID=$UID
         - GID=$GID
-    command: 'make dev'
+    command: ['make', 'dev']
     volumes:
       - ./:/src
       - ./.cache/docker/home/user/.conan/data:/home/user/.conan/data
