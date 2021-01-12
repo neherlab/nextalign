@@ -21,6 +21,8 @@ cache:
 
 env:
   - DOCKER_COMPOSE_VERSION=1.27.0
+  - GDB=" "
+  - GTPP=" "
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
@@ -51,12 +53,12 @@ before_deploy:
   - git tag $TRAVIS_TAG
 
 deploy:
-   - provider: releases
-     repo: neherlab/nextalign
-     cleanup: false
-     overwrite: true
-     file:
-       - .out/nextalign_Linux_x86_64
-     on:
-       all_branches: true
-       condition: $TRAVIS_BRANCH =~ ^(master|staging|release)$
+  - provider: releases
+    repo: neherlab/nextalign
+    cleanup: false
+    overwrite: true
+    file:
+      - .out/nextalign_Linux_x86_64
+    on:
+      all_branches: true
+      condition: $TRAVIS_BRANCH =~ ^(master|staging|release)$
