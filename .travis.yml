@@ -54,6 +54,7 @@ before_deploy:
 deploy:
   - provider: releases
     repo: neherlab/nextalign
+    token: $GITHUB_TOKEN
     cleanup: false
     overwrite: true
     file:
