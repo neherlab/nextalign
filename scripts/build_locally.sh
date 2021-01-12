@@ -27,6 +27,25 @@ fi
 PROJECT_NAME="nextalign"
 BUILD_PREFIX=""
 
+CI="true"
+
+IS_CI="0"
+if false \
+|| [ ! -z "${BUILD_ID:=}" ] \
+|| [ ! -z "${CI:=}" ] \
+|| [ ! -z "${CIRCLECI:=}" ] \
+|| [ ! -z "${CIRRUS_CI:=}" ] \
+|| [ ! -z "${CODEBUILD_BUILD_ID:=}" ] \
+|| [ ! -z "${GITHUB_ACTIONS:=}" ] \
+|| [ ! -z "${GITLAB_CI:=}" ] \
+|| [ ! -z "${HEROKU_TEST_RUN_ID:=}" ] \
+|| [ ! -z "${TEAMCITY_VERSION:=}" ] \
+|| [ ! -z "${TF_BUILD:=}" ] \
+|| [ ! -z "${TRAVIS:=}" ] \
+; then
+  IS_CI="1"
+fi
+
 # Build type (default: Release)
 CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE:=Release}"
 
@@ -104,10 +123,16 @@ esac
 
 # gdb (or lldb) command with arguments
 GDB_DEFAULT="gdb --quiet -ix ${THIS_DIR}/lib/.gdbinit -x ${THIS_DIR}/lib/.gdbexec --args"
+if [ "${IS_CI}" == "1" ]; then
+  GDB_DEFAULT=""
+fi
 GDB="${GDB:=${GDB_DEFAULT}}"
 
 # gttp (Google Test Pretty Printer) command
 GTTP_DEFAULT="${THIS_DIR}/lib/gtpp.py"
+if [ "${IS_CI}" == "1" ]; then
+  GTTP_DEFAULT=""
+fi
 GTPP="${GTPP:=${GTTP_DEFAULT}}"
 
 # Generate a semicolon-delimited list of arguments for cppcheck
