@@ -56,7 +56,7 @@ deploy:
      cleanup: false
      overwrite: true
      file:
-       - .build/Release/packages/nextalign_cli/nextalign_cli
+       - .out/nextalign_Linux_x86_64
      on:
        all_branches: true
        condition: $TRAVIS_BRANCH =~ ^(master|staging|release)$
