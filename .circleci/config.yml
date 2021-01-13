@@ -33,11 +33,17 @@ jobs:
 
       - run:
           name: 'Run "Builder" container image'
-          command:
+          command: |
             make docker-prod-run
+            make output-prod
 
       - save_cache:
           name: 'Save build cache'
           key: cache-nextalign-v1-cache
           paths:
             - .cache
+
+      - store_artifacts:
+          name: 'Store Linux x86_64 binary'
+          path: .out/nextalign_Linux_x86_64
+          destination: nextalign_Linux_x86_64

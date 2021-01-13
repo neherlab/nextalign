@@ -41,8 +41,7 @@ before_script:
 
 script:
   - make docker-prod-run
-  - mkdir -p .out
-  - mv .build/Release/packages/nextalign_cli/nextalign_cli .out/nextalign_Linux_x86_64
+  - make output-prod
 
 before_deploy:
   # Set up git user name and tag this commit
