@@ -1,0 +1,36 @@
+version: 2.1
+
+jobs:
+  build:
+    resource_class: medium
+
+    machine: true
+
+    steps:
+      - checkout
+      - run: git submodule sync
+      - run: git submodule update --init
+
+      - restore_cache:
+          key: cache-nextalign-v1-docker_images
+
+      - restore_cache:
+          key: cache-nextalign-v1-cache
+
+      - run:
+          make docker-cache-load
+          make docker-prod-build
+          make docker-cache-save
+
+      - save_cache:
+          key: cache-nextalign-v1-docker_images
+          paths:
+          - docker_images
+
+      - run:
+          make docker-prod-run
+
+      - save_cache:
+          key: cache-nextalign-v1-cache
+          paths:
+          - .cache
