@@ -12,25 +12,31 @@ jobs:
       - run: git submodule update --init
 
       - restore_cache:
-          key: cache-nextalign-v1-docker_images
-
-      - restore_cache:
-          key: cache-nextalign-v1-cache
-
-      - run:
-          make docker-cache-load
-          make docker-prod-build
-          make docker-cache-save
-
-      - save_cache:
-          key: cache-nextalign-v1-docker_images
-          paths:
-          - docker_images
+          name: 'Restore caches'
+          keys:
+           - cache-nextalign-v1-docker_images
+           - cache-nextalign-v1-cache
 
       - run:
-          make docker-prod-run
+          name: 'Build "Builder" container image'
+          command: |
+            make docker-cache-load
+            make docker-prod-build
+            make docker-cache-save
 
       - save_cache:
+          name: 'Save docker image cache'
+          key: cache-nextalign-v1-docker_images
+          paths:
+            - docker_images
+
+      - run:
+          name: 'Run "Builder" container image'
+          command:
+            make docker-prod-run
+
+      - save_cache:
+          name: 'Save build cache'
           key: cache-nextalign-v1-cache
           paths:
-          - .cache
+            - .cache
