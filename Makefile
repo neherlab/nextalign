@@ -63,6 +63,7 @@ docker-prod-run:
 	UID=${UID} GID=${GID} docker-compose -f docker-compose.prod.yml up --build
 
 docker-cache-save:
+	mkdir -p docker_images
 	docker save -o docker_images/images.tar $(shell docker images -a -q)
 
 docker-cache-load:
