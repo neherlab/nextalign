@@ -80,7 +80,8 @@ Images are available at Docker Hub: https://hub.docker.com/repository/docker/neh
 Pull and run the latest version with:
 
 ```
-docker run -it --rm neherlab/nextalign nextalign --version
+docker pull neherlab/nextalign:latest
+docker run -it --rm neherlab/nextalign:latest nextalign --version
 ```
 
 Pull and run a specific version with:
