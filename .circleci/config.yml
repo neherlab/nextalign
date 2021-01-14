@@ -13,10 +13,9 @@ jobs:
       - run: git submodule update --init
 
       - restore_cache:
-          name: 'Restore caches'
+          name: 'Restore docker image cache'
           keys:
             - cache-nextalign-v1-docker_images
-            - cache-nextalign-v1-cache
 
       - run:
           name: 'Build "Builder" container image'
@@ -31,6 +30,11 @@ jobs:
           paths:
             - docker_images
 
+      - restore_cache:
+          name: 'Restore build cache'
+          keys:
+            - cache-nextalign-v1-cache-{arch}-{checksum "conanfile.txt"}
+
       - run:
           name: 'Run "Builder" container image'
           command: |
@@ -39,7 +43,7 @@ jobs:
 
       - save_cache:
           name: 'Save build cache'
-          key: cache-nextalign-v1-cache
+          key: cache-nextalign-v1-cache-{arch}-{checksum "conanfile.txt"}
           paths:
             - .cache
 
