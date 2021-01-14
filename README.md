@@ -473,13 +473,27 @@ executable.
 
 > 💡 The projects' build system is setup to automatically pickup the `ld` linker from `3rdparty/binutils/bin/` if it exists.
 
-#### Continuous integration
 
-TODO: under construction
+#### 🚅 Profile-guided optimization (PGO)
 
-#### Build artifacts
+TODO: add profile-guided optimization
 
-TODO: under construction
+#### Creating a new release
+
+ - Increment `VERSION` of `project()` command in cmake files (TODO: automate this):
+    - packages/nextalign/CMakeLists.txt
+    - packages/nextalign_cli/CMakeLists.txt
+
+   CI will refuse to run if there's a tag exist with the current version already.
+
+ - Merge changes to `release`  branch (do not create a tag!)
+
+ - CI will trigger a build and
+    - run build script
+    - upload binaries to Github Releases
+    - create and push a git tag
+    - build and push Docker image to Docker Hub
+
 
 <h3 id="troubleshooting" align="center">
 😮 Troubleshooting
