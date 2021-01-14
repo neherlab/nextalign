@@ -68,3 +68,6 @@ docker-cache-save:
 
 docker-cache-load:
 	docker load -i docker_images/images.tar || true
+
+check-release-version:
+	scripts/check_release_version.sh

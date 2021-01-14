@@ -12,6 +12,11 @@ jobs:
       - run: git submodule sync
       - run: git submodule update --init
 
+      - run:
+          name: 'Check release version'
+          command: |
+            make check-release-version
+
       - restore_cache:
           name: 'Restore docker image cache'
           keys:
