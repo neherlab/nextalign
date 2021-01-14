@@ -59,13 +59,26 @@ auto getParamRequiredDefaulted([[maybe_unused]] const cxxopts::Options &cxxOpts,
 
 
 CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-avoid-c-arrays)
-  cxxopts::Options cxxOpts("nextalign", "Nextalign: sequence alignment\n");
+  const std::string versionShort = PROJECT_VERSION;
+  const std::string versionDetailed = fmt::format("nextalign {:s}\nbased on libnextalign {:s}", PROJECT_VERSION, getVersion());
+
+  cxxopts::Options cxxOpts("nextalign", fmt::format("{:s}\n\n{:s}\n", versionDetailed, PROJECT_DESCRIPTION));
 
   // clang-format off
   cxxOpts.add_options()
     (
       "h,help",
       "Show this help"
+    )
+
+    (
+      "v,version",
+      "Show version"
+    )
+
+    (
+      "version-detailed",
+      "Show version"
     )
 
     (
@@ -137,6 +150,16 @@ CliParams parseCommandLine(int argc, char *argv[]) {// NOLINT(cppcoreguidelines-
 
   if (cxxOptsParsed.count("help") > 0) {
     fmt::print(stdout, "{:s}\n", cxxOpts.help());
+    std::exit(0);
+  }
+
+  if (cxxOptsParsed.count("version") > 0) {
+    fmt::print(stdout, "{:s}\n", versionShort);
+    std::exit(0);
+  }
+
+    if (cxxOptsParsed.count("version-detailed") > 0) {
+    fmt::print(stdout, "{:s}\n", versionDetailed);
     std::exit(0);
   }
 

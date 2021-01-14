@@ -184,3 +184,5 @@ std::unique_ptr<FastaStream> makeFastaStream(std::istream& istream);
 
 /** Parses all sequences of a given file or string stream */
 std::vector<AlgorithmInput> parseSequences(std::istream& istream);
+
+const char* getVersion();

@@ -6,7 +6,10 @@ include(CFlags)
 include(Quiet)
 include(Sanitizers)
 
-project(nextalign)
+project(nextalign
+  VERSION 0.1.0
+  DESCRIPTION "C++ library for viral genome reference alignment"
+  )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -72,6 +75,10 @@ target_compile_definitions(${PROJECT_NAME}
   PRIVATE
 
   -DPROJECT_NAME="${PROJECT_NAME}"
+  -DPROJECT_VERSION="${PROJECT_VERSION}"
+  -DPROJECT_VERSION_MAJOR="${PROJECT_VERSION_MAJOR}"
+  -DPROJECT_VERSION_MINOR="${PROJECT_VERSION_MINOR}"
+  -DPROJECT_VERSION_PATCH="${PROJECT_VERSION_PATCH}"
 
   # Workaround for GCC 9 error in type_safe.
   # See: https://github.com/foonathan/debug_assert/issues/17

@@ -60,3 +60,7 @@ NextalignResult nextalign(const NucleotideSequence& query, const NucleotideSeque
 
   return result;
 }
+
+const char* getVersion() {
+  return PROJECT_VERSION;
+}

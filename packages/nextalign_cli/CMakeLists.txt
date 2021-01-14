@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
 cmake_policy(SET CMP0069 NEW)
 
-project(nextalign_cli)
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/packages/cmake" ${CMAKE_MODULE_PATH})
+include(CFlags)
+include(Quiet)
+include(Sanitizers)
+
+project(nextalign_cli
+  VERSION 0.1.0
+  DESCRIPTION "Viral genome reference alignment"
+  )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -26,7 +34,13 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 11)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
 target_compile_definitions(${PROJECT_NAME}
-  PRIVATE -DPROJECT_NAME="${PROJECT_NAME}"
+  PRIVATE
+  -DPROJECT_NAME="${PROJECT_NAME}"
+  -DPROJECT_VERSION="${PROJECT_VERSION}"
+  -DPROJECT_DESCRIPTION="${PROJECT_DESCRIPTION}"
+  -DPROJECT_VERSION_MAJOR="${PROJECT_VERSION_MAJOR}"
+  -DPROJECT_VERSION_MINOR="${PROJECT_VERSION_MINOR}"
+  -DPROJECT_VERSION_PATCH="${PROJECT_VERSION_PATCH}"
   )
 
 target_include_directories(${PROJECT_NAME}
