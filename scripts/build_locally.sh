@@ -96,6 +96,8 @@ BUILD_DIR="${BUILD_DIR:=${BUILD_DIR_DEFAULT}}"
 
 mkdir -p "${BUILD_DIR}"
 
+INSTALL_DIR="${PROJECT_ROOT_DIR}/.out"
+
 USE_COLOR="${USE_COLOR:=1}"
 DEV_CLI_OPTIONS="${DEV_CLI_OPTIONS:=}"
 
@@ -165,6 +167,7 @@ pushd "${BUILD_DIR}" > /dev/null
   print 92 "Generate build files";
   ${CLANG_ANALYZER} cmake "${PROJECT_ROOT_DIR}" \
     -DCMAKE_MODULE_PATH="${BUILD_DIR}" \
+    -DCMAKE_INSTALL_PREFIX="${INSTALL_DIR}" \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
     -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
     -DCMAKE_CXX_CPPCHECK="${CMAKE_CXX_CPPCHECK}" \
@@ -175,6 +178,11 @@ pushd "${BUILD_DIR}" > /dev/null
 
   print 12 "Build";
   ${CLANG_ANALYZER} cmake --build "${BUILD_DIR}" --config "${CMAKE_BUILD_TYPE}" -- -j$(($(nproc) - 1))
+
+  if [ "${CMAKE_BUILD_TYPE}" == "Release" ]; then
+    print 14 "Install";
+    cmake --install "${BUILD_DIR}" --config "${CMAKE_BUILD_TYPE}" --strip
+  fi
 
 popd > /dev/null
 
@@ -191,7 +199,7 @@ pushd "${PROJECT_ROOT_DIR}" > /dev/null
 
   print 27 "Run CLI";
   CLI_DIR="${BUILD_DIR}/packages/${PROJECT_NAME}_cli"
-  CLI_EXE="nextalign_cli"
+  CLI_EXE="nextalign-$(uname -s)-$(uname -p || uname -m)"
   eval "${GDB}" ${CLI_DIR}/${CLI_EXE} ${DEV_CLI_OPTIONS} || cd .
 
   print 22 "Done";

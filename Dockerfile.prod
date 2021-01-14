@@ -1,5 +1,5 @@
 FROM scratch
 
-COPY .build/Release/packages/nextalign_cli/nextalign_cli /nextalign
+COPY .out/nextalign-Linux-x86_64 /nextalign
 
 ENTRYPOINT ["/nextalign"]

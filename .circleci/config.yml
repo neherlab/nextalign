@@ -49,15 +49,15 @@ jobs:
 
       - store_artifacts:
           name: 'Store Linux x86_64 binary'
-          path: .out/nextalign_Linux_x86_64
-          destination: nextalign_Linux_x86_64
+          path: .out/nextalign-Linux-x86_64
+          destination: nextalign-Linux-x86_64
 
       - run:
           name: "Publish Release on GitHub"
           command: |
             GHR_VERSION=0.13.0
             pushd ${HOME} >/dev/null && curl -fsSL "https://github.com/tcnksm/ghr/releases/download/v${GHR_VERSION}/ghr_v${GHR_VERSION}_linux_amd64.tar.gz" | tar -xz --directory="$(pwd)" --strip-components=1 "ghr_v${GHR_VERSION}_linux_amd64/ghr"; popd >/dev/null
-            VERSION=$(.out/nextalign_Linux_x86_64 --version)
+            VERSION=$(.out/nextalign-Linux-x86_64 --version)
             ${HOME}/ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} .out/
 
       - run:
