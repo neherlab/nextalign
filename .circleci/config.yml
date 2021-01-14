@@ -18,10 +18,18 @@ jobs:
             - cache-nextalign-v1-docker_images
 
       - run:
-          name: 'Build "Builder" container image'
+          name: 'Load docker image cache'
           command: |
             make docker-cache-load
+
+      - run:
+          name: 'Build "Builder" container image'
+          command: |
             make docker-prod-build
+
+      - run:
+          name: 'Store docker image cache'
+          command: |
             make docker-cache-save
 
       - save_cache:
@@ -36,7 +44,7 @@ jobs:
             - cache-nextalign-v1-cache-{arch}-{checksum "conanfile.txt"}
 
       - run:
-          name: 'Run "Builder" container image'
+          name: 'Run "Builder" container'
           command: |
             make docker-prod-run
 
