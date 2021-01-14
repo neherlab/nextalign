@@ -21,7 +21,7 @@ if [ -f "${PROJECT_ROOT_DIR}/.env" ]; then
   source "${PROJECT_ROOT_DIR}/.env"
 fi
 
-VERSION=$(.out/nextalign-Linux-x86_64 --version)
+VERSION=$(.out/bin/nextalign-Linux-x86_64 --version)
 
 docker build -f "${PROJECT_ROOT_DIR}/Dockerfile.prod" \
   -t neherlab/nextalign:latest \
