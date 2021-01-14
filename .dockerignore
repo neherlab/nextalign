@@ -1,2 +1,2 @@
 **/*
-!.build/Release/packages/nextalign_cli/nextalign_cli
+!.out/bin/nextalign-Linux-x86_64
