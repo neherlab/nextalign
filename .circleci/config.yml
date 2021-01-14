@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  build:
+  Build-Linux-x86_64:
     resource_class: medium
 
     machine:
@@ -77,3 +77,9 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             scripts/publish_docker_images.sh
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - Build-Linux-x86_64
