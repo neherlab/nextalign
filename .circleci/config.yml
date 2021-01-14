@@ -39,7 +39,6 @@ jobs:
           name: 'Run "Builder" container image'
           command: |
             make docker-prod-run
-            make output-prod
 
       - save_cache:
           name: 'Save build cache'

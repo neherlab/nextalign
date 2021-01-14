@@ -68,7 +68,3 @@ docker-cache-save:
 
 docker-cache-load:
 	docker load -i docker_images/images.tar || true
-
-output-prod:
-	mkdir -p .out
-	cp -avr .build/Release/packages/nextalign_cli/nextalign_cli .out/nextalign_Linux_x86_64
