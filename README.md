@@ -15,6 +15,25 @@ Nextalign
 
 ---
 
+<p align="center">
+  <a href="https://github.com/neherlab/nextalign/releases">
+    <img height="50px"
+      src="https://img.shields.io/badge/%E2%AC%87%EF%B8%8F%20Download-%2317992a.svg"
+      alt="Download button"
+    />
+  </a>
+</p>
+
+---
+
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/neherlab/nextalign?label=%E2%AC%87%EF%B8%8F%20release)
+![Docker Image Version (latest semver)](https://img.shields.io/docker/v/neherlab/nextalign?label=%F0%9F%90%8B%20docker)
+![GitHub contributors](https://img.shields.io/github/contributors/neherlab/nextalign)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/neherlab/nextalign)
+[![CircleCI](https://img.shields.io/circleci/build/github/neherlab/nextalign)](https://circleci.com/gh/neherlab/nextalign)
+
+---
+
 <h2 id="about" align="center">
 👋 About
 </h2>
@@ -38,11 +57,48 @@ TODO: expand this section
 💿 Installation
 </h3>
 
-TODO: provide prebuilt binaries for major platforms
+You can download Nextalign on the Releases page: https://github.com/neherlab/nextalign/releases
+
+#### 🐧 One-liners to download for Linux
+
+Download latest version:
+
+```bash
+curl -fsSL "https://github.com/neherlab/nextalign/releases/latest/download/nextalign_Linux_x86_64" -o "nextalign" && chmod +x nextalign
+```
+
+Download specific version:
+
+```bash
+NEXTALIGN_VERSION=0.1.0 && curl -fsSL "https://github.com/neherlab/nextalign/releases/download/${NEXTALIGN_VERSION}/nextalign_Linux_x86_64" -o "nextalign" && chmod +x nextalign
+```
+
+#### 🐋 With docker
+
+Images are available at Docker Hub: https://hub.docker.com/repository/docker/neherlab/nextalign
+
+Pull and run the latest version with:
+
+```
+docker run -it --rm neherlab/nextalign nextalign --version
+```
+
+Pull and run a specific version with:
+
+```
+docker run -it --rm neherlab/nextalign:0.1.0 nextalign --version
+```
+
 
 <h3 id="usage" align="center">
 🔋 Usage
 </h3>
+
+After obtaining Nextalign read help: 
+
+```
+nextalign --help
+```
 
 #### ➡️ Inputs
 
@@ -66,15 +122,8 @@ Nextalign produces the following outputs:
 | no       | Sequence output      | `--output-fasta=<path>`      | Aligned sequences will be written to this file. Format: fasta. (overrides paths given with --output-dir and --output-basename)                                                  |
 | no       | Insertions output    | `--output-insertions=<path>` | A list of insertions which have been stripped from aligned sequences will be written to this file. Format: CSV. (overrides paths given with --output-dir and --output-basename) |
 
-<h3 id="with-docker" align="center">
-🐋 With docker
-</h3>
 
-TODO: publish docker image and provide instructions on how to use it
-
----
-
-<h3 id="usage" align="center">
+<h3 id="feedback" align="center">
 💬 Feedback
 </h3>
 
