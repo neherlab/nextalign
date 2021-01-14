@@ -71,4 +71,4 @@ docker-cache-load:
 
 output-prod:
 	mkdir -p .out
-	mv .build/Release/packages/nextalign_cli/nextalign_cli .out/nextalign_Linux_x86_64
+	cp -avr .build/Release/packages/nextalign_cli/nextalign_cli .out/nextalign_Linux_x86_64
