@@ -6,7 +6,7 @@ include(CFlags)
 include(Quiet)
 include(Sanitizers)
 
-project(nextalign_cli VERSION 0.1.1
+project(nextalign_cli VERSION 0.1.0
   DESCRIPTION "Viral genome reference alignment"
   )
 

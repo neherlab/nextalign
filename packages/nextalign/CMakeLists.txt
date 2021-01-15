@@ -6,7 +6,7 @@ include(CFlags)
 include(Quiet)
 include(Sanitizers)
 
-project(nextalign VERSION 0.1.1
+project(nextalign VERSION 0.1.0
   DESCRIPTION "C++ library for viral genome reference alignment"
   )
 

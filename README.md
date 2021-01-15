@@ -64,13 +64,13 @@ You can download Nextalign on the Releases page: https://github.com/neherlab/nex
 Download latest version:
 
 ```bash
-curl -fsSL "https://github.com/neherlab/nextalign/releases/latest/download/nextalign_Linux_x86_64" -o "nextalign" && chmod +x nextalign
+curl -fsSL "https://github.com/neherlab/nextalign/releases/latest/download/nextalign-Linux-x86_64" -o "nextalign" && chmod +x nextalign
 ```
 
 Download specific version:
 
 ```bash
-NEXTALIGN_VERSION=0.1.0 && curl -fsSL "https://github.com/neherlab/nextalign/releases/download/${NEXTALIGN_VERSION}/nextalign_Linux_x86_64" -o "nextalign" && chmod +x nextalign
+NEXTALIGN_VERSION=0.1.0 && curl -fsSL "https://github.com/neherlab/nextalign/releases/download/${NEXTALIGN_VERSION}/nextalign-Linux-x86_64" -o "nextalign" && chmod +x nextalign
 ```
 
 #### 🐋 With docker
