@@ -9,7 +9,6 @@
 struct PeptidesInternal {
   std::vector<PeptideInternal> queryPeptides;
   std::vector<PeptideInternal> refPeptides;
-  std::vector<InsertionInternal<Aminoacid>> insertions;
   std::vector<std::string> warnings;
 };
 
