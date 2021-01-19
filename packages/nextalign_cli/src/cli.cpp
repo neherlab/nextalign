@@ -305,7 +305,7 @@ Paths getPaths(const CliParams &cliParams, const std::set<std::string> &genes) {
   }
 
   std::map<std::string, std::filesystem::path> outputGenes;
-  for (const auto gene : genes) {
+  for (const auto& gene : genes) {
     auto outputGene = outDir / baseName;
     outputGene += fmt::format(".gene.{:s}.fasta", gene);
     outputGenes.emplace(gene, outputGene);
