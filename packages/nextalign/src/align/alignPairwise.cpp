@@ -127,11 +127,11 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   const int querySize = safe_cast<int>(query.size());
   const int refSize = safe_cast<int>(ref.size());
 
-  constexpr const int nSeeds = 25;
   constexpr const int seedLength = 21;
   constexpr const int allowed_mismatches = 3;
 
-  const int margin = refSize > 10000 ? 30 : details::round(refSize / 100.0);
+  const int nSeeds = refSize > 1000 ? details::round(refSize / 100.0) : 10;
+  const int margin = refSize > 10000 ? 30 : details::round(refSize / 300.0);
   const int bandWidth = details::round((refSize + querySize) * 0.5) - 3;
   int start_pos = 0;
   if (bandWidth < 2 * seedLength) {
@@ -147,7 +147,7 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   std::vector<Clamp> seedMatches;
   // generate kmers equally spaced on the query
   const auto seedCover = safe_cast<double>(nGoodPositions - 2 * margin);
-  const double kmerSpacing = (seedCover) / (nSeeds - 1);
+  const double kmerSpacing = (seedCover) / (nSeeds - 1.0);
   for (int ni = 0; ni < nSeeds; ++ni) {
 
     const int qPos = mapToGoodPositions[details::round(margin + (kmerSpacing * ni))];
