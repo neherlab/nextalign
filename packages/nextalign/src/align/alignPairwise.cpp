@@ -1,13 +1,11 @@
-#include "alignPairwise.h"
-
 #include <algorithm>
 #include <cmath>
 #include <ctime>
-#include <gsl/gsl>
 #include <iostream>
 #include <string>
 #include <vector>
 
+#include "alignPairwise.h"
 #include "../alphabet/aminoacids.h"
 #include "../alphabet/nucleotides.h"
 #include "../match/matchAa.h"
@@ -58,6 +56,9 @@ constexpr const int qryGAPextend = 1 << 4;
 constexpr const int END_OF_SEQUENCE = -1;
 
 // determine the position where a particular kmer (string of length k) matches the reference sequence
+// TODO: this function accepts a start position and will not search for matches before this position.
+// This start position is set be the previous match. It is this sensitive to a seed matching in the wrong
+// part of the sequence and this is likely to produce errors for genomes with repeated sequence
 template<typename Letter>
 SeedMatch seedMatch(
   const Sequence<Letter>& kmer, const Sequence<Letter>& ref, const int start_pos, const int allowed_mismatches) {
@@ -127,11 +128,11 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   const int querySize = safe_cast<int>(query.size());
   const int refSize = safe_cast<int>(ref.size());
 
-  constexpr const int nSeeds = 25;
   constexpr const int seedLength = 21;
   constexpr const int allowed_mismatches = 3;
 
-  const int margin = refSize > 10000 ? 30 : details::round(refSize / 100.0);
+  const int nSeeds = refSize > 1000 ? details::round(refSize / 100.0) : 10;
+  const int margin = refSize > 10000 ? 30 : details::round(refSize / 300.0);
   const int bandWidth = details::round((refSize + querySize) * 0.5) - 3;
   int start_pos = 0;
   if (bandWidth < 2 * seedLength) {
@@ -147,11 +148,10 @@ SeedAlignment seedAlignment(const Sequence<Letter>& query, const Sequence<Letter
   std::vector<Clamp> seedMatches;
   // generate kmers equally spaced on the query
   const auto seedCover = safe_cast<double>(nGoodPositions - 2 * margin);
-  const double kmerSpacing = (seedCover) / (nSeeds - 1);
+  const double kmerSpacing = (seedCover - 1.0) / (nSeeds - 1.0);
   for (int ni = 0; ni < nSeeds; ++ni) {
 
     const int qPos = mapToGoodPositions[details::round(margin + (kmerSpacing * ni))];
-
     // FIXME: query.substr() creates a new string. Use string view instead.
     const auto tmpMatch = seedMatch(query.substr(qPos, seedLength), ref, start_pos, allowed_mismatches);
 
